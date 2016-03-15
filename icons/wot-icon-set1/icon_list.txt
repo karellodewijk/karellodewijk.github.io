@@ -106,7 +106,6 @@ uk-at_15a.png
 uk-birch_gun.png
 uk-bishop.png
 uk-black_prince.png
-uk-black_prince_t.png
 uk-caernarvon.png
 uk-centurion.png
 uk-centurion_mk3.png
