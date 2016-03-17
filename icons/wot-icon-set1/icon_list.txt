@@ -251,7 +251,6 @@ ussr-object_261.png
 ussr-object_430.png
 ussr-object_704.png
 ussr-object_907.png
-ussr-observer.png
 ussr-r104_object_430_ii.png
 ussr-r80_kv1.png
 ussr-s-51.png
