@@ -1,4 +1,5 @@
 ## EXPIRES CACHING ##
+Redirect 301 / http://wottactic.tk/
 <IfModule mod_expires.c>
 ExpiresActive On
 ExpiresByType image/jpg "access 1 day"
