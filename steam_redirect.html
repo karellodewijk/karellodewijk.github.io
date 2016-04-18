@@ -11,9 +11,11 @@
 		return string ? string[1] : null;
 	};
 	
-	var dest = getQueryString('dest');
-	console.log(dest)
+	
+	
 	window.document.onload = function(e) { 
+		var dest = getQueryString('dest');
+		console.log(dest)
 		window.location = dest + window.location.search + window.location.hash;
 	}
 	
