@@ -13,6 +13,9 @@
 	
 	document.onload = function(e) { 
 		//var dest = getQueryString('dest');
+		console.log(window.location)
+		console.log(window.location.search)
+		console.log(window.location.hash)
 		window.location.replace("http://localhost/auth/steam/callback" + window.location.search + window.location.hash);
 	}
 	
