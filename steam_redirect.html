@@ -12,6 +12,7 @@
 	};
 	
 	var dest = getQueryString('dest');
+	console.log(dest)
 	window.document.onload = function(e) { 
 		window.location = dest + window.location.search + window.location.hash;
 	}
