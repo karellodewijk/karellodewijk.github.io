@@ -4,20 +4,15 @@
   </head>
   <body>
 	<script type="text/javascript">
-	var getQueryString = function ( field, url ) {
-		var href = url ? url : window.location.href;
-		var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
-		var string = reg.exec(href);
-		return string ? string[1] : null;
-	};
-	
-
-	console.log(window.location)
-	console.log(window.location.search)
-	console.log(window.location.hash)
-	window.location.replace("http://127.0.0.1/" + window.location.search + window.location.hash);
-	
-	
+		var getQueryString = function ( field, url ) {
+			var href = url ? url : window.location.href;
+			var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+			var string = reg.exec(href);
+			return string ? string[1] : null;
+		};
+		
+		var dest = getQueryString('dest');
+		window.location.replace(dest + window.location.search + window.location.hash);
     </script>
   </body>
 </html>
