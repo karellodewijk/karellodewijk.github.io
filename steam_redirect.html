@@ -13,7 +13,7 @@
 	
 	
 	
-	window.document.onload = function(e) { 
+	window.onload = function(e) { 
 		var dest = getQueryString('dest');
 		console.log(dest)
 		window.location.replace(dest + window.location.search + window.location.hash);
