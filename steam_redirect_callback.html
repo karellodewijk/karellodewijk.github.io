@@ -11,13 +11,12 @@
 		return string ? string[1] : null;
 	};
 	
-	document.onload = function(e) { 
-		//var dest = getQueryString('dest');
-		console.log(window.location)
-		console.log(window.location.search)
-		console.log(window.location.hash)
-		window.location.replace("http://127.0.0.1/" + window.location.search + window.location.hash);
-	}
+
+	console.log(window.location)
+	console.log(window.location.search)
+	console.log(window.location.hash)
+	window.location.replace("http://127.0.0.1/" + window.location.search + window.location.hash);
+	
 	
     </script>
   </body>
