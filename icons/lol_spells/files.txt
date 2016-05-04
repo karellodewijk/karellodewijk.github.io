@@ -1,0 +1,13 @@
+files.txt
+spellButton0.jpg
+spellButton1.jpg
+spellButton10.jpg
+spellButton11.jpg
+spellButton2.jpg
+spellButton3.jpg
+spellButton4.jpg
+spellButton5.jpg
+spellButton6.jpg
+spellButton7.jpg
+spellButton8.jpg
+spellButton9.jpg
