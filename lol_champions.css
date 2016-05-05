@@ -1,0 +1,665 @@
+
+.lol_champions {
+  background-image: url('http://karellodewijk.github.io/lol_champions.png');
+}
+
+.lol_champions-Voidgate_Square_0 {
+  background-position: -0px -0px;
+  width: 64px;
+  height: 64px;
+}
+.lol_champions-Voidspawn_Square_0 {
+  background-position: -0px -64px;
+  width: 64px;
+  height: 64px;
+}
+.lol_champions-MissFortune_Square_0 {
+  background-position: -0px -128px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Alistar_Square_0 {
+  background-position: -0px -248px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Amumu_Square_0 {
+  background-position: -0px -368px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Anivia_Square_0 {
+  background-position: -0px -488px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Annie_Square_0 {
+  background-position: -0px -608px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Ashe_Square_0 {
+  background-position: -0px -728px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-AurelionSol_Square_0 {
+  background-position: -0px -848px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Azir_Square_0 {
+  background-position: -0px -968px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Bard_Square_0 {
+  background-position: -0px -1088px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Blitzcrank_Square_0 {
+  background-position: -0px -1208px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Brand_Square_0 {
+  background-position: -0px -1328px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Braum_Square_0 {
+  background-position: -0px -1448px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Caitlyn_Square_0 {
+  background-position: -0px -1568px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Cassiopeia_Square_0 {
+  background-position: -0px -1688px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Chogath_Square_0 {
+  background-position: -0px -1808px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Corki_Square_0 {
+  background-position: -0px -1928px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Darius_Square_0 {
+  background-position: -0px -2048px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Diana_Square_0 {
+  background-position: -0px -2168px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-DrMundo_Square_0 {
+  background-position: -0px -2288px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Draven_Square_0 {
+  background-position: -0px -2408px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Ekko_Square_0 {
+  background-position: -0px -2528px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Elise_Square_0 {
+  background-position: -0px -2648px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Evelynn_Square_0 {
+  background-position: -0px -2768px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Ezreal_Square_0 {
+  background-position: -0px -2888px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Fiddlesticks_Square_0 {
+  background-position: -0px -3008px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Fiora_Square_0 {
+  background-position: -0px -3128px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Fizz_square_0 {
+  background-position: -0px -3248px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Galio_Square_0 {
+  background-position: -0px -3368px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Gangplank_Square_0 {
+  background-position: -0px -3488px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Garen_Square_0 {
+  background-position: -0px -3608px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Gnar_Square_0 {
+  background-position: -0px -3728px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Gragas_Square_0 {
+  background-position: -0px -3848px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Graves_Square_0 {
+  background-position: -0px -3968px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Hecarim_Square_0 {
+  background-position: -0px -4088px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Heimerdinger_Square_0 {
+  background-position: -0px -4208px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Illaoi_Square_0 {
+  background-position: -0px -4328px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Irelia_Square_0 {
+  background-position: -0px -4448px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Janna_Square_0 {
+  background-position: -0px -4568px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-JarvanIV_Square_0 {
+  background-position: -0px -4688px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Jax_Square_0 {
+  background-position: -0px -4808px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Jayce_Square_0 {
+  background-position: -0px -4928px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Jhin_Square_0 {
+  background-position: -0px -5048px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Jinx_Square_0 {
+  background-position: -0px -5168px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Kalista_Square_0 {
+  background-position: -0px -5288px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Karma_Square_0 {
+  background-position: -0px -5408px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Karthus_Square_0 {
+  background-position: -0px -5528px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Kassadin_Square_0 {
+  background-position: -0px -5648px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Katarina_Square_0 {
+  background-position: -0px -5768px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Kayle_Square_0 {
+  background-position: -0px -5888px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Kennen_Square_0 {
+  background-position: -0px -6008px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Khazix_Square_0 {
+  background-position: -0px -6128px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Kindred_Square_0 {
+  background-position: -0px -6248px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-KogMaw_Square_0 {
+  background-position: -0px -6368px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Leblanc_Square_0 {
+  background-position: -0px -6488px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-LeeSin_Square_0 {
+  background-position: -0px -6608px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Leona_Square_0 {
+  background-position: -0px -6728px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Lissandra_Square_0 {
+  background-position: -0px -6848px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Lucian_Square_0 {
+  background-position: -0px -6968px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Lulu_Square_0 {
+  background-position: -0px -7088px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Lux_Square_0 {
+  background-position: -0px -7208px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Malphite_Square_0 {
+  background-position: -0px -7328px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Malzahar_Square_0 {
+  background-position: -0px -7448px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Maokai_Square_0 {
+  background-position: -0px -7568px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-MasterYi_Square_0 {
+  background-position: -0px -7688px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Ahri_Square_0 {
+  background-position: -0px -7808px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-MonkeyKing_Square_0 {
+  background-position: -0px -7928px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Mordekaiser_Square_0 {
+  background-position: -0px -8048px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Morgana_Square_0 {
+  background-position: -0px -8168px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Nami_Square_0 {
+  background-position: -0px -8288px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Nasus_Square_0 {
+  background-position: -0px -8408px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Nautilus_Square_0 {
+  background-position: -0px -8528px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Nidalee_Square_0 {
+  background-position: -0px -8648px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Nocturne_Square_0 {
+  background-position: -0px -8768px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Nunu_Square_0 {
+  background-position: -0px -8888px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Olaf_Square_0 {
+  background-position: -0px -9008px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Orianna_Square_0 {
+  background-position: -0px -9128px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Pantheon_Square_0 {
+  background-position: -0px -9248px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Poppy_Square_0 {
+  background-position: -0px -9368px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Quinn_Square_0 {
+  background-position: -0px -9488px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Rammus_Square_0 {
+  background-position: -0px -9608px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-RekSai_Square_0 {
+  background-position: -0px -9728px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Renekton_Square_0 {
+  background-position: -0px -9848px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Rengar_Square_0 {
+  background-position: -0px -9968px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Riven_Square_0 {
+  background-position: -0px -10088px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Rumble_Square_0 {
+  background-position: -0px -10208px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Ryze_Square_0 {
+  background-position: -0px -10328px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Sejuani_Square_0 {
+  background-position: -0px -10448px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Shaco_Square_0 {
+  background-position: -0px -10568px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Shen_Square_0 {
+  background-position: -0px -10688px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Shyvana_Square_0 {
+  background-position: -0px -10808px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Singed_Square_0 {
+  background-position: -0px -10928px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Sion_Square_0 {
+  background-position: -0px -11048px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Sivir_Square_0 {
+  background-position: -0px -11168px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Skarner_Square_0 {
+  background-position: -0px -11288px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Sona_Square_0 {
+  background-position: -0px -11408px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Soraka_Square_0 {
+  background-position: -0px -11528px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Swain_Square_0 {
+  background-position: -0px -11648px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Syndra_Square_0 {
+  background-position: -0px -11768px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-TahmKench_Square_0 {
+  background-position: -0px -11888px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Talon_Square_0 {
+  background-position: -0px -12008px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Taric_Square_0 {
+  background-position: -0px -12128px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Teemo_Square_0 {
+  background-position: -0px -12248px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Thresh_Square_0 {
+  background-position: -0px -12368px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Tristana_Square_0 {
+  background-position: -0px -12488px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Trundle_Square_0 {
+  background-position: -0px -12608px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Tryndamere_Square_0 {
+  background-position: -0px -12728px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-TwistedFate_Square_0 {
+  background-position: -0px -12848px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Twitch_Square_0 {
+  background-position: -0px -12968px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Udyr_Square_0 {
+  background-position: -0px -13088px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Urgot_Square_0 {
+  background-position: -0px -13208px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Varus_Square_0 {
+  background-position: -0px -13328px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Vayne_Square_0 {
+  background-position: -0px -13448px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Veigar_Square_0 {
+  background-position: -0px -13568px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-VelKoz_Square_0 {
+  background-position: -0px -13688px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Vi_Square_0 {
+  background-position: -0px -13808px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Viktor_Square_0 {
+  background-position: -0px -13928px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Vladimir_Square_0 {
+  background-position: -0px -14048px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Aatrox_Square_0 {
+  background-position: -0px -14168px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Akali_Square_0 {
+  background-position: -0px -14288px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Volibear_Square_0 {
+  background-position: -0px -14408px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Warwick_Square_0 {
+  background-position: -0px -14528px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Xerath_Square_0 {
+  background-position: -0px -14648px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-XinZhao_Square_0 {
+  background-position: -0px -14768px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Yasuo_Square_0 {
+  background-position: -0px -14888px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Yorick_Square_0 {
+  background-position: -0px -15008px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Zac_Square_0 {
+  background-position: -0px -15128px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Zed_Square_0 {
+  background-position: -0px -15248px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Ziggs_Square_0 {
+  background-position: -0px -15368px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Zilean_Square_0 {
+  background-position: -0px -15488px;
+  width: 120px;
+  height: 120px;
+}
+.lol_champions-Zyra_Square_0 {
+  background-position: -0px -15608px;
+  width: 120px;
+  height: 120px;
+}

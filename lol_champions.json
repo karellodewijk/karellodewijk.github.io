@@ -1,0 +1,934 @@
+{
+  "sprites": {
+    "lol_champions.png": {
+      "width": 120,
+      "height": 15728
+    }
+  },
+  "tiles": {
+    "Voidgate_Square_0.jpg": {
+      "width": 64,
+      "height": 64,
+      "x": 0,
+      "y": 0,
+      "sprite": "lol_champions.png"
+    },
+    "Voidspawn_Square_0.jpg": {
+      "width": 64,
+      "height": 64,
+      "x": 0,
+      "y": 64,
+      "sprite": "lol_champions.png"
+    },
+    "MissFortune_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 128,
+      "sprite": "lol_champions.png"
+    },
+    "Alistar_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 248,
+      "sprite": "lol_champions.png"
+    },
+    "Amumu_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 368,
+      "sprite": "lol_champions.png"
+    },
+    "Anivia_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 488,
+      "sprite": "lol_champions.png"
+    },
+    "Annie_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 608,
+      "sprite": "lol_champions.png"
+    },
+    "Ashe_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 728,
+      "sprite": "lol_champions.png"
+    },
+    "AurelionSol_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 848,
+      "sprite": "lol_champions.png"
+    },
+    "Azir_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 968,
+      "sprite": "lol_champions.png"
+    },
+    "Bard_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 1088,
+      "sprite": "lol_champions.png"
+    },
+    "Blitzcrank_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 1208,
+      "sprite": "lol_champions.png"
+    },
+    "Brand_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 1328,
+      "sprite": "lol_champions.png"
+    },
+    "Braum_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 1448,
+      "sprite": "lol_champions.png"
+    },
+    "Caitlyn_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 1568,
+      "sprite": "lol_champions.png"
+    },
+    "Cassiopeia_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 1688,
+      "sprite": "lol_champions.png"
+    },
+    "Chogath_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 1808,
+      "sprite": "lol_champions.png"
+    },
+    "Corki_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 1928,
+      "sprite": "lol_champions.png"
+    },
+    "Darius_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 2048,
+      "sprite": "lol_champions.png"
+    },
+    "Diana_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 2168,
+      "sprite": "lol_champions.png"
+    },
+    "DrMundo_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 2288,
+      "sprite": "lol_champions.png"
+    },
+    "Draven_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 2408,
+      "sprite": "lol_champions.png"
+    },
+    "Ekko_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 2528,
+      "sprite": "lol_champions.png"
+    },
+    "Elise_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 2648,
+      "sprite": "lol_champions.png"
+    },
+    "Evelynn_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 2768,
+      "sprite": "lol_champions.png"
+    },
+    "Ezreal_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 2888,
+      "sprite": "lol_champions.png"
+    },
+    "Fiddlesticks_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3008,
+      "sprite": "lol_champions.png"
+    },
+    "Fiora_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3128,
+      "sprite": "lol_champions.png"
+    },
+    "Fizz_square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3248,
+      "sprite": "lol_champions.png"
+    },
+    "Galio_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3368,
+      "sprite": "lol_champions.png"
+    },
+    "Gangplank_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3488,
+      "sprite": "lol_champions.png"
+    },
+    "Garen_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3608,
+      "sprite": "lol_champions.png"
+    },
+    "Gnar_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3728,
+      "sprite": "lol_champions.png"
+    },
+    "Gragas_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3848,
+      "sprite": "lol_champions.png"
+    },
+    "Graves_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 3968,
+      "sprite": "lol_champions.png"
+    },
+    "Hecarim_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 4088,
+      "sprite": "lol_champions.png"
+    },
+    "Heimerdinger_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 4208,
+      "sprite": "lol_champions.png"
+    },
+    "Illaoi_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 4328,
+      "sprite": "lol_champions.png"
+    },
+    "Irelia_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 4448,
+      "sprite": "lol_champions.png"
+    },
+    "Janna_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 4568,
+      "sprite": "lol_champions.png"
+    },
+    "JarvanIV_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 4688,
+      "sprite": "lol_champions.png"
+    },
+    "Jax_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 4808,
+      "sprite": "lol_champions.png"
+    },
+    "Jayce_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 4928,
+      "sprite": "lol_champions.png"
+    },
+    "Jhin_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 5048,
+      "sprite": "lol_champions.png"
+    },
+    "Jinx_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 5168,
+      "sprite": "lol_champions.png"
+    },
+    "Kalista_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 5288,
+      "sprite": "lol_champions.png"
+    },
+    "Karma_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 5408,
+      "sprite": "lol_champions.png"
+    },
+    "Karthus_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 5528,
+      "sprite": "lol_champions.png"
+    },
+    "Kassadin_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 5648,
+      "sprite": "lol_champions.png"
+    },
+    "Katarina_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 5768,
+      "sprite": "lol_champions.png"
+    },
+    "Kayle_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 5888,
+      "sprite": "lol_champions.png"
+    },
+    "Kennen_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6008,
+      "sprite": "lol_champions.png"
+    },
+    "Khazix_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6128,
+      "sprite": "lol_champions.png"
+    },
+    "Kindred_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6248,
+      "sprite": "lol_champions.png"
+    },
+    "KogMaw_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6368,
+      "sprite": "lol_champions.png"
+    },
+    "Leblanc_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6488,
+      "sprite": "lol_champions.png"
+    },
+    "LeeSin_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6608,
+      "sprite": "lol_champions.png"
+    },
+    "Leona_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6728,
+      "sprite": "lol_champions.png"
+    },
+    "Lissandra_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6848,
+      "sprite": "lol_champions.png"
+    },
+    "Lucian_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 6968,
+      "sprite": "lol_champions.png"
+    },
+    "Lulu_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 7088,
+      "sprite": "lol_champions.png"
+    },
+    "Lux_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 7208,
+      "sprite": "lol_champions.png"
+    },
+    "Malphite_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 7328,
+      "sprite": "lol_champions.png"
+    },
+    "Malzahar_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 7448,
+      "sprite": "lol_champions.png"
+    },
+    "Maokai_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 7568,
+      "sprite": "lol_champions.png"
+    },
+    "MasterYi_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 7688,
+      "sprite": "lol_champions.png"
+    },
+    "Ahri_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 7808,
+      "sprite": "lol_champions.png"
+    },
+    "MonkeyKing_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 7928,
+      "sprite": "lol_champions.png"
+    },
+    "Mordekaiser_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 8048,
+      "sprite": "lol_champions.png"
+    },
+    "Morgana_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 8168,
+      "sprite": "lol_champions.png"
+    },
+    "Nami_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 8288,
+      "sprite": "lol_champions.png"
+    },
+    "Nasus_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 8408,
+      "sprite": "lol_champions.png"
+    },
+    "Nautilus_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 8528,
+      "sprite": "lol_champions.png"
+    },
+    "Nidalee_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 8648,
+      "sprite": "lol_champions.png"
+    },
+    "Nocturne_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 8768,
+      "sprite": "lol_champions.png"
+    },
+    "Nunu_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 8888,
+      "sprite": "lol_champions.png"
+    },
+    "Olaf_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9008,
+      "sprite": "lol_champions.png"
+    },
+    "Orianna_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9128,
+      "sprite": "lol_champions.png"
+    },
+    "Pantheon_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9248,
+      "sprite": "lol_champions.png"
+    },
+    "Poppy_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9368,
+      "sprite": "lol_champions.png"
+    },
+    "Quinn_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9488,
+      "sprite": "lol_champions.png"
+    },
+    "Rammus_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9608,
+      "sprite": "lol_champions.png"
+    },
+    "RekSai_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9728,
+      "sprite": "lol_champions.png"
+    },
+    "Renekton_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9848,
+      "sprite": "lol_champions.png"
+    },
+    "Rengar_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 9968,
+      "sprite": "lol_champions.png"
+    },
+    "Riven_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 10088,
+      "sprite": "lol_champions.png"
+    },
+    "Rumble_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 10208,
+      "sprite": "lol_champions.png"
+    },
+    "Ryze_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 10328,
+      "sprite": "lol_champions.png"
+    },
+    "Sejuani_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 10448,
+      "sprite": "lol_champions.png"
+    },
+    "Shaco_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 10568,
+      "sprite": "lol_champions.png"
+    },
+    "Shen_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 10688,
+      "sprite": "lol_champions.png"
+    },
+    "Shyvana_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 10808,
+      "sprite": "lol_champions.png"
+    },
+    "Singed_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 10928,
+      "sprite": "lol_champions.png"
+    },
+    "Sion_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 11048,
+      "sprite": "lol_champions.png"
+    },
+    "Sivir_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 11168,
+      "sprite": "lol_champions.png"
+    },
+    "Skarner_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 11288,
+      "sprite": "lol_champions.png"
+    },
+    "Sona_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 11408,
+      "sprite": "lol_champions.png"
+    },
+    "Soraka_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 11528,
+      "sprite": "lol_champions.png"
+    },
+    "Swain_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 11648,
+      "sprite": "lol_champions.png"
+    },
+    "Syndra_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 11768,
+      "sprite": "lol_champions.png"
+    },
+    "TahmKench_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 11888,
+      "sprite": "lol_champions.png"
+    },
+    "Talon_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12008,
+      "sprite": "lol_champions.png"
+    },
+    "Taric_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12128,
+      "sprite": "lol_champions.png"
+    },
+    "Teemo_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12248,
+      "sprite": "lol_champions.png"
+    },
+    "Thresh_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12368,
+      "sprite": "lol_champions.png"
+    },
+    "Tristana_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12488,
+      "sprite": "lol_champions.png"
+    },
+    "Trundle_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12608,
+      "sprite": "lol_champions.png"
+    },
+    "Tryndamere_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12728,
+      "sprite": "lol_champions.png"
+    },
+    "TwistedFate_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12848,
+      "sprite": "lol_champions.png"
+    },
+    "Twitch_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 12968,
+      "sprite": "lol_champions.png"
+    },
+    "Udyr_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 13088,
+      "sprite": "lol_champions.png"
+    },
+    "Urgot_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 13208,
+      "sprite": "lol_champions.png"
+    },
+    "Varus_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 13328,
+      "sprite": "lol_champions.png"
+    },
+    "Vayne_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 13448,
+      "sprite": "lol_champions.png"
+    },
+    "Veigar_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 13568,
+      "sprite": "lol_champions.png"
+    },
+    "VelKoz_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 13688,
+      "sprite": "lol_champions.png"
+    },
+    "Vi_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 13808,
+      "sprite": "lol_champions.png"
+    },
+    "Viktor_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 13928,
+      "sprite": "lol_champions.png"
+    },
+    "Vladimir_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 14048,
+      "sprite": "lol_champions.png"
+    },
+    "Aatrox_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 14168,
+      "sprite": "lol_champions.png"
+    },
+    "Akali_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 14288,
+      "sprite": "lol_champions.png"
+    },
+    "Volibear_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 14408,
+      "sprite": "lol_champions.png"
+    },
+    "Warwick_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 14528,
+      "sprite": "lol_champions.png"
+    },
+    "Xerath_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 14648,
+      "sprite": "lol_champions.png"
+    },
+    "XinZhao_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 14768,
+      "sprite": "lol_champions.png"
+    },
+    "Yasuo_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 14888,
+      "sprite": "lol_champions.png"
+    },
+    "Yorick_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 15008,
+      "sprite": "lol_champions.png"
+    },
+    "Zac_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 15128,
+      "sprite": "lol_champions.png"
+    },
+    "Zed_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 15248,
+      "sprite": "lol_champions.png"
+    },
+    "Ziggs_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 15368,
+      "sprite": "lol_champions.png"
+    },
+    "Zilean_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 15488,
+      "sprite": "lol_champions.png"
+    },
+    "Zyra_Square_0.jpg": {
+      "width": 120,
+      "height": 120,
+      "x": 0,
+      "y": 15608,
+      "sprite": "lol_champions.png"
+    }
+  }
+}
