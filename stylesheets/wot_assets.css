@@ -1,53 +1,53 @@
-.icon {
+.wot {
   background-image: url('http://karellodewijk.github.io/wot_assets.png');
 }
 
-.icon-note {
+.wot-note {
   background-position: -0px -0px;
   width: 22px;
   height: 22px;
 }
-.icon-arty {
+.wot-arty {
   background-position: -0px -22px;
   width: 29px;
   height: 29px;
 }
-.icon-heavy {
+.wot-heavy {
   background-position: -0px -51px;
   width: 29px;
   height: 29px;
 }
-.icon-light {
+.wot-light {
   background-position: -0px -80px;
   width: 29px;
   height: 29px;
 }
-.icon-medium {
+.wot-medium {
   background-position: -0px -109px;
   width: 29px;
   height: 29px;
 }
-.icon-td {
+.wot-td {
   background-position: -0px -138px;
   width: 29px;
   height: 29px;
 }
-.icon-dot {
+.wot-dot {
   background-position: -0px -167px;
   width: 30px;
   height: 30px;
 }
-.icon-circle {
+.wot-circle {
   background-position: -0px -197px;
   width: 50px;
   height: 50px;
 }
-.icon-recticle {
+.wot-recticle {
   background-position: -0px -247px;
   width: 50px;
   height: 50px;
 }
-.icon-cursor {
+.wot-cursor {
   background-position: -0px -297px;
   width: 55px;
   height: 83px;
