@@ -1,0 +1,55 @@
+
+.csgo_icons {
+  background-image: url('http://karellodewijk.github.io/csgo_icons.png');
+}
+
+.csgo_icons-bomb {
+  background-position: -0px -0px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-csgo {
+  background-position: -0px -50px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-ct {
+  background-position: -0px -100px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-decoy {
+  background-position: -0px -150px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-explosive {
+  background-position: -0px -200px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-flash {
+  background-position: -0px -250px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-incendiary {
+  background-position: -0px -300px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-molotov {
+  background-position: -0px -350px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-smoke {
+  background-position: -0px -400px;
+  width: 50px;
+  height: 50px;
+}
+.csgo_icons-terrorists {
+  background-position: -0px -450px;
+  width: 50px;
+  height: 50px;
+}
