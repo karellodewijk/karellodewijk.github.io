@@ -1,9 +1,5 @@
-## EXPIRES CACHING ##
-Redirect 301 / http://wottactic.tk/
-<IfModule mod_expires.c>
-ExpiresActive On
-ExpiresByType image/jpg "access plus 3 days"
-ExpiresByType image/jpeg "access plus 3 days"
-ExpiresDefault "access plus 1 month"
-</IfModule>
-## EXPIRES CACHING ##
+<FilesMatch "\.(ttf|otf|eot|woff)$">
+  <IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+  </IfModule>
+</FilesMatch>
