@@ -212,11 +212,11 @@ small {
 
 @font-face {
     font-family: 'icomoon';
-    src:    url('<%=static_host%>/stylesheets/fonts/icomoon.eot');
-    src:    url('<%=static_host%>/stylesheets/fonts/icomoon.eot#iefix') format('embedded-opentype'),
-        url('<%=static_host%>/stylesheets/fonts/icomoon.ttf') format('truetype'),
-        url('<%=static_host%>/stylesheets/fonts/icomoon.woff') format('woff'),
-        url('<%=static_host%>/stylesheets/fonts/icomoon.svg#icomoon') format('svg');
+    src:    url('fonts/icomoon.eot');
+    src:    url('fonts/icomoon.eot#iefix') format('embedded-opentype'),
+        url('fonts/icomoon.ttf') format('truetype'),
+        url('fonts/icomoon.woff') format('woff'),
+        url('fonts/icomoon.svg#icomoon') format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -277,7 +277,7 @@ div.inline { display: inline-block; vertical-align: middle; }
 }
 
 .icon {
-  background-image: url('<%=static_host%>/stylesheets/sprite.png');
+  background-image: url('sprite.png');
 }
 
 .icon-logout {
