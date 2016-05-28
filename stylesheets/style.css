@@ -210,6 +210,13 @@ small {
 	border: 1px solid #AAAAAA;
 }
 
+/* makes the font 33% larger relative to the icon container */
+.fa-lg {
+  font-size: 1.33333333em;
+  line-height: 0.75em;
+  vertical-align: -15%;
+}
+
 @font-face {
     font-family: 'icomoon';
     src:    url('fonts/icomoon.eot');
@@ -238,6 +245,18 @@ small {
 
 .icon-patreon:before {
     content: "\e900";
+}
+.icon-paypal:before {
+    content: "\e901";
+}
+.icon-twitter:before {
+    content: "\e902";
+}
+.icon-facebook:before {
+    content: "\e903";
+}
+.icon-google-plus:before {
+    content: "\e904";
 }
 
 div.inline { display: inline-block; vertical-align: middle; }
