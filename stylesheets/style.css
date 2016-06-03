@@ -51,12 +51,10 @@ button {
 }
 
 .left_column {
-	min-width: 350px;
-	max-width: 350px;
 	display: inline-block;
 	vertical-align:top;
-	padding-left: 20px;
-	padding-right: 20px;
+	padding-left: 10px;
+	padding-right: 10px;
 	padding-top: 0px;
 }
 
@@ -65,8 +63,8 @@ button {
 	display:inline-block;
 	vertical-align:top;
 	width: auto;
-	padding-left: 20px;
-	padding-right: 20px;
+	padding-left: 10px;
+	padding-right: 10px;
 	padding-top: 0px;
 	padding-bottom: 20px;
 }
@@ -75,8 +73,8 @@ button {
 	min-width: 600px;
 	display:inline-block;
 	width: auto;
-	padding-left: 20px;
-	padding-right: 20px;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 .tank_select {
