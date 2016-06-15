@@ -1800,11 +1800,15 @@ function on_ruler_move(e) {
 		temp_draw_context.lineWidth = to_x_local(0.5)/1000;
 		temp_draw_context.strokeStyle = "#000000";
 		temp_draw_context.fillStyle = "#FFFFFF";
-		var unit = "m";
+		var label = "";
 		if (game == "lol") {
-			unit = "u";
+			label += Math.round(10*length)/10 + "u";
+		} else if (game == "wows") {
+			label += Math.round(0.01*length)/10 + "km";
+		} else {
+			label += Math.round(10*length)/10 + "m";
 		}
-		temp_draw_context.fillText(""+Math.round(10*length)/10+unit, mid_line_x, mid_line_y);
+		temp_draw_context.fillText(label, mid_line_x, mid_line_y);
 	});
 }
 
@@ -1858,7 +1862,15 @@ function on_circle_move(e) {
 			temp_draw_context.lineWidth = to_x_local(0.5)/1000;
 			temp_draw_context.strokeStyle = "#000000";
 			temp_draw_context.fillStyle = "#FFFFFF";
-			temp_draw_context.fillText(""+Math.round(10*length)/10+"m", mid_line_x, mid_line_y);
+			var label = "";
+			if (game == "lol") {
+				label += Math.round(10*length)/10 + "u";
+			} else if (game == "wows") {
+				label += Math.round(0.01*length)/10 + "km";
+			} else {
+				label += Math.round(10*length)/10 + "m";
+			}	
+			temp_draw_context.fillText(label, mid_line_x, mid_line_y);
 			temp_draw_context.stroke();
 			temp_draw_context.restore();
 		}
@@ -1918,7 +1930,15 @@ function on_circle_end(e) {
 		temp_draw_context.lineWidth = to_x_local(0.5)/1000;
 		temp_draw_context.strokeStyle = "#000000";
 		temp_draw_context.fillStyle = "#FFFFFF";
-		temp_draw_context.fillText(""+Math.round(10*length)/10+"m", mid_line_x, mid_line_y);
+		var label = "";
+		if (game == "lol") {
+			label += Math.round(10*length)/10 + "u";
+		} else if (game == "wows") {
+			label += Math.round(0.01*length)/10 + "km";
+		} else {
+			label += Math.round(10*length)/10 + "m";
+		}
+		temp_draw_context.fillText(label, mid_line_x, mid_line_y);		
 		temp_draw_context.stroke();
 		temp_draw_context.restore();		
 		new_shape.draw_radius = [mouse_x_rel(mouse_location.x), mouse_y_rel(mouse_location.y)];
@@ -2773,7 +2793,15 @@ function create_circle2(circle) {
 		_context.lineWidth = to_x_local(0.5)/1000;
 		_context.strokeStyle = "#000000";
 		_context.fillStyle = "#FFFFFF";
-		_context.fillText(""+Math.round(10*length)/10+"m", mid_line_x, mid_line_y);
+		var label = "";
+		if (game == "lol") {
+			label += Math.round(10*length)/10 + "u";
+		} else if (game == "wows") {
+			label += Math.round(0.01*length)/10 + "km";
+		} else {
+			label += Math.round(10*length)/10 + "m";
+		}
+		_context.fillText(label, mid_line_x, mid_line_y);
 		_context.restore();
 	}
 	
@@ -3861,7 +3889,7 @@ function update_slide_buttons() {
 		
 	} while (current_slide_uid != 0);
 	
-	//TODO: Future me, figure out why it resets the scrollbar, I'm too stupid to figure it out
+	//TODO: Future me, figure out why it resets the scrollbar just AFTER this function ends, I'm too stupid to figure it out
 	var scrolltop = $('#slide_container').scrollTop();
 	setTimeout(function() {
 		$('#slide_container').scrollTop(scrolltop);
