@@ -2118,6 +2118,8 @@ function select_box_mousemove(e, ref_x, ref_y, ref_width, ref_height, lock_x, lo
 }
 
 function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock_y) {
+	limit_rate(15, select_box_move_state, function() {});
+	
 	var mouse_location = renderer.plugins.interaction.eventData.data.global;
 	mouse_location.x = x_abs(from_x_local(mouse_location.x));
 	mouse_location.y = y_abs(from_y_local(mouse_location.y));
