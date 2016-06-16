@@ -751,6 +751,10 @@ function on_drag_start(e) {
 			move_selected = true;
 		}
 		
+		if (!move_selected) {
+			deselect_all();
+		}
+		
 		for (var i in selected_entities) {
 			selected_entities[i].origin_x = selected_entities[i].x;
 			selected_entities[i].origin_y = selected_entities[i].y;			
