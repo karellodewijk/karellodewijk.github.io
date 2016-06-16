@@ -2134,7 +2134,7 @@ function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock
 		
 		var scale = entity.scale ? entity.scale : [1,1], x = entity.x, y = entity.y;
 		
-		origin = [x, y, [scale[0], scale[1]]];
+		var origin = [x, y, [scale[0], scale[1]]];
 		origin_entity_map.push([origin, selected_entities[i]]);
 		
 		if (!lock_x) {
@@ -2158,9 +2158,7 @@ function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock
 	select_box.mouseupoutside = undefined;
 	objectContainer.mouseup = undefined;
 	objectContainer.mouseupoutside = undefined;
-	
-	on_selectbox_move(e);
-	
+		
 	if (!lock_x) {
 		select_box.x = Math.min(ref_x, mouse_location.x);
 		select_box.width = Math.abs(ref_x - mouse_location.x);
