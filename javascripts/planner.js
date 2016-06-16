@@ -3372,7 +3372,7 @@ function create_entity(entity) {
 		create_area2(entity);
 	}
 
-	if (entity.scale) {
+	if (entity.scale && entity.container) {
 		entity.container.scale.x = entity.container.orig_scale[0] * entity.scale[0];
 		entity.container.scale.y = entity.container.orig_scale[1] * entity.scale[1];
 	}
