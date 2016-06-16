@@ -2709,8 +2709,8 @@ function canvas2container(_context, _canvas, entity) {
 function create_line2(line) {
 	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = renderer.view.width;
-	_canvas.height = renderer.view.height;
+	_canvas.width = 2 * renderer.view.width;
+	_canvas.height = 2 * renderer.view.height;
 	_context = _canvas.getContext("2d");
 	
 	init_canvas(_context, line.thickness, line.color, line.style);
@@ -2749,8 +2749,8 @@ function init_shape_canvas(_context, shape) {
 function create_rectangle2(rectangle) {
 	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = renderer.view.width;
-	_canvas.height = renderer.view.height;
+	_canvas.width = 2 * renderer.view.width;
+	_canvas.height = 2 * renderer.view.height;
 	var _context = _canvas.getContext("2d");
 	init_shape_canvas(_context, rectangle);
 
@@ -2763,8 +2763,8 @@ function create_rectangle2(rectangle) {
 function create_circle2(circle) {
 	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = renderer.view.width;
-	_canvas.height = renderer.view.height;
+	_canvas.width = 2 * renderer.view.width;
+	_canvas.height = 2 * renderer.view.height;
 	var _context = _canvas.getContext("2d");
 	init_shape_canvas(_context, circle);
 
@@ -2809,8 +2809,8 @@ function create_circle2(circle) {
 function create_polygon2(polygon) {
 	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = renderer.view.width;
-	_canvas.height = renderer.view.height;
+	_canvas.width = 2 * renderer.view.width;
+	_canvas.height = 2 * renderer.view.height;
 	var _context = _canvas.getContext("2d");
 	init_shape_canvas(_context, polygon);
 
@@ -2831,8 +2831,8 @@ function create_polygon2(polygon) {
 function create_area2(area) {
 	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = renderer.view.width;
-	_canvas.height = renderer.view.height;
+	_canvas.width = 2 * renderer.view.width;
+	_canvas.height = 2 * renderer.view.height;
 	var _context = _canvas.getContext("2d");
 	init_shape_canvas(_context, area);
 
@@ -2846,8 +2846,8 @@ function create_area2(area) {
 function create_drawing2(drawing) {
 	var color = '#' + ('00000' + (drawing.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = renderer.view.width;
-	_canvas.height = renderer.view.height;
+	_canvas.width = 2 * renderer.view.width;
+	_canvas.height = 2 * renderer.view.height;
 	var _context = _canvas.getContext("2d");
 
 	init_canvas(_context, drawing.thickness, drawing.color, drawing.style);
@@ -2872,8 +2872,8 @@ function create_drawing2(drawing) {
 function create_curve2(drawing) {
 	var color = '#' + ('00000' + (drawing.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = renderer.view.width;
-	_canvas.height = renderer.view.height;
+	_canvas.width = 2 * renderer.view.width;
+	_canvas.height = 2 * renderer.view.height;
 	var _context = _canvas.getContext("2d");
 
 	init_canvas(_context, drawing.thickness, drawing.color, drawing.style);
@@ -4234,6 +4234,7 @@ $(document).ready(function() {
 	$(temp_draw_canvas).hide();
 	$(draw_canvas).hide();
 	
+	window.onresize();
 	
 	loader.once('complete', function () {		
 		//generate ticks, leveraged from: http://thenewcode.com/864/Auto-Generate-Marks-on-HTML5-Range-Sliders-with-JavaScript
