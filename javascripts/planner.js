@@ -4234,8 +4234,6 @@ $(document).ready(function() {
 	$(temp_draw_canvas).hide();
 	$(draw_canvas).hide();
 	
-	window.onresize();
-	
 	loader.once('complete', function () {		
 		//generate ticks, leveraged from: http://thenewcode.com/864/Auto-Generate-Marks-on-HTML5-Range-Sliders-with-JavaScript
 		function ticks(element) {		
