@@ -956,8 +956,6 @@ function render_scene() {
 
 var ping_texture_atlas = {}
 function ping(x, y, color, size) {	
-console.log($('#slide_container').scrollTop())
-
 	if (!ping_texture_atlas[color]) {
 		var temp = new PIXI.Sprite(ping_texture);
 		temp.tint = color;
@@ -4181,9 +4179,6 @@ $(document).ready(function() {
 		alpha: false
 	});
 	
-	objectContainer.addChild(background_sprite);
-	objectContainer.addChild(fast_container);
-
 	//initialize grid layer
 	if (game == "aw") {
 		grid_layer = new PIXI.Sprite.fromImage(image_host + "aw_grid.png");
@@ -4192,7 +4187,10 @@ $(document).ready(function() {
 	}
 	grid_layer.height = renderer.height;
 	grid_layer.width = renderer.width;
+	
+	objectContainer.addChild(background_sprite);
 	objectContainer.addChild(grid_layer);
+	objectContainer.addChild(fast_container);
 	
 	objectContainer.interactive = true;
 	objectContainer.mousedown = on_left_click;
