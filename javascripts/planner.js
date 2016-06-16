@@ -1228,6 +1228,9 @@ var last_draw_time, last_point;
 function on_left_click(e) {
 	var mouse_location = e.data.getLocalPosition(background_sprite);
 	if (!can_edit()) {
+		setup_mouse_events(on_ruler_move, on_ruler_end);
+		init_canvases(0.1, 0xffffff, "full");
+		left_click_origin = [mouse_x_rel(mouse_location.x), mouse_y_rel(mouse_location.y)];	
 		return;
 	}
 	try {
