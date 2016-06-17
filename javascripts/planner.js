@@ -2141,14 +2141,13 @@ function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock
 	for (var i in selected_entities) {
 		var entity = selected_entities[i];
 		
-		var origin = [x, y, [1,1]];
+		var scale = [1,1];
 		if (entity.scale) {
-			origin[2][0] = entity.scale[0];
-			origin[2][1] = entity.scale[1];
+			scale = [entity.scale[0], entity.scale[1]];
 		}
-		
-		undo_action[1].push([origin, selected_entities[i]]);
-		
+		var origin = [entity.x, entity.y, [scale[0], scale[1]]];
+		undo_action[1].push([origin, entity]);	
+	
 		if (!lock_x) {
 			x = x_rel((entity.container.x_orig - ref_x) * scale_x + ref_x - entity.container.x_orig) + entity.x;
 			scale[0] = scale_x * entity.container.start_scale[0] / entity.container.orig_scale[0];
@@ -2161,6 +2160,7 @@ function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock
 		entity.container.y = entity.container.y_orig;
 		drag_entity(entity, x, y, scale);
 		socket.emit('drag', room, entity.uid, active_slide, x, y, scale);
+
 	}
 	undo_list.push(undo_action);
 	
@@ -3634,6 +3634,7 @@ function undo() {
 				var y = action[1][i][0][1];
 				var scale = action[1][i][0][2];
 				var uid = action[1][i][1].uid;
+				
 				if (room_data.slides[active_slide].entities[uid]) { //still exists
 					action[1][i][0][0] = room_data.slides[active_slide].entities[uid].x;
 					action[1][i][0][1] = room_data.slides[active_slide].entities[uid].y;
