@@ -191,6 +191,9 @@ var line_thickness;
 var icon_size;
 var ping_size;
 var track_size;
+var draw_end_size;
+var line_end_size;
+var curve_end_size;
 var rectangle_outline_thickness;
 var rectangle_outline_transparancy;
 var rectangle_fill_transparancy;
@@ -1247,7 +1250,7 @@ function on_left_click(e) {
 	if (active_context == 'draw_context') {
 		setup_mouse_events(on_draw_move, on_draw_end);
 		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-		new_drawing = {uid : newUid(), type: 'drawing', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:draw_color, alpha:1, thickness:parseFloat(draw_thickness) * zoom_level, end:$('#draw_end_type').find('.active').attr('data-end'), style:$('#draw_type').find('.active').attr('data-style'), path:[[0, 0]]};
+		new_drawing = {uid : newUid(), type: 'drawing', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:draw_color, alpha:1, thickness:parseFloat(draw_thickness) * zoom_level, end:$('#draw_end_type').find('.active').attr('data-end'), style:$('#draw_type').find('.active').attr('data-style'), path:[[0, 0]], end_size:draw_end_size};
 		init_canvases(parseFloat(draw_thickness), new_drawing.color, new_drawing.style);
 		draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
 		last_draw_time = Date.now();
@@ -1260,7 +1263,7 @@ function on_left_click(e) {
 		if (!new_drawing) {
 			setup_mouse_events(on_line_move, on_line_end);
 			var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-			new_drawing = {uid : newUid(), type: 'line', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:line_color, alpha:1, thickness:parseFloat(line_thickness) * zoom_level, path:[[0, 0]], end:$('#line_end_type').find('.active').attr('data-end'), style:$('#line_type').find('.active').attr('data-style') };
+			new_drawing = {uid : newUid(), type: 'line', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:line_color, alpha:1, thickness:parseFloat(line_thickness) * zoom_level, path:[[0, 0]], end:$('#line_end_type').find('.active').attr('data-end'), style:$('#line_type').find('.active').attr('data-style'), end_size:line_end_size};
 			init_canvases(parseFloat(line_thickness), new_drawing.color, new_drawing.style);
 			draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
 			just_activated = true;
@@ -1288,7 +1291,7 @@ function on_left_click(e) {
 	} else if (active_context == 'curve_context') {
 		if (!new_drawing) {
 			var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-			new_drawing = {uid : newUid(), type: 'curve', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y),  scale:[1,1], color:curve_color, alpha:1, thickness:parseFloat(curve_thickness) * zoom_level, path:[[0, 0]], end:$('#curve_end_type').find('.active').attr('data-end'), style:$('#curve_type').find('.active').attr('data-style') };
+			new_drawing = {uid : newUid(), type: 'curve', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y),  scale:[1,1], color:curve_color, alpha:1, thickness:parseFloat(curve_thickness) * zoom_level, path:[[0, 0]], end:$('#curve_end_type').find('.active').attr('data-end'), style:$('#curve_type').find('.active').attr('data-style'), end_size:curve_end_size};
 
 			init_canvases(parseFloat(curve_thickness), new_drawing.color, new_drawing.style);
 			draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
@@ -2614,6 +2617,9 @@ function draw_end(context, drawing) {
 function draw_arrow2(context, drawing, i) {
 	var i = Math.max(0, drawing.path.length-i);
 	var size = (ARROW_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
+	if (drawing.end_size) {
+		size *= drawing.end_size / 10;
+	}	
 	var x0 = drawing.path[i][0] - drawing.path[drawing.path.length-1][0];
 	var y0 = drawing.path[i][1] - drawing.path[drawing.path.length-1][1];
 	l = Math.sqrt(Math.pow(x0,2) + Math.pow(y0,2));
@@ -2627,6 +2633,9 @@ function draw_arrow2(context, drawing, i) {
 
 function draw_arrow3(context, a, b, drawing) {
 	var size = (ARROW_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
+	if (drawing.end_size) {
+		size *= drawing.end_size / 10;
+	}
 	var x_diff = b[0] - a[0];
 	var y_diff = b[1] - a[1];
 	l = Math.sqrt(Math.pow(x_diff,2) + Math.pow(y_diff,2));
@@ -2639,6 +2648,9 @@ function draw_arrow3(context, a, b, drawing) {
 function draw_T2(context, drawing, i) {
 	var i = Math.max(0, drawing.path.length-i);
 	var size = (TEND_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
+	if (drawing.end_size) {
+		size *= drawing.end_size / 10;
+	}
 	var x0 = drawing.path[i][0] - drawing.path[drawing.path.length-1][0];
 	var y0 = drawing.path[i][1] - drawing.path[drawing.path.length-1][1];
 	l = Math.sqrt(Math.pow(x0,2) + Math.pow(y0,2));
@@ -2661,6 +2673,9 @@ function draw_T2(context, drawing, i) {
 
 function draw_T3(context, a, b, drawing) {
 	var size = (TEND_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
+	if (drawing.end_size) {
+		size *= drawing.end_size / 10;
+	}
 	var x_diff = b[0] - a[0];
 	var y_diff = b[1] - a[1];
 	l = Math.sqrt(Math.pow(x_diff,2) + Math.pow(y_diff,2));
@@ -4453,7 +4468,10 @@ $(document).ready(function() {
 		initialize_slider("icon_size", "icon_size_text", "icon_size");
 		initialize_slider("ping_size", "ping_size_text", "ping_size");
 		initialize_slider("track_size", "track_size_text", "track_size");
-				
+		initialize_slider("draw_end_size", "draw_end_size_text", "draw_end_size");
+		initialize_slider("line_end_size", "line_end_size_text", "line_end_size");
+		initialize_slider("curve_end_size", "curve_end_size_text", "curve_end_size");
+		
 		$('html').click(function(e) {
 			if (e.target.id != 'tactic_name') {
 				$('[data-toggle="popover"]').popover('hide');
