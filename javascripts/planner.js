@@ -761,8 +761,8 @@ function on_drag_start(e) {
 			objectContainer.removeChild(selected_entities[i].container);
 			objectContainer.addChild(selected_entities[i].container);
 		}
-		_this.origin_x = x_rel(_this.x);
-		_this.origin_y = y_rel(_this.y);
+		_this.entity.origin_x = x_rel(_this.x);
+		_this.entity.origin_y = y_rel(_this.y);
 		
 		drag_in_progress = false;
 	
@@ -845,7 +845,7 @@ function on_drag_move(e) {
 function on_drag_end(e) {
 	limit_rate(15, drag_state, function() {});
 	$('html,body').css('cursor', 'initial');
-	if (this.entity && Math.abs(this.origin_x - this.entity.x) < EPSILON &&  Math.abs(this.origin_y - this.entity.y) < EPSILON) {	
+	if (this.entity && Math.abs(this.entity.origin_x - this.entity.x) < EPSILON &&  Math.abs(this.entity.origin_y - this.entity.y) < EPSILON) {	
 		if (context_before_drag == 'remove_context') {
 			remove(this.entity.uid);
 			undo_list.push(["remove", [this.entity]]);
@@ -855,23 +855,23 @@ function on_drag_end(e) {
 			deselect_all();
 		}
 	} else {
-		var origin_entity_map = [];
+		var undo_action = ["drag", []];
 		if (selected_entities.length > 0) {
 			for (var i in selected_entities) {
-				origin = [selected_entities[i].origin_x, selected_entities[i].origin_y];
-				origin_entity_map.push([origin, selected_entities[i]]);
+				var origin = [selected_entities[i].origin_x, selected_entities[i].origin_y];
+				undo_action[1].push([origin, selected_entities[i]]);
 				delete selected_entities[i].origin_x;
 				delete selected_entities[i].origin_y;
 				socket.emit("drag", room, selected_entities[i].uid, active_slide, selected_entities[i].x, selected_entities[i].y);
 			}
 		} else {
-			origin = [this.entity.origin_x, this.entity.origin_y];
-			origin_entity_map.push([origin, this.entity]);
+			var origin = [this.entity.origin_x, this.entity.origin_y];
+			undo_action[1].push([origin, this.entity]);
 			delete this.entity.origin_x;
 			delete this.entity.origin_y;
 			socket.emit("drag", room, this.entity.uid, active_slide, this.entity.x, this.entity.y);
 		}
-		undo_list.push(["drag", origin_entity_map]);
+		undo_list.push(undo_action);
 	}
 	
 	this.mouseup = undefined;
@@ -2135,14 +2135,17 @@ function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock
 	var scale_x = Math.abs(x_diff / ref_width);
 	var scale_y = Math.abs(y_diff / ref_height);
 		
-	var origin_entity_map = [];	
+	var undo_action = ["drag", []];	
 	for (var i in selected_entities) {
 		var entity = selected_entities[i];
 		
-		var scale = entity.scale ? entity.scale : [1,1], x = entity.x, y = entity.y;
+		var origin = [x, y, [1,1]];
+		if (entity.scale) {
+			origin[2][0] = entity.scale[0];
+			origin[2][1] = entity.scale[1];
+		}
 		
-		var origin = [x, y, [scale[0], scale[1]]];
-		origin_entity_map.push([origin, selected_entities[i]]);
+		undo_action[1].push([origin, selected_entities[i]]);
 		
 		if (!lock_x) {
 			x = x_rel((entity.container.x_orig - ref_x) * scale_x + ref_x - entity.container.x_orig) + entity.x;
@@ -2157,7 +2160,7 @@ function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock
 		drag_entity(entity, x, y, scale);
 		socket.emit('drag', room, entity.uid, active_slide, x, y, scale);
 	}
-	undo_list.push(["drag", origin_entity_map]);
+	undo_list.push(undo_action);
 	
 	select_box.mousedown = undefined;
 	select_box.mousemove = on_selectbox_move;
