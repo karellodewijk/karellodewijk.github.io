@@ -2016,7 +2016,6 @@ function on_ping_move(e) {
 		var y = from_y_local(mouse_location.y);
 		ping(x, y, ping_color, ping_size);
 		//ping(x+0.2, y+0.2, 16711680/3, ping_size);
-		console.log(ping_color);
 		socket.emit('ping_marker', room, x, y, ping_color, ping_size);
 	});
 }
