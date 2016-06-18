@@ -965,13 +965,8 @@ function render_scene() {
 
 var ping_texture_atlas = {}
 function ping(x, y, color, size) {	
-	if (!ping_texture_atlas[color]) {
-		var temp = new PIXI.Sprite(ping_texture);
-		temp.tint = color;
-		ping_texture_atlas[color] = temp.generateTexture(renderer);
-	}
-
-	var sprite = new PIXI.Sprite(ping_texture_atlas[color]);	
+	var sprite = new PIXI.Sprite(ping_texture);
+	sprite.tint = color;
 	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 	
 	sprite.anchor.set(0.5);
@@ -981,7 +976,7 @@ function ping(x, y, color, size) {
 	sprite.x = x_abs(x);
 	sprite.y = y_abs(y);
 
-	fast_container.addChild(sprite);
+	objectContainer.addChild(sprite);
 	render_scene();
 	
 	var steps = 25;
@@ -995,7 +990,7 @@ function ping(x, y, color, size) {
 		steps--;
 		if (steps <= 0) {
 			clearInterval(loop)
-			fast_container.removeChild(sprite);
+			objectContainer.removeChild(sprite);
 			render_scene();			
 		}
 	}, 20);
@@ -2020,6 +2015,8 @@ function on_ping_move(e) {
 		var x = from_x_local(mouse_location.x);
 		var y = from_y_local(mouse_location.y);
 		ping(x, y, ping_color, ping_size);
+		//ping(x+0.2, y+0.2, 16711680/3, ping_size);
+		console.log(ping_color);
 		socket.emit('ping_marker', room, x, y, ping_color, ping_size);
 	});
 }
