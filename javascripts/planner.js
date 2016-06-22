@@ -459,6 +459,8 @@ function resize_renderer(new_size_x, new_size_y) {
 	if (background_sprite.texture && (zoom_level - 1) < 0.0000001) {
 		background_sprite.width = new_size_x / objectContainer.scale.x;
 		background_sprite.height = new_size_y / objectContainer.scale.y;
+		grid_layer.width = background_sprite.width;
+		grid_layer.height = background_sprite.height;
 	}
 
 	renderer.resize(new_size_x, new_size_y);
