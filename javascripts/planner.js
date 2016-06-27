@@ -2243,26 +2243,30 @@ function on_selectbox_move(e) {
 		mouse_location.y /= select_box.height;
 		
 		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-		var margin = y_abs(ROTATE_ARROW_MARGIN) / select_box.height * zoom_level;
+		var margin = y_abs(ROTATE_ARROW_MARGIN) * zoom_level;
+		var x_margin = margin/select_box.width;
+		var y_margin = margin/select_box.height;
 		
 		var left_x = select_box.left_x;
 		var top_y = select_box.upper_y;
 		var right_x = left_x + select_box.width;
 		var bottom_y = top_y + select_box.height;
 		
-		if (mouse_location.x < 0-margin || mouse_location.x > 1+margin || mouse_location.y < 0-margin || mouse_location.y > 1+margin)  {
+		if (mouse_location.x < 0-x_margin || mouse_location.x > 1+x_margin || mouse_location.y < 0-y_margin || mouse_location.y > 1+y_margin)  {
 			on_select_out(e);
 			e.stopPropagation();
 			return;
 		}
 		
-		margin = Math.min(margin, 0.25);		
-		if (mouse_location.x < margin) {
-			if (mouse_location.y < margin) { //top-left
+		x_margin = Math.min(x_margin, 0.25);
+		y_margin = Math.min(y_margin, 0.25);
+		
+		if (mouse_location.x < x_margin) {
+			if (mouse_location.y < y_margin) { //top-left
 				$('html,body').css('cursor', 'nw-resize');
 				objectContainer.mousedown = function(e) { prepare_resize(e, right_x, bottom_y, select_box.width, select_box.height, false, false); };
 				select_box.mousedown = objectContainer.mousedown;
-			} else if (mouse_location.y > 1 - margin) { //bottom-left
+			} else if (mouse_location.y > 1 - y_margin) { //bottom-left
 				$('html,body').css('cursor', 'sw-resize');
 				objectContainer.mousedown = function(e) { prepare_resize(e, right_x, top_y, select_box.width, select_box.height, false, false); };
 				select_box.mousedown = objectContainer.mousedown;
@@ -2271,12 +2275,12 @@ function on_selectbox_move(e) {
 				objectContainer.mousedown = function(e) { prepare_resize(e, right_x, 0, select_box.width, select_box.height, false, true); };
 				select_box.mousedown = objectContainer.mousedown;
 			}
-		} else if (mouse_location.x > 1 - margin) { //right
-			if (mouse_location.y < margin) { //top-right
+		} else if (mouse_location.x > 1 - x_margin) { //right
+			if (mouse_location.y < y_margin) { //top-right
 				$('html,body').css('cursor', 'ne-resize');
 				objectContainer.mousedown = function(e) { prepare_resize(e, left_x, bottom_y, select_box.width, select_box.height, false, false); };
 				select_box.mousedown = objectContainer.mousedown;
-			} else if (mouse_location.y > 1 - margin) { //bottom-right
+			} else if (mouse_location.y > 1 - y_margin) { //bottom-right
 				$('html,body').css('cursor', 'se-resize');
 				objectContainer.mousedown = function(e) { prepare_resize(e, left_x, top_y, select_box.width, select_box.height, false, false); };
 				select_box.mousedown = objectContainer.mousedown;
@@ -2286,11 +2290,11 @@ function on_selectbox_move(e) {
 				select_box.mousedown = objectContainer.mousedown;
 			}
 		} else {			
-			if (mouse_location.y < margin) { //top
+			if (mouse_location.y < y_margin) { //top
 				$('html,body').css('cursor', 'n-resize');
 				objectContainer.mousedown = function(e) { prepare_resize(e, 0, bottom_y, select_box.width, select_box.height, true, false); };
 				select_box.mousedown = objectContainer.mousedown;
-			} else if (mouse_location.y > 1 - margin) { //bottom
+			} else if (mouse_location.y > 1 - y_margin) { //bottom
 				$('html,body').css('cursor', 's-resize');
 				objectContainer.mousedown = function(e) { prepare_resize(e, 0, top_y, select_box.width, select_box.height, true, false); };
 				select_box.mousedown = objectContainer.mousedown;
