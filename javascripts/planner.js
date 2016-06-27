@@ -355,23 +355,15 @@ function paste() {
 		entity.x = mouse_x + (entity.x - left);
 		entity.y = mouse_y + (entity.y - top);
 		new_entities.push(entity);		
-		if (entity.type == "icon") {
-			create_icon(entity, function(entity) {
-				snap_and_emit_entity(entity);
-				entity.container.alpha = select_alpha;
-				render_scene();
-			});
-		} else {
-			create_entity(entity);
-			snap_and_emit_entity(entity);
-			entity.container.alpha = select_alpha;
-			render_scene();
-		}
+		create_entity(entity);
+		snap_and_emit_entity(entity);
 		selected_entities.push(entity);
+		render_scene();
 	}
 	
 	select_entities();
 	undo_list.push(["add", new_entities]);	
+
 
 }
 
