@@ -347,15 +347,6 @@ function paste() {
 		top = Math.min(top, clipboard[i].y);
 		left = Math.min(left, clipboard[i].x);
 	}
-
-	//selection filter
-	var select_filter = new PIXI.filters.ColorMatrixFilter();
-	select_filter.matrix = [
-		1, 0, 0, 0, 0,
-		0, 1, 0, 0, 0,
-		0, 0, 1, 0, 0,
-		0, 0, 0, 0.5, 0
-	]
 	
 	var new_entities = [];
 	for (var i in clipboard) {
@@ -379,6 +370,7 @@ function paste() {
 		selected_entities.push(entity);
 	}
 	
+	select_entities();
 	undo_list.push(["add", new_entities]);	
 
 }
@@ -2272,6 +2264,7 @@ function on_selectbox_move(e) {
 			return;
 		}
 		
+		margin = Math.min(margin, 0.25);		
 		if (mouse_location.x < margin) {
 			if (mouse_location.y < margin) { //top-left
 				$('html,body').css('cursor', 'nw-resize');
