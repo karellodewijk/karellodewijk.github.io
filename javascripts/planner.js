@@ -166,6 +166,7 @@ var MAGIC_NUMBER = 25;
 var EPSILON = 0.000000001;
 var ROTATE_ARROW_SCALE = 0.05;
 var ROTATE_ARROW_MARGIN = 0.02;
+var TEXT_BOX_QUALITY = 4;
 
 var chat_color = random_darkish_color();
 var room_data;
@@ -1790,6 +1791,7 @@ function draw_shape(outline_thickness, outline_opacity, outline_color, fill_opac
 	graphic.beginFill(fill_color, fill_opacity);
 	graphic.drawShape(shape);
 	graphic.endFill();
+	graphic.boundsPadding = 1;
 	var sprite = new PIXI.Sprite(graphic.generateTexture(renderer));
 	return sprite;
 }
@@ -3208,7 +3210,7 @@ function emit_entity(entity) {
 	entity.container.mouseover = function() {
 		hovering_over = entity;
 	}
-	center_anchor(entity.container)
+	center_anchor(entity.container);
 }
 
 function on_icon_end(e) {	
@@ -3402,7 +3404,7 @@ function create_background_text2(text_entity) {
 	var fill_color = '#' + ('00000' + (text_entity.color | 0).toString(16)).substr(-6);
 	_context.fillStyle = fill_color;
 	
-	_context.fillText(text_entity.text, 0, _canvas.height - 15);
+	_context.fillText(text_entity.text, 0, _canvas.height/1.5);
 
 	var sprite = createSprite(_context, _canvas);
 		
@@ -3413,15 +3415,20 @@ function create_background_text2(text_entity) {
 		sprite.x = 0;
 		sprite.y = 0;
 		
-		var shape = new PIXI.RoundedRectangle(0, 0, sprite.width+10, sprite.height+10, 5);
-		var container = draw_shape(1, 1, 0, 1, 16777215, shape);
+		var shape = new PIXI.Rectangle(0, 0, TEXT_BOX_QUALITY * (sprite.width + (sprite.height/2)),TEXT_BOX_QUALITY * (sprite.height + (sprite.height/2)));
+		var container = draw_shape(TEXT_BOX_QUALITY * (sprite.height/8), 1, 0, 1, 16777215, shape);
 
-		container.x = x_abs(text_entity.x);
-		container.y = y_abs(text_entity.y);
-		
-		sprite.x -= sprite.width/2;
-		sprite.y -= sprite.height/2;
-		
+		container.x = x_abs(text_entity.x)
+		container.y = y_abs(text_entity.y)
+		container.width /= TEXT_BOX_QUALITY;
+		container.height /= TEXT_BOX_QUALITY;
+
+		sprite.width *= TEXT_BOX_QUALITY;
+		sprite.height *= TEXT_BOX_QUALITY;
+		sprite.x = -sprite.width/2 + (sprite.height/16); 
+		sprite.y = -sprite.height/2 + (sprite.height/16); 
+
+
 		container.addChild(sprite);
 
 		text_entity.container = container;		
@@ -3477,7 +3484,7 @@ function create_icon_cont(icon, texture) {
 		_context.shadowOffsetX = 1; 
 		_context.shadowOffsetY = 1; 
 		_context.shadowBlur = 7;
-		_context.fillText(icon.label, 0, _canvas.height - 15);
+		_context.fillText(icon.label, 0, _canvas.height/1.5);
 		
 		var text = createSprite(_context, _canvas);
 		
@@ -3488,11 +3495,16 @@ function create_icon_cont(icon, texture) {
 		
 		if (icon.label_background) {
 			var temp = text;
-			var shape = new PIXI.Rectangle(0, 0, temp.width+(temp.height/1.5), temp.height+(temp.height/1.5));
-			text = draw_shape((temp.height/8), 1, 0, 1, 16777215, shape);
+			var shape = new PIXI.Rectangle(0, 0, TEXT_BOX_QUALITY * (temp.width+(temp.height/1.5)), TEXT_BOX_QUALITY * (temp.height+(temp.height/1.5)));
+			text = draw_shape(TEXT_BOX_QUALITY*(temp.height/8), 1, 0, 1, 16777215, shape);
 			text.addChild(temp);
-			temp.x += (temp.height/3) + (temp.height/16);
-			temp.y += (temp.height/3) + (temp.height/16);	
+			text.width /= TEXT_BOX_QUALITY;
+			text.height /= TEXT_BOX_QUALITY;
+			
+			temp.width *= TEXT_BOX_QUALITY;
+			temp.height *= TEXT_BOX_QUALITY;
+			temp.x += (temp.height/3) + (temp.height/16) + 1;
+			temp.y += (temp.height/3) + (temp.height/16) + 1;
 		}			
 		
 		var label_pos = icon.label_pos;
