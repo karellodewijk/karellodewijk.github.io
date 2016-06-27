@@ -3195,7 +3195,6 @@ function stop_drawing() {
 function snap_and_emit_entity(entity) {
 	move_entity(entity, 0, 0);
 	emit_entity(entity);
-	center_anchor(entity.container)
 	render_scene();
 }
 
@@ -3209,6 +3208,7 @@ function emit_entity(entity) {
 	entity.container.mouseover = function() {
 		hovering_over = entity;
 	}
+	center_anchor(entity.container)
 }
 
 function on_icon_end(e) {	
