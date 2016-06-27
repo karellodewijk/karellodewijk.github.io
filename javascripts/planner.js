@@ -2256,14 +2256,15 @@ function on_selectbox_move(e) {
 		mouse_location.x /= select_box.width;
 		mouse_location.y /= select_box.height;
 		
-		var margin = 0.1;
+		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
+		var margin = y_abs(ROTATE_ARROW_MARGIN) / select_box.height * zoom_level;
 		
 		var left_x = select_box.left_x;
 		var top_y = select_box.upper_y;
 		var right_x = left_x + select_box.width;
 		var bottom_y = top_y + select_box.height;
 		
-		if (mouse_location.x < 0-0.1 || mouse_location.x > 1+0.1 || mouse_location.y < 0-0.1 || mouse_location.y > 1+0.1)  {
+		if (mouse_location.x < 0-margin || mouse_location.x > 1+margin || mouse_location.y < 0-margin || mouse_location.y > 1+margin)  {
 			on_select_out(e);
 			e.stopPropagation();
 			return;
