@@ -768,8 +768,8 @@ function on_drag_start(e) {
 			objectContainer.addChild(selected_entities[i].container);
 		}
 		if (_this.entity) {
-			_this.entity.origin_x = x_rel(_this.x);
-			_this.entity.origin_y = y_rel(_this.y);
+			_this.entity.origin_x = _this.entity.x;
+			_this.entity.origin_y = _this.entity.y;
 		}
 		
 		drag_in_progress = false;
