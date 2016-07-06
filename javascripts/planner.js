@@ -3787,6 +3787,9 @@ function update_lock() {
 		$('#slide_table1').hide();
 		$('#can_not_edit').show();
 		$('#map_select_box').hide();
+		$('#export_tab_button').hide();
+		$('#save').hide();
+		$('#store_tactic_popover').hide();
 		for (var i in room_data.slides[active_slide].entities) {
 			if (room_data.slides[active_slide].entities[i] && room_data.slides[active_slide].entities[i].type == 'note') {
 				if (room_data.slides[active_slide].entities[i].container) {
@@ -3808,6 +3811,9 @@ function update_lock() {
 		$('#slide_table1').show();
 		$('#can_not_edit').hide();
 		$('#map_select_box').show();
+		$('#export_tab_button').show();
+		$('#save').show();
+		$('#store_tactic_popover').show();
 		for (var i in room_data.slides[active_slide].entities) {
 			if (room_data.slides[active_slide].entities[i] && room_data.slides[active_slide].entities[i].type == 'note') {
 				if (room_data.slides[active_slide].entities[i].container) {
