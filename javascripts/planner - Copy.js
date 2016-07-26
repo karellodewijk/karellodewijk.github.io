@@ -144,13 +144,6 @@ function random_darkish_color(){
     return '#' + r + g + b;
 }
 
-function random_color(){
-    var r = (Math.round(Math.random() * 256)).toString(16);
-    var g = (Math.round(Math.random() * 256)).toString(16);
-    var b = (Math.round(Math.random() * 256)).toString(16);
-    return '#' + ("00" + r.toString(16)).slice(-2) + ("00" + g.toString(16)).slice(-2) + ("00" + b.toString(16)).slice(-2);
-}
-
 var ARROW_LOOKBACK = 6;
 var MOUSE_DRAW_SMOOTHING = 0.5;
 var LEFT_BAR_MIN_WIDTH = 340;
@@ -313,11 +306,6 @@ $(document).on('keyup keydown', function(e) {
 				} else if (e.keyCode==86) { //v
 					paste();
 				}
-			} else if (e.keyCode==32) {
-				if (video_layer) {
-					toggle_play();
-					e.preventDefault();
-				}
 			}
 		} else if (e.type == "keyup") {
 			if (e.keyCode==46) { //del
@@ -330,16 +318,6 @@ $(document).on('keyup keydown', function(e) {
 		}
 	}
 });
-
-function toggle_play() {
-	if (video_layer[0].paused) {
-		video_layer[0].play();
-		$('#left_side_bar').hide();
-		$('#right_side_bar').hide();
-	} else {
-		video_layer[0].pause();
-	}
-}
 
 function cut() {
 	copy();
@@ -464,19 +442,7 @@ function on_pan(e) {
 }
 
 //resize the render window
-function resize_renderer(new_size_x, new_size_y) {	
-	if (video_layer) {
-		video_layer.width(new_size_x);
-		video_layer.height(new_size_y);
-		var videoRatio = video_layer[0].videoWidth / video_layer[0].videoHeight;
-		var windowRatio = (new_size_x/new_size_y);
-		var border = (new_size_x * (1 - videoRatio/windowRatio) / 2);	
-		$(draw_canvas).css('left', '' + border + 'px');
-		$(temp_draw_canvas).css('left', '' + border + 'px');
-		$(renderer.view).css('left', '' + border + 'px');		
-		new_size_x = new_size_x - 2 * border;
-	}
-	
+function resize_renderer(new_size_x, new_size_y) {
 	var last_size_x = size_x;
 	var last_size_y = size_y;
 	size_x = new_size_y;
@@ -502,7 +468,10 @@ function resize_renderer(new_size_x, new_size_y) {
 	renderer.resize(new_size_x, new_size_y);
 	$("#edit_window").attr('style', 'padding:0; margin:0; border:0; height:'+ new_size_y +'px; width:' + new_size_x + 'px;');
 
-
+	if (video_layer) {
+		video_layer.width(draw_canvas.width);
+		video_layer.height(draw_canvas.height);
+	}
 	
 	zoom(0,true);
 };
@@ -715,12 +684,10 @@ function set_background(new_background, cb) {
 				controls: true
 			});
 			video_layer.appendTo($('#edit_window'));
-		
-			video_layer[0].onloadedmetadata = function() {
-				window.onresize();
-				render_scene();		
-				if (cb)	cb(true);				
-			}
+			
+			window.onresize();
+			render_scene();	
+			if (cb)	cb(true);
 		}
 	} else {
 				
@@ -772,6 +739,8 @@ function on_drag_start(e) {
 	var delay = 0;
 	if (active_context == "ping_context" && (!_this.entity || _this.entity.type != 'note')) {
 		delay = 300;
+	} else if (active_context == "ruler_context") {
+		return;
 	} else if ((active_context == "remove_context" || active_context == "eraser_context")) {
 		if (_this.entity) {
 			deselect_all();
@@ -785,8 +754,6 @@ function on_drag_start(e) {
 		if (_this == select_box) {
 			clear_selected();
 		}
-		return;
-	} else if (active_context != "select_context" && active_context != "icon_context" && active_context != "text_context" && active_context != "background_text_context" && active_context != "note_context" && active_context != "ping_context") {
 		return;
 	} else {
 		if (active_context != 'drag_context') {
@@ -1055,6 +1022,8 @@ function  get_offset() {
 
 var ping_texture_atlas = {}
 function ping(x, y, color, size) {	
+	console.log(get_offset());
+
 	var sprite = new PIXI.Sprite(ping_texture);
 	sprite.tint = color;
 	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
@@ -1097,7 +1066,7 @@ function setup_mouse_events(on_move, on_release) {
 
 function align_note_text(entity) {
 	if (entity.container) {
-		var rect = renderer.view.getBoundingClientRect();
+		var rect = document.getElementById("edit_window").getBoundingClientRect();
 		var x = rect.left + to_x_local(entity.x) + entity.container.width * objectContainer.scale.x;
 		var y = rect.top + to_y_local(entity.y);
 
@@ -1314,6 +1283,7 @@ function t2o(transparancy) {
 //function fires when mouse is left clicked on the map and it isn't a drag
 var last_draw_time, last_point;
 function on_left_click(e) {
+	console.log("LEFT CLICK")
 	var mouse_location = e.data.getLocalPosition(background_sprite);
 	if (!can_edit()) {
 		setup_mouse_events(on_ruler_move, on_ruler_end);
@@ -1332,9 +1302,8 @@ function on_left_click(e) {
 	}
 	if (active_context == 'draw_context') {
 		setup_mouse_events(on_draw_move, on_draw_end);
-		point_buffer = [];
 		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-		new_drawing = {uid : newUid(), type: 'drawing', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:draw_color, alpha:1, thickness:parseFloat(draw_thickness) * zoom_level, end:$('#draw_end_type').find('.active').attr('data-end'), style:$('#draw_type').find('.active').attr('data-style'), path:[[0, 0]], end_size:draw_end_size * zoom_level};
+		new_drawing = {uid : newUid(), type: 'drawing', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:draw_color, alpha:1, thickness:parseFloat(draw_thickness) * zoom_level, end:$('#draw_end_type').find('.active').attr('data-end'), style:$('#draw_type').find('.active').attr('data-style'), path:[[0, 0]], end_size:draw_end_size};
 		init_canvases(parseFloat(draw_thickness), new_drawing.color, new_drawing.style);
 		draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
 		last_draw_time = Date.now();
@@ -1517,13 +1486,8 @@ function create_note(note) {
 	}
 	var sprite = new PIXI.Sprite(texture);
 
-	var ratio = sprite.width / sprite.height;
-
-	sprite.height = x_abs(NOTE_SCALE);
-	sprite.width = sprite.height * ratio;
-	
-	//sprite.height = y_abs(NOTE_SCALE);
-	//sprite.width = x_abs(NOTE_SCALE);
+	sprite.height = y_abs(NOTE_SCALE);
+	sprite.width = x_abs(NOTE_SCALE);
 	
 	//note.container = new PIXI.Container();
 	sprite.x = x_abs(note.x);
@@ -2831,86 +2795,26 @@ function draw_path2(context, context2, drawing, n, start_index, stop_index, end,
 	} else {
 		context.stroke();
 	}
-
 }
 
-
-var INTERPOLATION_RESOLUTION = 25;
-var INTERPOLATION_TENSION = 0.5;
-var INTERPOLATION_LOOKBACK = 10;
-
-function smooth_draw(context, point_buffer, closed) {
-	var splinePoints = getCurvePoints(point_buffer, INTERPOLATION_TENSION, INTERPOLATION_RESOLUTION, closed);
-	context.beginPath();
-	context.moveTo(splinePoints[0], splinePoints[1]);
-	for (var i = 2; i < splinePoints.length; i+=2) {
-		context.lineTo(splinePoints[i], splinePoints[i+1]);
-	}
-	context.stroke();
-}
-
-function smooth_draw_incremental(context1, context2, point_buffer, x, y, temp_x, temp_y) {
-	point_buffer.push(x, y, temp_x, temp_y);
-	var splinePoints = getCurvePoints(point_buffer, INTERPOLATION_TENSION, INTERPOLATION_RESOLUTION);
-	
-	var start_i = INTERPOLATION_LOOKBACK * INTERPOLATION_RESOLUTION;
-	if (point_buffer.length < 2 * INTERPOLATION_LOOKBACK) {
-		start_i = 0;
-	}
-	if (point_buffer.length == 3 * INTERPOLATION_LOOKBACK) {
-		start_i = 2 * INTERPOLATION_LOOKBACK * INTERPOLATION_RESOLUTION;
-	}
-
-	context2.moveTo(splinePoints[start_i], splinePoints[start_i+1]);
-	context2.beginPath();
-	for (var i = start_i+2; i < splinePoints.length; i+=2) {
-		context2.lineTo(splinePoints[i], splinePoints[i+1]);
-	}
-	context2.stroke();
-	
-
-	
-	if (point_buffer.length == 2*INTERPOLATION_LOOKBACK || point_buffer.length == 3*INTERPOLATION_LOOKBACK) {
-		var start_i = INTERPOLATION_LOOKBACK * INTERPOLATION_RESOLUTION;	
-
-		if (point_buffer.length == 2*INTERPOLATION_LOOKBACK) {
-			start_i = 2;
-			context1.moveTo(splinePoints[0], splinePoints[1]);
-		}
-
-		context1.beginPath();
-		var i;
-		for (i = start_i; i < splinePoints.length-((INTERPOLATION_LOOKBACK-2) * INTERPOLATION_RESOLUTION); i+=2) {
-			context1.lineTo(splinePoints[i], splinePoints[i+1]);
-		}
-		//context1.strokeStyle = random_color();
-		context1.stroke();
-		context1.moveTo(splinePoints[i-2], splinePoints[i-1]);
-		
-		if (point_buffer.length == 3 * INTERPOLATION_LOOKBACK) {
-			point_buffer.splice(0, INTERPOLATION_LOOKBACK);
-		}
-	}
-
-
-	point_buffer.pop();
-	point_buffer.pop();	
-	
-}
 
 var draw_state = {}
-var point_buffer = []
 function on_draw_move(e) {
 	limit_rate(20, draw_state, function() {
 		var mouse_location = renderer.plugins.interaction.eventData.data.global;
-
 		new_x = last_point[0] * MOUSE_DRAW_SMOOTHING + (1-MOUSE_DRAW_SMOOTHING) * mouse_location.x;
 		new_y = last_point[1] * MOUSE_DRAW_SMOOTHING + (1-MOUSE_DRAW_SMOOTHING) * mouse_location.y;	
 		new_drawing.path.push([from_x_local(new_x) - new_drawing.x, from_y_local(new_y) - new_drawing.y]);
 		
-		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);
-		smooth_draw_incremental(draw_context, temp_draw_context, point_buffer, new_x, new_y, mouse_location.x, mouse_location.y);
+		draw_context.quadraticCurveTo(last_point[0], last_point[1], new_x, new_y);	
+		draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
+		draw_context.stroke();		
 		
+		temp_draw_context.beginPath();
+		temp_draw_context.moveTo(last_point[0], last_point[1]);
+		temp_draw_context.quadraticCurveTo(new_x, new_y, mouse_location.x, mouse_location.y);
+		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);
+
 		new_drawing.path.push([from_x_local(mouse_location.x) - new_drawing.x, from_y_local(mouse_location.y) - new_drawing.y]);
 		draw_end(temp_draw_context, new_drawing);
 		new_drawing.path.pop();
@@ -2923,22 +2827,20 @@ function on_draw_end(e) {
 	limit_rate(20, draw_state, function() {});
 
 	var mouse_location = renderer.plugins.interaction.eventData.data.global;
-	smooth_draw_incremental(draw_context, draw_context, point_buffer, new_x, new_y, mouse_location.x, mouse_location.y);
+	draw_context.quadraticCurveTo(last_point[0], last_point[1], mouse_location.x, mouse_location.y);
+	draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
 	new_drawing.path.push([from_x_local(mouse_location.x) - new_drawing.x, from_y_local(mouse_location.y) - new_drawing.y]);
-	
+
 	draw_end(draw_context, new_drawing);
-	
+
 	var success = canvas2container(draw_context, draw_canvas, new_drawing);
 	if (success) {
 		emit_entity(new_drawing);
 		undo_list.push(["add", [new_drawing]]);
 	}
 	
-	temp_draw_context.beginPath();
-	temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);
-	draw_context.beginPath();
+	stop_drawing();	
 	draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
-	
 	setup_mouse_events(undefined, undefined);
 	new_drawing = null;	
 }
@@ -3003,17 +2905,7 @@ function createSprite(ctx, canvas) {
 	}
 }
 
-
-function drawRotatedImage(context, image, angle) { 
-	context.save();
-	context.translate((image.width/2), (image.height/2));
-	context.rotate(angle);
-	context.translate(-(image.width/2), -(image.height/2));
-	context.drawImage(image, 0, 0);
- 	context.restore(); 
-}
-
-
+var end_sprite;
 function draw_end(context, drawing) {
 	context.stroke();
 	context.beginPath();
@@ -3042,7 +2934,6 @@ function draw_arrow2(context, drawing, i) {
 	drawArrow(context, start_x, start_y, start_x-(drawing.thickness*x0),start_y-(drawing.thickness*y0), 3, 1, Math.PI/8, size);	
 	context.fill();
 }
-
 
 function draw_arrow3(context, a, b, drawing) {
 	var size = (ARROW_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
@@ -3292,13 +3183,17 @@ function create_drawing2(drawing) {
 
 	init_canvas(_context, drawing.thickness, drawing.color, drawing.style);
 	
-	var points = []
-
-	for (var i = 0; i < drawing.path.length; i++) {
-		points.push(to_x_local(drawing.x + drawing.path[i][0]), to_y_local(drawing.y + drawing.path[i][1]));
-	}	
+	_context.beginPath();
+	_context.moveTo(to_x_local(drawing.x), to_y_local(drawing.y));
 	
-	smooth_draw(_context, points);
+	var p_i = [to_x_local(drawing.x), to_y_local(drawing.y)];
+	var p_i_plus_1 = p_i;
+
+	for (i = 1; i <= drawing.path.length - 2; i++) {
+		p_i_plus_1 = [to_x_local(drawing.path[i+1][0] + drawing.x), to_y_local(drawing.path[i+1][1] + drawing.y)]
+		_context.quadraticCurveTo(p_i[0], p_i[1], p_i_plus_1[0], p_i_plus_1[1]);
+		p_i = p_i_plus_1;
+	}
 
 	draw_end(_context, drawing);
 	
@@ -4992,10 +4887,6 @@ $(document).ready(function() {
 		initialize_slider("draw_end_size", "draw_end_size_text", "draw_end_size");
 		initialize_slider("line_end_size", "line_end_size_text", "line_end_size");
 		initialize_slider("curve_end_size", "curve_end_size_text", "curve_end_size");
-		
-		if (document.getElementById('delay') !== null) {
-			initialize_slider("delay", "delay_text", "delay");
-		}
 		
 		$('html').click(function(e) {
 			if (e.target.id != 'tactic_name') {
