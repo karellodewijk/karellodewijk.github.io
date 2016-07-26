@@ -293,6 +293,7 @@ var timeline_entities = {}; //time->entity map
 var video_ready = false;
 var video_paused = true;
 var initiated_play = false;
+var im_syncing = false;
 
 var mouse_down_interrupted;
 document.body.onmouseup = function() {
@@ -704,6 +705,7 @@ function init_video_controls() {
 
 function start_syncing() {
 	clearInterval(sync_event);
+	im_syncing = true;
 	for (var i = 0; i < 10; i++) { //send 10 syncs in quick succession
 		setTimeout(function() {
 			var frame = video_media.currentTime;
@@ -757,6 +759,7 @@ function init_video_triggers() {
 	video_media.addEventListener('pause', function(e) {
 		if (manual_pause) {
 			clearInterval(sync_event);
+			im_syncing = false;
 			socket.emit("pause_video", room, video_media.currentTime);
 			manual_pause = false;
 		}
@@ -944,6 +947,7 @@ function set_background(new_background, cb) {
 							video_player.pause();
 						}
 					}
+					socket.emit('request_sync', room)
 					done();
 				}
 			});
@@ -4960,7 +4964,7 @@ function handle_play(frame, timestamp) {
 	var timer = time - timestamp + get_offset();
 	video_media.setCurrentTime(frame + (Date.now() - timestamp + get_offset())/1000);
 	video_player.play();
-	clearInterval(sync_event); 
+	clearInterval(sync_event);
 	sync_event = setInterval(function() {
 		if (Date.now() - last_video_sync[1] + get_offset() > 20000) {
 			start_syncing();
@@ -5015,6 +5019,7 @@ function hard_sync_video(frame, timestamp) {
 	
 	if (lag > 0) {
 		video_player.pause();
+		console.log('')
 		setTimeout(function() {
 			if (!video_paused) {
 				video_player.play();
@@ -5022,7 +5027,8 @@ function hard_sync_video(frame, timestamp) {
 			sync_in_progress = false;
 		}, lag * 1000);	
 	} else {
-		video_media.setCurrentTime(video_media.currentTime-lag+0.5);
+		video_media.setCurrentTime(estimated_frame+1);
+		sync_in_progress = false;
 	}
 }
 
@@ -5031,6 +5037,7 @@ function handle_sync(frame, timestamp, user_id) {
 	
 	if (user_id != my_user.id && !video_paused)  {
 		clearInterval(sync_event);
+		im_syncing = false;
 		sync_event = setInterval(function() {
 			if (Date.now() - last_video_sync[1] + get_offset() > 20000) {
 				start_syncing();
@@ -6058,6 +6065,17 @@ $(document).ready(function() {
 	
 	socket.on('sync_video', function(frame, timestamp, user_id) {
 		handle_sync(frame, timestamp, user_id);
+	});
+
+	socket.on('request_sync', function() {
+		if (im_syncing) {
+			for (var i = 1; i < 6; i++) {
+				setTimeout(function() {
+					var frame = video_media.currentTime;
+					socket.emit("sync_video", room, frame, Date.now() + get_offset());
+				}, i*2000);
+			}			
+		}
 	});
 	
 	socket.on('seek_video', function(frame, timestamp, user_id) {
