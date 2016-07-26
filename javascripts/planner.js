@@ -6078,12 +6078,14 @@ $(document).ready(function() {
 
 	socket.on('request_sync', function() {
 		if (im_syncing) {
+			/*
 			for (var i = 1; i <= 10; i++) {
 				setTimeout(function() {
 					var frame = video_media.currentTime;
 					socket.emit("sync_video", room, frame, Date.now() + get_offset());
 				}, i*2000);
-			}			
+			}
+			*/
 		}
 	});
 	
