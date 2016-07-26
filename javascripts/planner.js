@@ -5900,6 +5900,9 @@ $(document).ready(function() {
 					for (var i in entities) {
 						create_entity(entities[i]);
 					}
+					if (background.is_video) {
+						rebuild_timeline();
+					}
 				}
 			});
 		}
@@ -5917,9 +5920,7 @@ $(document).ready(function() {
 			start_tracking({x:2000,y:2000});
 		}
 		
-		if (background.is_video) {
-			rebuild_timeline();
-		}
+
 		
 		render_scene();
 	});
