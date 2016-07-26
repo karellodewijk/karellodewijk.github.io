@@ -1,5 +1,3 @@
-"use strict";
-
 var servers = $("#socket_io_servers").attr("data-socket_io_servers").split(',')
 //var servers = [location.host];
 
@@ -116,7 +114,7 @@ ntp.init(socket);
 function newUid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,
     function(c) {
-      r = Math.random() * 16 | 0,
+      var r = Math.random() * 16 | 0,
         v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     }).toUpperCase();
@@ -6069,7 +6067,7 @@ $(document).ready(function() {
 
 	socket.on('request_sync', function() {
 		if (im_syncing) {
-			for (var i = 1; i < 6; i++) {
+			for (var i = 1; i <= 10; i++) {
 				setTimeout(function() {
 					var frame = video_media.currentTime;
 					socket.emit("sync_video", room, frame, Date.now() + get_offset());
