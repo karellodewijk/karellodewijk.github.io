@@ -921,8 +921,10 @@ function set_background(new_background, cb) {
 					video_media = media;
 					video_paused = !room_data.playing;
 
-					video_media.pluginApi.pauseVideo();
-
+					if (video_type == 'video/youtube') {
+						video_media.pluginApi.pauseVideo();
+					}
+					
 					init_video_controls();					
 					$('.mejs-controls').css('z-index', 9);
 					$('.mejs-controls').css('position', 'fixed');
