@@ -4983,8 +4983,11 @@ function handle_pause(frame, timestamp) {
 
 function sync_video(frame, timestamp) {	
 	var time = Date.now();
-	var elapsed_time = time - (timestamp - get_offset());		
-	var estimated_frame = frame + elapsed_time / 1000;
+	var elapsed_time = time - (timestamp - get_offset());
+	var estimated_frame = frame + elapsed_time / 1000.0;
+	
+	console.log('elapsed time:', elapsed_time)
+	
 	var lag = video_media.currentTime-estimated_frame;
 	
 	console.log('lag: ', lag)
