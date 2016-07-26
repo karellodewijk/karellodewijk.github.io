@@ -912,7 +912,7 @@ function set_background(new_background, cb) {
 				if (cb)	cb(true);					
 			}
 			
-			video_player = new MediaElementPlayer(video_layer, {
+			video_layer.mediaelementplayer({
 				videoHeight: '100%',
 				enableAutosize: true,
 				alwaysShowControls: true,
@@ -920,6 +920,7 @@ function set_background(new_background, cb) {
 				success: function(media, node, player) {
 					video_media = media;
 					video_paused = !room_data.playing;
+					video_player = player;
 
 					if (video_type == 'video/youtube') {
 						video_media.pluginApi.pauseVideo();
