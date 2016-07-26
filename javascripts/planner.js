@@ -4992,6 +4992,8 @@ function sync_video(frame, timestamp) {
 	
 	console.log('lag: ', lag)
 	
+	console.log(video_media.currentTime, timestamp, estimated_frame)
+	
 	if (Math.abs(lag) > 0.1) {
 		hard_sync_video(frame, timestamp);
 		//video_media.setCurrentTime(video_media.currentTime-lag);
