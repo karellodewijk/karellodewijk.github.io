@@ -897,7 +897,7 @@ function set_background(new_background, cb) {
 				controls: true
 			});
 			
-			video_source = $('<source />', {		
+			var video_source = $('<source />', {		
 				type: video_type,
 				src: new_background.path
 			});
@@ -934,7 +934,7 @@ function set_background(new_background, cb) {
 					
 					if (room_data.playing) {
 						if (room_data.last_sync) {
-							handle_play(room_data.last_sync[0], room_data.last_sync[1] + get_offset());
+							handle_play(room_data.last_sync[0], Date.now());
 						} else {
 							handle_play(0,Date.now());
 						}
@@ -4984,8 +4984,12 @@ function sync_video(frame, timestamp) {
 	var elapsed_time = time - timestamp + get_offset();		
 	var estimated_frame = frame + elapsed_time / 1000;
 	var lag = video_media.currentTime-estimated_frame;
+	
+	console.log('lag: ', lag)
+	
 	if (Math.abs(lag) > 0.1) {
 		hard_sync_video(frame, timestamp);
+		//video_media.setCurrentTime(video_media.currentTime-lag);
 	} else {	
 		//should allow it to catch up over the course of VIDEO_SYNC_DELAY ms 
 		//Not supported for youtube videos unfortunately
@@ -5018,22 +5022,7 @@ function hard_sync_video(frame, timestamp) {
 			sync_in_progress = false;
 		}, lag * 1000);	
 	} else {
-		video_media.setCurrentTime(video_media.currentTime-lag+1);
-		wait_for_seek(function() {
-			video_player.pause();	
-			
-			var time = Date.now();
-			var elapsed_time = time - timestamp + get_offset();		
-			var estimated_frame = frame + elapsed_time / 1000;
-			var lag = video_media.currentTime-estimated_frame;
-			
-			setTimeout(function() {
-				if (!video_paused) {
-					video_player.play();
-				}
-				sync_in_progress = false;
-			}, lag * 1000);	
-		});	
+		video_media.setCurrentTime(video_media.currentTime-lag+0.5);
 	}
 }
 
