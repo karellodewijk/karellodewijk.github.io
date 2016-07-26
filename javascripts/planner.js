@@ -1277,7 +1277,7 @@ function render_scene() {
 	scene_dirty = true;
 }
 
-function  get_offset() {
+function get_offset() {
 	if (isNaN(ntp.offset())) {
 		return 0;
 	} else {
@@ -4959,12 +4959,12 @@ function handle_play(frame, timestamp) {
 	video_paused = false;
 	last_video_sync = [frame, timestamp]
 	var time = Date.now();
-	var timer = time - timestamp + get_offset();
-	video_media.setCurrentTime(frame + (Date.now() - timestamp + get_offset())/1000);
+	var timer = time - (timestamp - get_offset());
+	video_media.setCurrentTime(frame + (Date.now() - (timestamp - get_offset()))/1000);
 	video_player.play();
 	clearInterval(sync_event);
 	sync_event = setInterval(function() {
-		if (Date.now() - last_video_sync[1] + get_offset() > 20000) {
+		if (Date.now() - (last_video_sync[1] - get_offset()) > 20000) {
 			start_syncing();
 		}
 	}, 10000 +  Math.random() * 5000);
@@ -4983,7 +4983,7 @@ function handle_pause(frame, timestamp) {
 
 function sync_video(frame, timestamp) {	
 	var time = Date.now();
-	var elapsed_time = time - timestamp + get_offset();		
+	var elapsed_time = time - (timestamp - get_offset());		
 	var estimated_frame = frame + elapsed_time / 1000;
 	var lag = video_media.currentTime-estimated_frame;
 	
@@ -5011,7 +5011,7 @@ function hard_sync_video(frame, timestamp) {
 	sync_in_progress = true;
 		
 	var time = Date.now();
-	var elapsed_time = time - timestamp + get_offset();		
+	var elapsed_time = time - (timestamp - get_offset());		
 	var estimated_frame = frame + elapsed_time / 1000;
 	var lag = video_media.currentTime-estimated_frame;
 	
@@ -5037,7 +5037,7 @@ function handle_sync(frame, timestamp, user_id) {
 		clearInterval(sync_event);
 		im_syncing = false;
 		sync_event = setInterval(function() {
-			if (Date.now() - last_video_sync[1] + get_offset() > 20000) {
+			if (Date.now() - (last_video_sync[1] - get_offset()) > 20000) {
 				start_syncing();
 			}
 		}, 10000 +  Math.random() * 5000);
