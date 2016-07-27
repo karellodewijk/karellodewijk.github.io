@@ -1,6 +1,16 @@
 var servers = $("#socket_io_servers").attr("data-socket_io_servers").split(',')
 //var servers = [location.host];
 
+var is_video_replay = false;
+if (location.pathname.indexOf('planner3') != -1) {
+	is_video_replay = true;
+}
+
+if (is_video_replay) {
+	servers = ['localhost'];
+	//servers = ['server2.wottactic.eu'];
+}
+
 var image_host;
 function is_safari() {
 	return navigator.vendor && navigator.vendor.indexOf('Apple') > -1;
@@ -112,7 +122,7 @@ try {
 function newUid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,
     function(c) {
-      r = Math.random() * 16 | 0,
+      var r = Math.random() * 16 | 0,
         v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     }).toUpperCase();
@@ -142,6 +152,13 @@ function random_darkish_color(){
     return '#' + r + g + b;
 }
 
+function random_color(){
+    var r = (Math.round(Math.random() * 256)).toString(16);
+    var g = (Math.round(Math.random() * 256)).toString(16);
+    var b = (Math.round(Math.random() * 256)).toString(16);
+    return '#' + ("00" + r.toString(16)).slice(-2) + ("00" + g.toString(16)).slice(-2) + ("00" + b.toString(16)).slice(-2);
+}
+
 var ARROW_LOOKBACK = 6;
 var MOUSE_DRAW_SMOOTHING = 0.5;
 var LEFT_BAR_MIN_WIDTH = 340;
@@ -167,6 +184,8 @@ var EPSILON = 0.000000001;
 var ROTATE_ARROW_SCALE = 0.05;
 var ROTATE_ARROW_MARGIN = 0.02;
 var TEXT_BOX_QUALITY = 4;
+var VIDEO_EXTENSIONS = ['mp4','webgl','avi'];
+var VIDEO_SYNC_DELAY = 10000; //in ms
 
 var chat_color = random_darkish_color();
 var room_data;
@@ -266,7 +285,24 @@ var panning;
 var last_move_func, last_end_func;
 var draw_canvas;
 var temp_draw_canvas;
+var draw_context;
+var temp_draw_context;
 var grid_layer;
+
+var offset = 0; // time offset from the server in ms 
+var sync_start_time;
+var video_layer;
+var manual_pause = false;
+var sync_seek = false;
+var sync_event;
+var clock_sync_event;
+var last_video_sync = null;
+var timeline;
+var timeline_entities = {}; //time->entity map
+var video_ready = false;
+var video_paused = true;
+var initiated_play = false;
+var im_syncing = false;
 
 var mouse_down_interrupted;
 document.body.onmouseup = function() {
@@ -300,6 +336,13 @@ $(document).on('keyup keydown', function(e) {
 					cut();
 				} else if (e.keyCode==86) { //v
 					paste();
+				}
+			} else if (e.keyCode==32) {
+				if (video_layer) {
+					if (can_edit()) {
+						toggle_play();
+						e.preventDefault();
+					}
 				}
 			}
 		} else if (e.type == "keyup") {
@@ -365,7 +408,7 @@ function paste() {
 }
 
 function zoom(amount, isZoomIn, e) {
-	direction = isZoomIn ? 1 : -1;
+	var direction = isZoomIn ? 1 : -1;
 	var factor = (1 + amount * direction);
 	
 	var mouse_location = renderer.plugins.interaction.eventData.data.global;
@@ -437,7 +480,26 @@ function on_pan(e) {
 }
 
 //resize the render window
-function resize_renderer(new_size_x, new_size_y) {
+function resize_renderer(new_size_x, new_size_y) {	
+	if (video_layer) {
+		var videoRatio;
+		if (video_layer[0].videoWidth > 0) {
+			videoRatio = video_layer[0].videoWidth / video_layer[0].videoHeight;
+		} else {
+			videoRatio = 16.0/9.0;
+		}
+		var windowRatio = (new_size_x/new_size_y);
+		var border = (new_size_x * (1 - videoRatio/windowRatio) / 2);
+		
+		$("#edit_window").css('left', '' + border + 'px');
+		
+		new_size_x = new_size_x - 2 * border;
+		video_layer.width(new_size_x);
+		video_layer.height(new_size_y);
+	} else {
+		$("#edit_window").css('left', '0px');	
+	}
+	
 	var last_size_x = size_x;
 	var last_size_y = size_y;
 	size_x = new_size_y;
@@ -461,12 +523,18 @@ function resize_renderer(new_size_x, new_size_y) {
 	grid_layer.height = background_sprite.height;
 	
 	renderer.resize(new_size_x, new_size_y);
-	$("#edit_window").attr('style', 'padding:0; margin:0; border:0; height:'+ new_size_y +'px; width:' + new_size_x + 'px;');
+	$("#edit_window").css('width', '' + new_size_x + 'px');
+	$("#edit_window").css('height', '' + new_size_y + 'px');
 	
 	zoom(0,true);
 };
 
 window.onresize = function() {
+	if (window.location.pathname.indexOf("planner3") != -1) {
+		resize_renderer($(window).width(), $(window).height());
+		return;
+	}
+	
 	var ratio = 1;
 	if (background_sprite.texture) {
 		ratio = background_sprite.texture.width /  background_sprite.texture.height;
@@ -582,61 +650,323 @@ function mouse_y_rel(y) {
 	return y/(background_sprite.height / background_sprite.scale.y);
 }
 
-function set_background(new_background, cb) {
+function is_video(path) {
+	return get_video_type(path) != "";
+}
+
+function get_video_type(path) {
+	var extension = path.split('.').pop();
+	for (var i = 0; i < VIDEO_EXTENSIONS.length; i++) {
+		if (extension.startsWith(VIDEO_EXTENSIONS[i])) {
+			return "video/"+VIDEO_EXTENSIONS[i];
+		}
+	}
+	if (path.toUpperCase().indexOf('YOUTUBE') != -1) {
+		return "video/youtube";
+	}
+	if (path.toUpperCase().indexOf('VIMEO') != -1) {
+		return "video/vimeo";
+	}
+	return "";
+}
+
+function reset_background() {
+	video_ready = false;
+	if (video_media) {
+		video_media.setCurrentTime(0);
+	}
+	if (video_player) {
+		video_player.pause();
+		video_player.remove();
+	}
+	if ($('#video_player')) {
+		$('#video_player').remove();
+	}
+	video_layer = null;
+	$('#left_detect').unbind('mouseenter');
+	$('#right_detect').unbind('mouseenter');
+	$('#left_side_bar').unbind('mouseleave');
+	$('#right_side_bar').unbind('mouseleave');
+	$('#left_side_bar').show();
+	$('#right_side_bar').show();
+}
+
+var video_player;
+var video_media;
+function init_video_controls() {
+	$('#left_detect').mouseenter(function() {
+		$('#left_side_bar').show();
+	});
+	$('#right_detect').mouseenter(function() {
+		$('#right_side_bar').show();
+	});
+	$('#left_side_bar').mouseleave(function() {
+		$('#left_side_bar').hide();
+	});
+	$('#right_side_bar').mouseleave(function() {
+		$('#right_side_bar').hide();
+	});
+
+
+	$('#left_side_bar').hide();
+	$('#right_side_bar').hide();
+}
+
+function start_syncing() {
+	clearInterval(sync_event);
+	im_syncing = true;
+	for (var i = 0; i < 5; i++) { //send 10 syncs in quick succession
+		setTimeout(function() {
+			var frame = video_media.currentTime;
+			socket.emit("sync_video", room, frame, get_server_time());
+		}, i*2000);
+	}
+	sync_event = setInterval(function() { //sync every 10s
+		var frame = video_media.currentTime;
+		socket.emit("sync_video", room, frame, get_server_time());
+	}, 10000);
+}
+
+function play_video_controls() {
+	$('.mejs-controls').mouseenter(function() {
+		$('.mejs-controls').css('opacity', 1);
+	});
+	$('.mejs-controls').mouseleave(function() {
+		$('.mejs-controls').css('opacity', 0);
+	});
+	$('.mejs-controls').css('opacity', 0);
+	if (can_edit()) {
+		$('.mejs-controls').show();
+	} else {
+		$('.mejs-controls').hide();
+	}
+}
+
+function pause_video_controls() {
+	$('.mejs-controls').unbind('mouseenter');
+	$('.mejs-controls').unbind('mouseleave');
+	$('.mejs-controls').css('opacity', 1);
+}
+
+function toggle_play() {
+	if (background.is_video) {
+		if (video_media.paused) {
+			var frame = video_media.currentTime;
+			socket.emit("play_video", room, frame);
+			initiated_play = true;
+			play_video_controls()
+		} else {
+			manual_pause = true;
+			video_player.pause();
+			pause_video_controls();
+		}
+	}
+}
+
+var ignore_jump = false;
+function init_video_triggers() {
+	video_media.addEventListener('pause', function(e) {
+		if (manual_pause) {
+			stop_syncing();
+			socket.emit("pause_video", room, video_media.currentTime);
+			manual_pause = false;
+		}
+	});
+	
+	video_media.addEventListener('play', function(e) {
+		if (initiated_play) {	
+			start_syncing();
+			initiated_play = false;
+		}
+		//TODO: fix dirty hack because the youtube player starts playing when you seek regradless
+		if (video_paused) {
+			video_player.pause();
+			if (last_video_sync) {
+				video_media.currentTime = last_video_sync[0];
+			} else {
+				video_media.currentTime = 0;
+			} 
+		}
+	});
+	
+	$('.mejs-playpause-button').unbind('click');
+	$('.mejs-playpause-button').click(function(e) {
+		toggle_play();
+	});
+	
+	//little bit of a hack to detect seeks, cause the seeked event doesn't work so well
+	$(".mejs-time-rail").on('mousedown', function() {
+		wait_for_seek(function() {
+-			socket.emit("seek_video", room, video_media.currentTime, get_server_time());
+			start_syncing();
+			rebuild_timeline();
+		})
+	});	
+	
+
+}
+
+function wait_for_seek(cb) {
+	var start_time = Date.now();
+	var start_frame = video_media.currentTime;
+	var changed = setInterval(function() {
+		var current_frame = video_media.currentTime;
+		if (Math.abs(video_media.currentTime - (start_frame + (Date.now() - start_time)/1000)) > 0.05) {
+			cb();
+			clearInterval(changed);
+		}
+		if (Date.now() - start_time > 10000) {
+			clearInterval(changed);
+		}
+	}, 5);
+}
+
+function set_background(new_background, cb) {	
 	if (new_background.path != "") {
-		resources_loading++;
+		if (!new_background.is_video) {		
+			resources_loading++;
 
-		var texture = PIXI.Texture.fromImage(new_background.path);
+			var texture = PIXI.Texture.fromImage(new_background.path);
 
-		var on_loaded = function() {
+			var on_loaded = function() {
+				reset_background()
+
+				background = new_background;
+				history[background.uid] = background;
+				background_sprite.texture = texture;
+				window.onresize();				
+				room_data.slides[active_slide].entities[new_background.uid] = new_background;
+				resources_loading--;
+				
+				if ($("#map_select option[value='" + background.path + "']").length > 0) {
+					$("#map_select").val(background.path).change();	
+					$("#use_wotbase").prop("checked", false);
+					$('#map_select_container').show();
+					$('#wotbase_map_select_container').hide();
+				} else if ($("#map_select_wotbase option[value='" + background.path + "']").length > 0) {
+					$("#map_select_wotbase").val(background.path).change();
+					$("#use_wotbase").prop("checked", true);
+					$('#map_select_container').hide();
+					$('#wotbase_map_select_container').show();
+				} else {
+					add_custom_map(background.path)
+					$("#map_select").selectpicker('refresh');
+					$('#wotbase_map_select_container').hide();
+					$('#map_select_container').show();
+				}
+			
+				if (background.size_x && background.size_y && background.size_x > 0 && background.size_y > 0) {
+					$("#map_size").text("("+background.size_x+" x "+background.size_y+")");
+				} else {
+					$("#map_size").text("");
+				}
+				
+				render_scene();
+				if (cb)	cb(true);
+			}
+			
+			if (!texture.baseTexture.hasLoaded) {
+				texture.baseTexture.on('loaded', function() {
+					on_loaded();
+				});
+				texture.baseTexture.on('error', function(e) {
+					alert("Image exists, but the host does not allow embedding. Try uploading your map to a service such as http://imgur.com.");
+					resources_loading--;
+					if (cb)	cb(false);
+				});			
+			} else {
+				on_loaded();
+			}
+		} else {
+			reset_background();
+			
 			background = new_background;
 			history[background.uid] = background;
-			background_sprite.texture = texture;	
-			window.onresize();				
-			room_data.slides[active_slide].entities[new_background.uid] = new_background;
-			resources_loading--;
+
+			add_custom_map(background.path)
+			$("#map_select").selectpicker('refresh');
+			$('#wotbase_map_select_container').hide();
+			$('#map_select_container').show();
 			
-			if ($("#map_select option[value='" + background.path + "']").length > 0) {
-				$("#map_select").val(background.path).change();	
-				$("#use_wotbase").prop("checked", false);
-				$('#map_select_container').show();
-				$('#wotbase_map_select_container').hide();
-			} else if ($("#map_select_wotbase option[value='" + background.path + "']").length > 0) {
-				$("#map_select_wotbase").val(background.path).change();
-				$("#use_wotbase").prop("checked", true);
-				$('#map_select_container').hide();
-				$('#wotbase_map_select_container').show();
-			} else {
-				add_custom_map(background.path)
-				$("#map_select").selectpicker('refresh');
-				$('#wotbase_map_select_container').hide();
-				$('#map_select_container').show();
-			}
-		
-			if (background.size_x && background.size_y && background.size_x > 0 && background.size_y > 0) {
-				$("#map_size").text("("+background.size_x+" x "+background.size_y+")");
-			} else {
-				$("#map_size").text("");
-			}
-			render_scene();
-			if (cb)	cb(true);
-		}
-		
-		if (!texture.baseTexture.hasLoaded) {
-			texture.baseTexture.on('loaded', function() {
-				on_loaded();
+			var empty_backround = new PIXI.Graphics();
+			empty_backround.beginFill(0xFFFFFF, 0);
+			empty_backround.moveTo(0, 0);
+			empty_backround.lineTo(renderer.width, 0);
+			empty_backround.lineTo(renderer.width, renderer.height);
+			empty_backround.lineTo(0, renderer.height);
+			empty_backround.lineTo(0, 0);
+			empty_backround.endFill();
+			background_sprite.texture = empty_backround.generateTexture();
+			$("#map_size").text("");
+			
+			var video_type = get_video_type(new_background.path)
+			
+			video_layer = $('<video />', {
+				id: "video_player",
+				autoplay: false,
+				controls: true
 			});
-			texture.baseTexture.on('error', function(e) {
-				alert("Image exists, but the host does not allow embedding. Try uploading your map to a service such as http://imgur.com.");
-				resources_loading--;
-				if (cb)	cb(false);
-			});			
-		} else {
-			on_loaded();
+			
+			var video_source = $('<source />', {		
+				type: video_type,
+				src: new_background.path
+			});
+			
+			video_source.appendTo(video_layer);
+			video_layer.appendTo($('#video_div'));
+
+			var done = function() {
+				window.onresize();
+				render_scene();		
+				if (cb)	cb(true);					
+			}
+			
+			video_layer.mediaelementplayer({
+				videoHeight: '100%',
+				enableAutosize: true,
+				alwaysShowControls: true,
+				features: ['playpause','progress','current','duration','tracks','volume'],
+				success: function(media, node, player) {
+					video_media = media;
+					video_paused = !room_data.playing;
+					video_player = player;
+
+					if (video_type == 'video/youtube') {
+						video_media.pluginApi.pauseVideo();
+					}
+					
+					init_video_controls();					
+					$('.mejs-controls').css('z-index', 9);
+					$('.mejs-controls').css('position', 'fixed');
+					$('.mejs-controls').css('left', '0px');
+					$('.mejs-controls').css('bottom', '0px');
+					$('.mejs-controls').css('height', '3%');
+					init_video_triggers();
+					timeline = new FastPriorityQueue();
+					video_ready = true;
+					
+					if (room_data.playing) {
+						if (room_data.last_sync) {
+							handle_play(room_data.last_sync[0], Date.now());
+						} else {
+							handle_play(0,Date.now());
+						}
+					} else {
+						if (room_data.last_sync) {
+							video_media.setCurrentTime(room_data.last_sync[0]);
+							video_player.pause();
+						}
+					}
+					socket.emit('request_sync', room)
+					done();
+				}
+			});
+			
+
 		}
-		
 	} else {
-				
+		reset_background();		
+		
 		background = new_background;
 		history[background.uid] = background;
 
@@ -659,7 +989,7 @@ function set_background(new_background, cb) {
 		window.onresize();
 		render_scene();	
 		if (cb)	cb(true);
-	}	
+	}
 }
 
 var context_before_drag;
@@ -685,8 +1015,6 @@ function on_drag_start(e) {
 	var delay = 0;
 	if (active_context == "ping_context" && (!_this.entity || _this.entity.type != 'note')) {
 		delay = 300;
-	} else if (active_context == "ruler_context") {
-		return;
 	} else if ((active_context == "remove_context" || active_context == "eraser_context")) {
 		if (_this.entity) {
 			deselect_all();
@@ -700,6 +1028,8 @@ function on_drag_start(e) {
 		if (_this == select_box) {
 			clear_selected();
 		}
+		return;
+	} else if (active_context != "select_context" && active_context != "icon_context" && active_context != "text_context" && active_context != "background_text_context" && active_context != "note_context" && active_context != "ping_context") {
 		return;
 	} else {
 		if (active_context != 'drag_context') {
@@ -903,6 +1233,7 @@ function remove(uid, keep_entity) {
 		if (room_data.slides[active_slide].entities[uid].type == "note") {
 			room_data.slides[active_slide].entities[uid].container.menu.remove();
 		}
+		
 		objectContainer.removeChild(room_data.slides[active_slide].entities[uid].container);
 		delete room_data.slides[active_slide].entities[uid].container;
 		
@@ -958,6 +1289,19 @@ function render_scene() {
 	scene_dirty = true;
 }
 
+function get_offset() {
+	return offset;
+}
+
+function get_server_time() {
+	return Date.now() + offset;
+}
+
+function get_local_time(timestamp) {
+	return timestamp - offset;
+}
+
+
 var ping_texture_atlas = {}
 function ping(x, y, color, size) {	
 	var sprite = new PIXI.Sprite(ping_texture);
@@ -1002,7 +1346,7 @@ function setup_mouse_events(on_move, on_release) {
 
 function align_note_text(entity) {
 	if (entity.container) {
-		var rect = document.getElementById("edit_window").getBoundingClientRect();
+		var rect = renderer.view.getBoundingClientRect();
 		var x = rect.left + to_x_local(entity.x) + entity.container.width * objectContainer.scale.x;
 		var y = rect.top + to_y_local(entity.y);
 
@@ -1028,7 +1372,6 @@ var drawHead=function(ctx,x0,y0,x1,y1,x2,y2,style)
   var twoPI=2*Math.PI;
 
   // all cases do this.
-  ctx.save();
   ctx.beginPath();
   ctx.moveTo(x0,y0);
   ctx.lineTo(x1,y1);
@@ -1091,7 +1434,6 @@ var drawHead=function(ctx,x0,y0,x1,y1,x2,y2,style)
       ctx.fill();
       break;
   }
-  ctx.restore();
 };
 var drawArrow=function(ctx,x1,y1,x2,y2,style,which,angle,d) {
   'use strict';
@@ -1239,8 +1581,9 @@ function on_left_click(e) {
 	}
 	if (active_context == 'draw_context') {
 		setup_mouse_events(on_draw_move, on_draw_end);
+		point_buffer = [];
 		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-		new_drawing = {uid : newUid(), type: 'drawing', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:draw_color, alpha:1, thickness:parseFloat(draw_thickness) * zoom_level, end:$('#draw_end_type').find('.active').attr('data-end'), style:$('#draw_type').find('.active').attr('data-style'), path:[[0, 0]], end_size:draw_end_size};
+		new_drawing = {uid : newUid(), type: 'drawing', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:draw_color, alpha:1, thickness:parseFloat(draw_thickness) * zoom_level, end:$('#draw_end_type').find('.active').attr('data-end'), style:$('#draw_type').find('.active').attr('data-style'), path:[[0, 0]], end_size:draw_end_size * zoom_level};
 		init_canvases(parseFloat(draw_thickness), new_drawing.color, new_drawing.style);
 		draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
 		last_draw_time = Date.now();
@@ -1423,8 +1766,13 @@ function create_note(note) {
 	}
 	var sprite = new PIXI.Sprite(texture);
 
-	sprite.height = y_abs(NOTE_SCALE);
-	sprite.width = x_abs(NOTE_SCALE);
+	var ratio = sprite.width / sprite.height;
+
+	sprite.height = x_abs(NOTE_SCALE);
+	sprite.width = sprite.height * ratio;
+	
+	//sprite.height = y_abs(NOTE_SCALE);
+	//sprite.width = x_abs(NOTE_SCALE);
 	
 	//note.container = new PIXI.Container();
 	sprite.x = x_abs(note.x);
@@ -2615,7 +2963,6 @@ function remove_select_box() {
 		objectContainer.removeChild(rotate_arrow1);
 		objectContainer.removeChild(rotate_arrow2);
 		objectContainer.removeChild(rotate_arrow3);
-		delete select_box;
 		select_box = undefined;
 		render_scene();
 	}
@@ -2732,26 +3079,86 @@ function draw_path2(context, context2, drawing, n, start_index, stop_index, end,
 	} else {
 		context.stroke();
 	}
+
 }
 
 
+var INTERPOLATION_RESOLUTION = 25;
+var INTERPOLATION_TENSION = 0.5;
+var INTERPOLATION_LOOKBACK = 10;
+
+function smooth_draw(context, point_buffer, closed) {
+	var splinePoints = getCurvePoints(point_buffer, INTERPOLATION_TENSION, INTERPOLATION_RESOLUTION, closed);
+	context.beginPath();
+	context.moveTo(splinePoints[0], splinePoints[1]);
+	for (var i = 2; i < splinePoints.length; i+=2) {
+		context.lineTo(splinePoints[i], splinePoints[i+1]);
+	}
+	context.stroke();
+}
+
+function smooth_draw_incremental(context1, context2, point_buffer, x, y, temp_x, temp_y) {
+	point_buffer.push(x, y, temp_x, temp_y);
+	var splinePoints = getCurvePoints(point_buffer, INTERPOLATION_TENSION, INTERPOLATION_RESOLUTION);
+	
+	var start_i = INTERPOLATION_LOOKBACK * INTERPOLATION_RESOLUTION;
+	if (point_buffer.length < 2 * INTERPOLATION_LOOKBACK) {
+		start_i = 0;
+	}
+	if (point_buffer.length == 3 * INTERPOLATION_LOOKBACK) {
+		start_i = 2 * INTERPOLATION_LOOKBACK * INTERPOLATION_RESOLUTION;
+	}
+
+	context2.moveTo(splinePoints[start_i], splinePoints[start_i+1]);
+	context2.beginPath();
+	for (var i = start_i+2; i < splinePoints.length; i+=2) {
+		context2.lineTo(splinePoints[i], splinePoints[i+1]);
+	}
+	context2.stroke();
+	
+
+	
+	if (point_buffer.length == 2*INTERPOLATION_LOOKBACK || point_buffer.length == 3*INTERPOLATION_LOOKBACK) {
+		var start_i = INTERPOLATION_LOOKBACK * INTERPOLATION_RESOLUTION;	
+
+		if (point_buffer.length == 2*INTERPOLATION_LOOKBACK) {
+			start_i = 2;
+			context1.moveTo(splinePoints[0], splinePoints[1]);
+		}
+
+		context1.beginPath();
+		var i;
+		for (i = start_i; i < splinePoints.length-((INTERPOLATION_LOOKBACK-2) * INTERPOLATION_RESOLUTION); i+=2) {
+			context1.lineTo(splinePoints[i], splinePoints[i+1]);
+		}
+		//context1.strokeStyle = random_color();
+		context1.stroke();
+		context1.moveTo(splinePoints[i-2], splinePoints[i-1]);
+		
+		if (point_buffer.length == 3 * INTERPOLATION_LOOKBACK) {
+			point_buffer.splice(0, INTERPOLATION_LOOKBACK);
+		}
+	}
+
+
+	point_buffer.pop();
+	point_buffer.pop();	
+	
+}
+
 var draw_state = {}
+var point_buffer = []
 function on_draw_move(e) {
 	limit_rate(20, draw_state, function() {
 		var mouse_location = renderer.plugins.interaction.eventData.data.global;
-		new_x = last_point[0] * MOUSE_DRAW_SMOOTHING + (1-MOUSE_DRAW_SMOOTHING) * mouse_location.x;
-		new_y = last_point[1] * MOUSE_DRAW_SMOOTHING + (1-MOUSE_DRAW_SMOOTHING) * mouse_location.y;	
+
+		var new_x = last_point[0] * MOUSE_DRAW_SMOOTHING + (1-MOUSE_DRAW_SMOOTHING) * mouse_location.x;
+		var new_y = last_point[1] * MOUSE_DRAW_SMOOTHING + (1-MOUSE_DRAW_SMOOTHING) * mouse_location.y;	
 		new_drawing.path.push([from_x_local(new_x) - new_drawing.x, from_y_local(new_y) - new_drawing.y]);
 		
-		draw_context.quadraticCurveTo(last_point[0], last_point[1], new_x, new_y);	
-		draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
-		draw_context.stroke();		
-		
-		temp_draw_context.beginPath();
-		temp_draw_context.moveTo(last_point[0], last_point[1]);
-		temp_draw_context.quadraticCurveTo(new_x, new_y, mouse_location.x, mouse_location.y);
 		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);
-
+		smooth_draw_incremental(draw_context, temp_draw_context, point_buffer, new_x, new_y, mouse_location.x, mouse_location.y);
+		
 		new_drawing.path.push([from_x_local(mouse_location.x) - new_drawing.x, from_y_local(mouse_location.y) - new_drawing.y]);
 		draw_end(temp_draw_context, new_drawing);
 		new_drawing.path.pop();
@@ -2764,20 +3171,24 @@ function on_draw_end(e) {
 	limit_rate(20, draw_state, function() {});
 
 	var mouse_location = renderer.plugins.interaction.eventData.data.global;
-	draw_context.quadraticCurveTo(last_point[0], last_point[1], mouse_location.x, mouse_location.y);
-	draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
+	var new_x = last_point[0];
+	var new_y = last_point[1];	
+	smooth_draw_incremental(draw_context, draw_context, point_buffer, new_x, new_y, mouse_location.x, mouse_location.y);
 	new_drawing.path.push([from_x_local(mouse_location.x) - new_drawing.x, from_y_local(mouse_location.y) - new_drawing.y]);
-
+	
 	draw_end(draw_context, new_drawing);
-
+	
 	var success = canvas2container(draw_context, draw_canvas, new_drawing);
 	if (success) {
 		emit_entity(new_drawing);
 		undo_list.push(["add", [new_drawing]]);
 	}
 	
-	stop_drawing();	
+	temp_draw_context.beginPath();
+	temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);
+	draw_context.beginPath();
 	draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
+	
 	setup_mouse_events(undefined, undefined);
 	new_drawing = null;	
 }
@@ -2842,6 +3253,17 @@ function createSprite(ctx, canvas) {
 	}
 }
 
+
+function drawRotatedImage(context, image, angle) { 
+	context.save();
+	context.translate((image.width/2), (image.height/2));
+	context.rotate(angle);
+	context.translate(-(image.width/2), -(image.height/2));
+	context.drawImage(image, 0, 0);
+ 	context.restore(); 
+}
+
+
 function draw_end(context, drawing) {
 	context.stroke();
 	context.beginPath();
@@ -2851,7 +3273,7 @@ function draw_end(context, drawing) {
 		} else if (drawing.end == "T") {
 			draw_T2(context, drawing, ARROW_LOOKBACK);
 		}
-	}	
+	}
 }
 
 function draw_arrow2(context, drawing, i) {
@@ -2860,8 +3282,8 @@ function draw_arrow2(context, drawing, i) {
 	if (drawing.end_size) {
 		size *= drawing.end_size / 10;
 	}	
-	var x0 = drawing.path[i][0] - drawing.path[drawing.path.length-1][0];
-	var y0 = drawing.path[i][1] - drawing.path[drawing.path.length-1][1];
+	var x0 = x_abs(drawing.path[i][0] - drawing.path[drawing.path.length-1][0]);
+	var y0 = y_abs(drawing.path[i][1] - drawing.path[drawing.path.length-1][1]);
 	l = Math.sqrt(Math.pow(x0,2) + Math.pow(y0,2));
 	x0 /= l;
 	y0 /= l;
@@ -2870,6 +3292,7 @@ function draw_arrow2(context, drawing, i) {
 	drawArrow(context, start_x, start_y, start_x-(drawing.thickness*x0),start_y-(drawing.thickness*y0), 3, 1, Math.PI/8, size);	
 	context.fill();
 }
+
 
 function draw_arrow3(context, a, b, drawing) {
 	var size = (ARROW_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
@@ -3119,17 +3542,13 @@ function create_drawing2(drawing) {
 
 	init_canvas(_context, drawing.thickness, drawing.color, drawing.style);
 	
-	_context.beginPath();
-	_context.moveTo(to_x_local(drawing.x), to_y_local(drawing.y));
-	
-	var p_i = [to_x_local(drawing.x), to_y_local(drawing.y)];
-	var p_i_plus_1 = p_i;
+	var points = []
 
-	for (i = 1; i <= drawing.path.length - 2; i++) {
-		p_i_plus_1 = [to_x_local(drawing.path[i+1][0] + drawing.x), to_y_local(drawing.path[i+1][1] + drawing.y)]
-		_context.quadraticCurveTo(p_i[0], p_i[1], p_i_plus_1[0], p_i_plus_1[1]);
-		p_i = p_i_plus_1;
-	}
+	for (var i = 0; i < drawing.path.length; i++) {
+		points.push(to_x_local(drawing.x + drawing.path[i][0]), to_y_local(drawing.y + drawing.path[i][1]));
+	}	
+	
+	smooth_draw(_context, points);
 
 	draw_end(_context, drawing);
 	
@@ -3178,17 +3597,68 @@ function snap_and_emit_entity(entity) {
 	render_scene();
 }
 
+function update_timeline(entity) {
+	if (entity.start_time) {
+		timeline.add(entity.start_time);
+		timeline.add(entity.end_time)
+		timeline_entities[entity.start_time] = entity;
+		timeline_entities[entity.end_time] = entity;
+	}
+}
+
+function rebuild_timeline(entity) {
+	timeline = new FastPriorityQueue();
+	timeline_entities = {}; //time->entity map
+	for (var key in room_data.slides[active_slide].entities) {
+		if (room_data.slides[active_slide].entities.hasOwnProperty(key)) {
+			if (room_data.slides[active_slide].entities[key].container) {
+				update_timeline(room_data.slides[active_slide].entities[key]);
+				remove(key, true);
+			}
+		}
+	}
+}
+
+function progress_timeline() {
+	if (timeline.isEmpty()) return;
+	var time = video_media.currentTime;
+	var next_event_time = timeline.peek();
+	
+	while (time >= next_event_time) {
+		var entity = timeline_entities[next_event_time];
+		if (video_media.currentTime >= entity.end_time) {
+			if (entity.container) {
+				remove(entity.uid, true);
+			}
+		} else if (entity.start_time <= time) {
+			if (!entity.container) {
+				create_entity(entity);
+			}
+		} 
+		timeline.poll();
+		if (timeline.isEmpty()) break;
+		next_event_time = timeline.peek();		
+	}
+}
+
 function emit_entity(entity) {
 	var container = entity.container;
+	if (background.is_video) {
+		entity.start_time = video_media.currentTime;
+		entity.end_time = video_media.currentTime + delay;
+		update_timeline(entity);
+	}	
 	entity.container = undefined;
 	socket.emit('create_entity', room, entity, active_slide);
 	room_data.slides[active_slide].z_top++;
 	entity.z_index = room_data.slides[active_slide].z_top;
 	entity.container = container;
+	center_anchor(entity.container);
+
 	entity.container.mouseover = function() {
 		hovering_over = entity;
 	}
-	center_anchor(entity.container);
+
 }
 
 function on_icon_end(e) {	
@@ -3344,7 +3814,7 @@ function create_text2(text_entity) {
 	_context.shadowOffsetY = 1; 
 	_context.shadowBlur = 7;
 	
-	_context.fillText(text_entity.text, 0, _canvas.height - 15);
+	_context.fillText(text_entity.text, 0, _canvas.height/2);
 
 	var sprite = createSprite(_context, _canvas);
 		
@@ -3694,6 +4164,9 @@ function create_entity(entity) {
 				hovering_over = entity;
 			}
 		}
+		if (background.is_video) {
+			update_timeline(entity);
+		}
 	}
 }
 
@@ -3781,6 +4254,7 @@ function update_lock() {
 	}
 	
 	if (is_room_locked && !my_user.role) {
+		$('.mejs-controls').hide();
 		$('.left_column').hide();
 		$('#slide_interactive').hide();
 		$('#slide_static').show();
@@ -3802,6 +4276,7 @@ function update_lock() {
 			objectContainer.mousemove = undefined;
 		}
 	} else {
+		$('.mejs-controls').show();
 		$('.left_column').show();
 		$('#slide_interactive').show();
 		$('#slide_static').hide();
@@ -4448,11 +4923,23 @@ function try_select_map(map_select, path, custom) {
 	}
 	
 	custom = custom ? true : false;
+	
+	var extension = path.split('.').pop(); 
+	extension.startsWith();
+	
 	var new_background = {uid:uid, type:'background', path:path, size_x:size_x, size_y:size_y, custom:custom};
+	
+	if (is_video(path)) {
+		new_background.is_video = true;
+	}
 		
 	set_background(new_background, function(success) {
 		if (success) {
 			socket.emit('create_entity', room, new_background, active_slide);
+			if (background.is_video) {
+				handle_pause(0)
+				socket.emit('pause_video', room, 0);
+			}
 		}
 	});
 }
@@ -4485,6 +4972,106 @@ function cleanup() {
 	room_data = {};
 }
 
+function stop_syncing() {
+	im_syncing = false;
+	clearInterval(sync_event);
+	sync_event = setInterval(function() {
+		im_syncing = false;
+		if (Date.now() - get_local_time(last_video_sync[1]) > 20000) {
+			start_syncing();
+		}
+	}, 10000 +  Math.random() * 5000);
+}
+
+function handle_play(frame, timestamp) {
+	video_paused = false;
+	last_video_sync = [frame, timestamp]
+	var time = Date.now();
+	var timer = time - get_local_time(timestamp);
+	video_media.setCurrentTime(frame + timer/1000.0);
+	video_player.play();
+	stop_syncing();
+	play_video_controls();
+}
+
+function handle_pause(frame, timestamp) {
+	if (!video_paused) {
+		video_paused = true;
+		stop_syncing();
+		video_media.setCurrentTime(frame);
+		video_player.pause();
+		pause_video_controls();
+	}
+}
+
+function sync_video(frame, timestamp) {	
+	var time = Date.now();
+	var elapsed_time = time - get_local_time(timestamp);
+	var estimated_frame = frame + elapsed_time / 1000.0;
+	
+	var lag = video_media.currentTime-estimated_frame;
+	
+	console.log('lag: ', lag)
+		
+	if (Math.abs(lag) > 0.1) {
+		hard_sync_video(frame, timestamp);
+	} else {	
+		//should allow it to catch up over the course of VIDEO_SYNC_DELAY ms 
+		//Not supported for youtube videos unfortunately
+		if (video_media.playbackRate != -1) {
+			video_media.playbackRate = 1 + lag/VIDEO_SYNC_DELAY; 
+		} else {
+			if (video_media.pluginApi.setPlaybackRate) { //do it through youtube API (doesn't work as youtube only allows fixed set of rates)
+				video_media.pluginApi.setPlaybackRate(1 + lag/VIDEO_SYNC_DELAY);
+			}
+		}
+	}
+}
+
+var sync_in_progress = false;
+var press_play_delay = 0;
+function hard_sync_video(frame, timestamp) {
+	if (sync_in_progress) return;
+	sync_in_progress = true;
+		
+	var time = Date.now();
+	var elapsed_time = time - get_local_time(timestamp);		
+	var estimated_frame = frame + elapsed_time / 1000;
+	var lag = video_media.currentTime-estimated_frame;
+	
+	if (lag > 0) {
+		video_player.pause();
+		setTimeout(function() {
+			if (!video_paused) {
+				video_player.play();
+				sync_in_progress = false;
+				var play_start = Date.now();
+				var play_delay_listener = function(e) {
+					press_play_delay = Date.now() - play_start;
+					video_media.removeEventListener('play', play_delay_listener);
+				}
+				video_media.addEventListener('play', play_delay_listener);
+			}
+		}, Math.max(0, lag * 1000 - press_play_delay));	
+	} else {
+		video_media.setCurrentTime(estimated_frame+press_play_delay+1);
+		sync_in_progress = false;
+	}
+}
+
+function handle_sync(frame, timestamp, user_id) {
+	if (video_paused) {
+		im_syncing = false;
+		return;
+	}	
+	if (user_id != my_user.id)  {
+		stop_syncing(); //if we get a sync from soemone else we stop syncing
+	}
+	
+	last_video_sync = [frame, timestamp];
+	sync_video(frame, timestamp);		
+}
+
 //connect socket.io socket
 $(document).ready(function() {
 	//sorts maps alphabetically, can't presort cause it depends on language
@@ -4498,14 +5085,14 @@ $(document).ready(function() {
 	size_y = size;
 
 	if (Modernizr.webgl && !nowebgl) {
-		renderer = PIXI.autoDetectRenderer(size, size, {backgroundColor : 0xBBBBBB});
+		renderer = PIXI.autoDetectRenderer(size, size, {transparent:true});
 	} else {
-		renderer = new PIXI.CanvasRenderer(size, size, {backgroundColor : 0xBBBBBB});
+		renderer = new PIXI.CanvasRenderer(size, size, {transparent:true});
 	}
 	renderer.autoResize = true;
 	useWebGL = renderer instanceof PIXI.WebGLRenderer;
 
-	$(renderer.view).attr('style', 'z-index: 0; position:absolute; padding:0; margin:0; border:0;');
+	$(renderer.view).attr('style', 'position:absolute; z-index: 2; padding:0; margin:0; border:0;');
 	$(".edit_window").append(renderer.view);
 	
 	renderer.view.addEventListener("wheel", function(e) {
@@ -4563,15 +5150,15 @@ $(document).ready(function() {
 			e.preventDefault();
 		}
 	});
-
+	
 	draw_canvas = document.createElement("canvas");
-	$(draw_canvas).attr('style', 'padding:0px; margin:0px; border:0; position:absolute; z-index:'+ 2 + '; pointer-events:none');
+	$(draw_canvas).attr('style', 'padding:0px; margin:0px; border:0; position:absolute; z-index:3; pointer-events:none');
 	draw_canvas.width = renderer.view.width;
 	draw_canvas.height = renderer.view.height;
 	draw_context = draw_canvas.getContext("2d");
 
 	temp_draw_canvas = document.createElement("canvas");
-	$(temp_draw_canvas).attr('style', 'padding:0px; margin:0px; border:0; position:absolute; z-index:'+ 3 + '; pointer-events:none');
+	$(temp_draw_canvas).attr('style', 'padding:0px; margin:0px; border:0; position:absolute; z-index:4; pointer-events:none');
 	temp_draw_canvas.width = renderer.view.width;
 	temp_draw_canvas.height = renderer.view.height;
 	temp_draw_context = temp_draw_canvas.getContext("2d");
@@ -4582,10 +5169,14 @@ $(document).ready(function() {
 	$(draw_canvas).hide();
 	
 	function animate() {
+		if (video_ready) {
+			progress_timeline();
+		}
 		if (scene_dirty) {
 			if (select_box_dirty) {
 				redraw_select_box();
 			}
+
 			renderer.render(objectContainer);
 			scene_dirty = false;
 		}
@@ -4594,8 +5185,6 @@ $(document).ready(function() {
 	animate();
 	
 	loader.once('complete', function () {
-
-	
 		//generate ticks, leveraged from: http://thenewcode.com/864/Auto-Generate-Marks-on-HTML5-Range-Sliders-with-JavaScript
 		function ticks(element) {		
 			if ('list' in element && 'min' in element && 'max' in element && 'step' in element) {
@@ -4804,6 +5393,10 @@ $(document).ready(function() {
 		initialize_slider("draw_end_size", "draw_end_size_text", "draw_end_size");
 		initialize_slider("line_end_size", "line_end_size_text", "line_end_size");
 		initialize_slider("curve_end_size", "curve_end_size_text", "curve_end_size");
+		
+		if ($('#delay')) {
+			initialize_slider("delay", "delay_text", "delay");
+		}
 		
 		$('html').click(function(e) {
 			if (e.target.id != 'tactic_name') {
@@ -5296,8 +5889,8 @@ $(document).ready(function() {
 	
 	socket.on('room_data', function(new_room_data, my_id, new_tactic_name) {
 		cleanup();
-
 		room_data = new_room_data;
+		video_paused = new_room_data.video_paused;
 		active_slide = room_data.active_slide;
 		is_room_locked = room_data.locked;
 		my_user_id = my_id;
@@ -5328,8 +5921,13 @@ $(document).ready(function() {
 		if (background_entity) {
 			//we need to set the background before we add other entities
 			set_background(background_entity, function() {
-				for (var i in entities) {
-					create_entity(entities[i]);
+				if (!background.is_video) {
+					for (var i in entities) {
+						create_entity(entities[i]);
+					}
+					if (background.is_video) {
+						rebuild_timeline();
+					}
 				}
 			});
 		}
@@ -5345,6 +5943,16 @@ $(document).ready(function() {
 		if (my_tracker) {
 			stop_tracking();
 			start_tracking({x:2000,y:2000});
+		}
+		
+		if (is_video_replay) {
+			sync_start_time = Date.now();
+			socket.emit('sync_clock');
+			clearInterval(clock_sync_event);
+			clock_sync_event = setInterval(function() {
+				sync_start_time = Date.now();
+				socket.emit('sync_clock');
+			}, 20000);
 		}
 		
 		render_scene();
@@ -5476,4 +6084,49 @@ $(document).ready(function() {
 	socket.on('force_reconnect', function() {
 		location.reload();
 	});
+	
+	socket.on('play_video', function(frame, timestamp, user_id) {
+		activity_animation(user_id);
+		handle_play(frame, timestamp)
+	});
+	
+	socket.on('pause_video', function(frame, user_id) {
+		handle_pause(frame);
+		activity_animation(user_id);
+	});
+	
+	socket.on('sync_video', function(frame, timestamp, user_id) {
+		handle_sync(frame, timestamp, user_id);
+	});
+
+	socket.on('request_sync', function() {
+		if (im_syncing) {
+			for (var i = 1; i <= 5; i++) {
+				setTimeout(function() {
+					var frame = video_media.currentTime;
+					socket.emit("sync_video", room, frame, get_server_time());
+				}, i*2000);
+			}
+		}
+	});
+	
+	socket.on('sync_clock', function(server_timestamp) {
+		var time = Date.now();
+		var server_time = server_timestamp + (time - sync_start_time)/2;
+		offset = server_time - time;
+	});
+	
+	socket.on('seek_video', function(frame, timestamp, user_id) {
+		video_media.setCurrentTime(frame);
+		if (video_paused) {
+			video_player.pause();
+			return;
+		}
+
+		handle_sync(frame, timestamp, user_id);
+		wait_for_seek(function() {
+			rebuild_timeline();
+		})
+	});
+
 });
