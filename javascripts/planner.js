@@ -7,8 +7,8 @@ if (location.pathname.indexOf('planner3') != -1) {
 }
 
 if (is_video_replay) {
-	servers = ['localhost'];
-	//servers = ['server2.wottactic.eu'];
+	//servers = ['localhost'];
+	servers = ['server2.wottactic.eu'];
 }
 
 var image_host;
