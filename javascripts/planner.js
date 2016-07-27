@@ -291,6 +291,8 @@ var grid_layer;
 
 var offset = 0; // time offset from the server in ms 
 var sync_start_time;
+var progress = 0;
+var progress_update = Date.now();
 var video_layer;
 var manual_pause = false;
 var sync_seek = false;
@@ -717,12 +719,12 @@ function start_syncing() {
 	im_syncing = true;
 	for (var i = 0; i < 5; i++) { //send 10 syncs in quick succession
 		setTimeout(function() {
-			var frame = video_media.currentTime;
+			var frame = video_progress();
 			socket.emit("sync_video", room, frame, get_server_time());
 		}, i*2000);
 	}
 	sync_event = setInterval(function() { //sync every 10s
-		var frame = video_media.currentTime;
+		var frame = video_progress();
 		socket.emit("sync_video", room, frame, get_server_time());
 	}, 10000);
 }
@@ -751,7 +753,7 @@ function pause_video_controls() {
 function toggle_play() {
 	if (background.is_video) {
 		if (video_media.paused) {
-			var frame = video_media.currentTime;
+			var frame = video_progress();
 			socket.emit("play_video", room, frame);
 			initiated_play = true;
 			play_video_controls()
@@ -768,7 +770,7 @@ function init_video_triggers() {
 	video_media.addEventListener('pause', function(e) {
 		if (manual_pause) {
 			stop_syncing();
-			socket.emit("pause_video", room, video_media.currentTime);
+			socket.emit("pause_video", room, video_progress());
 			manual_pause = false;
 		}
 	});
@@ -789,15 +791,22 @@ function init_video_triggers() {
 		}
 	});
 	
+	video_media.addEventListener('timeupdate', function(e) {
+		progress = video_media.currentTime;
+		progress_update = Date.now();
+	})
+	
 	$('.mejs-playpause-button').unbind('click');
 	$('.mejs-playpause-button').click(function(e) {
 		toggle_play();
+		e.preventDefault();
+		return false;
 	});
 	
 	//little bit of a hack to detect seeks, cause the seeked event doesn't work so well
 	$(".mejs-time-rail").on('mousedown', function() {
 		wait_for_seek(function() {
--			socket.emit("seek_video", room, video_media.currentTime, get_server_time());
+-			socket.emit("seek_video", room, video_progress(), get_server_time());
 			start_syncing();
 			rebuild_timeline();
 		})
@@ -808,10 +817,10 @@ function init_video_triggers() {
 
 function wait_for_seek(cb) {
 	var start_time = Date.now();
-	var start_frame = video_media.currentTime;
+	var start_frame = video_progress();
 	var changed = setInterval(function() {
-		var current_frame = video_media.currentTime;
-		if (Math.abs(video_media.currentTime - (start_frame + (Date.now() - start_time)/1000)) > 0.05) {
+		var current_frame = video_progress();
+		if (Math.abs(video_progress() - (start_frame + (Date.now() - start_time)/1000)) > 0.05) {
 			cb();
 			clearInterval(changed);
 		}
@@ -923,6 +932,7 @@ function set_background(new_background, cb) {
 			
 			video_layer.mediaelementplayer({
 				videoHeight: '100%',
+				loop:false,
 				enableAutosize: true,
 				alwaysShowControls: true,
 				features: ['playpause','progress','current','duration','tracks','volume'],
@@ -3598,11 +3608,19 @@ function snap_and_emit_entity(entity) {
 }
 
 function update_timeline(entity) {
-	if (entity.start_time) {
-		timeline.add(entity.start_time);
-		timeline.add(entity.end_time)
-		timeline_entities[entity.start_time] = entity;
-		timeline_entities[entity.end_time] = entity;
+	if (entity.start_time) {	
+		var time = entity.start_time;
+		while (timeline_entities[time]) {
+			time += EPSILON;
+		}
+		timeline.add(time);
+		timeline_entities[time] = entity;
+		time = entity.end_time;
+		while (timeline_entities[time]) {
+			time += EPSILON;
+		}
+		timeline.add(time)
+		timeline_entities[time] = entity;
 	}
 }
 
@@ -3621,12 +3639,12 @@ function rebuild_timeline(entity) {
 
 function progress_timeline() {
 	if (timeline.isEmpty()) return;
-	var time = video_media.currentTime;
+	var time = video_progress();
 	var next_event_time = timeline.peek();
 	
 	while (time >= next_event_time) {
 		var entity = timeline_entities[next_event_time];
-		if (video_media.currentTime >= entity.end_time) {
+		if (video_progress() >= entity.end_time) {
 			if (entity.container) {
 				remove(entity.uid, true);
 			}
@@ -3644,8 +3662,8 @@ function progress_timeline() {
 function emit_entity(entity) {
 	var container = entity.container;
 	if (background.is_video) {
-		entity.start_time = video_media.currentTime;
-		entity.end_time = video_media.currentTime + delay;
+		entity.start_time = video_progress();
+		entity.end_time = video_progress() + delay;
 		update_timeline(entity);
 	}	
 	entity.container = undefined;
@@ -4988,7 +5006,15 @@ function handle_play(frame, timestamp) {
 	last_video_sync = [frame, timestamp]
 	var time = Date.now();
 	var timer = time - get_local_time(timestamp);
-	video_media.setCurrentTime(frame + timer/1000.0);
+	video_media.setCurrentTime(frame);
+	if (timer <= 0) {
+		video_player.play();
+	} else {
+		setTimeout(function() {
+			video_player.play();
+		}, timer)
+	}
+	
 	video_player.play();
 	stop_syncing();
 	play_video_controls();
@@ -5008,8 +5034,7 @@ function sync_video(frame, timestamp) {
 	var time = Date.now();
 	var elapsed_time = time - get_local_time(timestamp);
 	var estimated_frame = frame + elapsed_time / 1000.0;
-	
-	var lag = video_media.currentTime-estimated_frame;
+	var lag = video_progress()-estimated_frame;
 	
 	console.log('lag: ', lag)
 		
@@ -5028,6 +5053,14 @@ function sync_video(frame, timestamp) {
 	}
 }
 
+function video_progress() {
+	if (video_paused) {
+		return video_media.currentTime;
+	} else {
+		return progress+(Date.now() - progress_update)/1000.0;
+	}
+}
+
 var sync_in_progress = false;
 var press_play_delay = 0;
 function hard_sync_video(frame, timestamp) {
@@ -5037,9 +5070,12 @@ function hard_sync_video(frame, timestamp) {
 	var time = Date.now();
 	var elapsed_time = time - get_local_time(timestamp);		
 	var estimated_frame = frame + elapsed_time / 1000;
-	var lag = video_media.currentTime-estimated_frame;
-	
-	if (lag > 0) {
+	var lag = video_progress()-estimated_frame;
+
+	if (lag < 0 || lag > 3) {	
+		video_media.setCurrentTime(estimated_frame + 0.5);
+		sync_in_progress = false;
+	} else {
 		video_player.pause();
 		setTimeout(function() {
 			if (!video_paused) {
@@ -5053,9 +5089,6 @@ function hard_sync_video(frame, timestamp) {
 				video_media.addEventListener('play', play_delay_listener);
 			}
 		}, Math.max(0, lag * 1000 - press_play_delay));	
-	} else {
-		video_media.setCurrentTime(estimated_frame+press_play_delay+1);
-		sync_in_progress = false;
 	}
 }
 
@@ -6101,9 +6134,9 @@ $(document).ready(function() {
 
 	socket.on('request_sync', function() {
 		if (im_syncing) {
-			for (var i = 1; i <= 5; i++) {
+			for (var i = 0; i <= 5; i++) {
 				setTimeout(function() {
-					var frame = video_media.currentTime;
+					var frame = video_progress();
 					socket.emit("sync_video", room, frame, get_server_time());
 				}, i*2000);
 			}
