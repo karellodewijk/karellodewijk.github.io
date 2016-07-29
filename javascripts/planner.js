@@ -188,7 +188,7 @@ var ROTATE_ARROW_MARGIN = 0.02;
 var TEXT_BOX_QUALITY = 4;
 var VIDEO_EXTENSIONS = ['mp4','webgl','avi'];
 var VIDEO_SYNC_DELAY = 10000; //in ms
-var MOUSE_IDLE_HIDE_TIME = 10000;
+var MOUSE_IDLE_HIDE_TIME = 5000;
 
 var chat_color = random_darkish_color();
 var room_data;
