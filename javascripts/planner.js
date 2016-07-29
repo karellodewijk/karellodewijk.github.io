@@ -3633,16 +3633,19 @@ function on_line_move(e) {
 		var b = [to_x_local(mouse_x_rel(mouse_location.x)) , to_y_local(mouse_y_rel(mouse_location.y))];
 		
 		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);
+
+		temp_draw_context.beginPath();
+		temp_draw_context.moveTo(a[0], a[1]);		
+		temp_draw_context.lineTo(b[0], b[1]);
+		temp_draw_context.stroke();
+	
 		if (new_drawing.end == "arrow") {
 			draw_arrow3(temp_draw_context, a, b, new_drawing);
 		} else if (new_drawing.end == "T") {
 			draw_T3(temp_draw_context, a, b, new_drawing);
 			temp_draw_context.stroke();
 		}
-		temp_draw_context.beginPath();
-		temp_draw_context.moveTo(a[0], a[1]);		
-		temp_draw_context.lineTo(b[0], b[1]);
-		temp_draw_context.stroke();
+		
 	});
 }
 
