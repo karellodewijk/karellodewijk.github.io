@@ -1369,6 +1369,7 @@ function align_note_text(entity) {
 }
 
 //borrowed from http://www.dbp-consulting.com/tutorials/canvas/CanvasArrow.html
+//but stripped a bit
 var drawArrow=function(ctx,x1,y1,x2,y2,style,which,angle,d) {
 	'use strict';
 	// calculate the angle of the line
@@ -1380,14 +1381,16 @@ var drawArrow=function(ctx,x1,y1,x2,y2,style,which,angle,d) {
 	var angle2=lineangle+Math.PI-angle;
 	var botx=x2+Math.cos(angle2)*h;
 	var boty=y2+Math.sin(angle2)*h;
+	
 	ctx.beginPath();
-	ctx.moveTo(x0,y0);
+	ctx.moveTo(topx,topy);
 	ctx.lineTo(x1,y1);
-	ctx.lineTo(x2,y2);
-	var cpx=(x0+x1+x2)/3;
-	var cpy=(y0+y1+y2)/3;
-	ctx.quadraticCurveTo(cpx,cpy,x0,y0);
+	ctx.lineTo(botx,boty);
+	var cpx=(topx+x1+botx)/3;
+	var cpy=(topy+y1+boty)/3;
+	ctx.quadraticCurveTo(cpx,cpy,topx,topy);
 	ctx.fill();
+	
 }
 
 function hexToRGBA(hex, alpha) {
@@ -2984,6 +2987,7 @@ function smooth_draw(context, point_buffer, closed) {
 	context.stroke();
 }
 
+var last_linedash_offset = 0;
 function smooth_draw_incremental(context1, context2, point_buffer, x, y, temp_x, temp_y) {
 	point_buffer.push(x, y, temp_x, temp_y);
 	var splinePoints = getCurvePoints(point_buffer, INTERPOLATION_TENSION, INTERPOLATION_RESOLUTION);
@@ -2995,25 +2999,28 @@ function smooth_draw_incremental(context1, context2, point_buffer, x, y, temp_x,
 	if (point_buffer.length == 3 * INTERPOLATION_LOOKBACK) {
 		start_i = 2 * INTERPOLATION_LOOKBACK * INTERPOLATION_RESOLUTION;
 	}
-
+	
 	context2.moveTo(splinePoints[start_i], splinePoints[start_i+1]);
 	context2.beginPath();
+	
+	context2.lineDashOffset = context1.lineDashOffset;	
 	for (var i = start_i+2; i < splinePoints.length; i+=2) {
 		context2.lineTo(splinePoints[i], splinePoints[i+1]);
 	}
 	context2.stroke();
-	
-
 	
 	if (point_buffer.length == 2*INTERPOLATION_LOOKBACK || point_buffer.length == 3*INTERPOLATION_LOOKBACK) {
 		var start_i = INTERPOLATION_LOOKBACK * INTERPOLATION_RESOLUTION;	
 
 		if (point_buffer.length == 2*INTERPOLATION_LOOKBACK) {
 			start_i = 2;
+			last_linedash_offset = 0;
 			context1.moveTo(splinePoints[0], splinePoints[1]);
 		}
 
 		context1.beginPath();
+		context1.lineDashOffset = last_linedash_offset;
+		
 		var i;
 		for (i = start_i; i < splinePoints.length-((INTERPOLATION_LOOKBACK-2) * INTERPOLATION_RESOLUTION); i+=2) {
 			context1.lineTo(splinePoints[i], splinePoints[i+1]);
@@ -3025,6 +3032,8 @@ function smooth_draw_incremental(context1, context2, point_buffer, x, y, temp_x,
 		if (point_buffer.length == 3 * INTERPOLATION_LOOKBACK) {
 			point_buffer.splice(0, INTERPOLATION_LOOKBACK);
 		}
+		
+		last_linedash_offset = context1.lineDashOffset;
 	}
 
 
