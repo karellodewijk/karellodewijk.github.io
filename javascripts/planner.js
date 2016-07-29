@@ -189,6 +189,7 @@ var TEXT_BOX_QUALITY = 4;
 var VIDEO_EXTENSIONS = ['mp4','webgl','avi'];
 var VIDEO_SYNC_DELAY = 10000; //in ms
 var MOUSE_IDLE_HIDE_TIME = 5000;
+var MAX_CANVAS_SIZE = 4096;
 
 var chat_color = random_darkish_color();
 var room_data;
@@ -3615,12 +3616,14 @@ function on_icon_end(e) {
 }
 
 function on_text_end(e) {
+	var msg = $('#text_tool_text').val();
 	setup_mouse_events(undefined, undefined);
+	if (msg == "") return;
 	var mouse_location = e.data.getLocalPosition(background_sprite);	
 	var x = mouse_x_rel(mouse_location.x);
 	var y = mouse_y_rel(mouse_location.y);
 	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-	var text = {uid:newUid(), type: 'text', x:x, y:y, scale:[1,1], color:text_color, alpha:1, text:$('#text_tool_text').val(), font_size:font_size * zoom_level, font:'Arial'};
+	var text = {uid:newUid(), type: 'text', x:x, y:y, scale:[1,1], color:text_color, alpha:1, text:msg, font_size:font_size * zoom_level, font:'Arial'};
 	undo_list.push(["add", [text]]);
 	current_text_element = text;
 	create_text2(text);
@@ -3729,20 +3732,30 @@ function create_text2(text_entity) {
 	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
 	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-	
 	var scaling = background_sprite.scale.y * objectContainer.scale.y;
-	_canvas.width = 2 * text_entity.text.length * text_entity.font_size * scaling * 1.5 * TEXT_QUALITY;
-	_canvas.height = 2 * text_entity.font_size * scaling * 2 * TEXT_QUALITY + 30;
-	var _context = _canvas.getContext("2d");	
-	_context.font = ""+ 2 * text_entity.font_size * scaling * TEXT_QUALITY + "px "+text_entity.font;
+
+	var _context = _canvas.getContext("2d");
+
+	var text_quality = TEXT_QUALITY;
+	_context.font = ""+ 2 * (text_entity.font_size+1) * scaling * text_quality + "px "+text_entity.font;
 	
+    var metrics = _context.measureText(text);
+	while (metrics.width > MAX_CANVAS_SIZE) {	
+		text_quality /= 2;
+		_context.font = ""+ 2 * (text_entity.font_size+1) * scaling * text_quality + "px "+text_entity.font;
+		metrics = _context.measureText(text);
+	}
+
+	_canvas.width = metrics.width;
+	_canvas.height = text_entity.font_size * scaling * text_quality * 3;	
+
 	var fill_color = '#' + ('00000' + (text_entity.color | 0).toString(16)).substr(-6);
 	_context.fillStyle = fill_color;
-
 	_context.shadowColor = "black";
 	_context.shadowOffsetX = 1; 
 	_context.shadowOffsetY = 1; 
 	_context.shadowBlur = 7;
+	_context.font = ""+ 2 * text_entity.font_size * scaling * text_quality + "px "+text_entity.font;
 	
 	_context.fillText(text_entity.text, 0, _canvas.height/2);
 
@@ -3751,8 +3764,8 @@ function create_text2(text_entity) {
 	if (sprite) {
 		text_entity.container = sprite;		
 		//rescale to objectContainer
-		sprite.height /= objectContainer.scale.x * TEXT_QUALITY;
-		sprite.width /= objectContainer.scale.y * TEXT_QUALITY;
+		sprite.height /= objectContainer.scale.x * text_quality;
+		sprite.width /= objectContainer.scale.y * text_quality;
 		sprite.x = x_abs(text_entity.x);
 		sprite.y = y_abs(text_entity.y);
 		objectContainer.addChild(sprite);
@@ -3773,23 +3786,38 @@ function create_background_text2(text_entity) {
 	var _canvas = document.createElement("canvas");
 	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 	var scaling = background_sprite.scale.y * objectContainer.scale.y;
+
+	var _context = _canvas.getContext("2d");
+
+	var text_quality = TEXT_QUALITY;
+	_context.font = ""+ 2 * (text_entity.font_size+1) * scaling * text_quality + "px "+text_entity.font;
 	
-	_canvas.width = 2 * text_entity.text.length * text_entity.font_size * scaling * 1.5 * TEXT_QUALITY;
-	_canvas.height = 2 * text_entity.font_size * scaling * 2 * TEXT_QUALITY + 30;
-	var _context = _canvas.getContext("2d");	
-	_context.font = ""+ 2 * text_entity.font_size * scaling * TEXT_QUALITY + "px "+text_entity.font;
-	
+    var metrics = _context.measureText(text);
+	while (metrics.width > MAX_CANVAS_SIZE) {	
+		text_quality /= 2;
+		_context.font = ""+ 2 * (text_entity.font_size+1) * scaling * text_quality + "px "+text_entity.font;
+		metrics = _context.measureText(text);
+	}
+
+	_canvas.width = metrics.width;
+	_canvas.height = text_entity.font_size * scaling * text_quality * 3;	
+
 	var fill_color = '#' + ('00000' + (text_entity.color | 0).toString(16)).substr(-6);
 	_context.fillStyle = fill_color;
+	_context.shadowColor = "black";
+	_context.shadowOffsetX = 1; 
+	_context.shadowOffsetY = 1; 
+	_context.shadowBlur = 7;
+	_context.font = ""+ 2 * text_entity.font_size * scaling * text_quality + "px "+text_entity.font;
 	
-	_context.fillText(text_entity.text, 0, _canvas.height/1.5);
+	_context.fillText(text_entity.text, 0, _canvas.height/2);
 
 	var sprite = createSprite(_context, _canvas);
 		
 	if (sprite) {
 		//rescale to objectContainer
-		sprite.height /= objectContainer.scale.x * TEXT_QUALITY;
-		sprite.width /= objectContainer.scale.y * TEXT_QUALITY;
+		sprite.height /= objectContainer.scale.x * text_quality;
+		sprite.width /= objectContainer.scale.y * text_quality;
 		sprite.x = 0;
 		sprite.y = 0;
 		
