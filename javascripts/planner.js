@@ -188,6 +188,7 @@ var ROTATE_ARROW_MARGIN = 0.02;
 var TEXT_BOX_QUALITY = 4;
 var VIDEO_EXTENSIONS = ['mp4','webgl','avi'];
 var VIDEO_SYNC_DELAY = 10000; //in ms
+var MOUSE_IDLE_HIDE_TIME = 10000;
 
 var chat_color = random_darkish_color();
 var room_data;
@@ -307,6 +308,7 @@ var video_ready = false;
 var video_paused = true;
 var initiated_play = false;
 var im_syncing = false;
+var idleMouseTimer;
 
 var mouse_down_interrupted;
 document.body.onmouseup = function() {
@@ -693,6 +695,8 @@ function reset_background() {
 	$('#right_side_bar').unbind('mouseleave');
 	$('#left_side_bar').show();
 	$('#right_side_bar').show();
+	
+	clearTimeout(idleMouseTimer);
 }
 
 var video_player;
@@ -969,7 +973,25 @@ function set_background(new_background, cb) {
 							video_player.pause();
 						}
 					}
-					socket.emit('request_sync', room)
+					
+					var forceMouseHide = false;
+					$(renderer.view).css('cursor', 'none');
+					$(renderer.view).mousemove(function(ev) {
+						if(!forceMouseHide) {
+							$(renderer.view).css('cursor', 'default');
+							clearTimeout(idleMouseTimer);
+							idleMouseTimer = setTimeout(function() {
+								$(renderer.view).css('cursor', 'none');
+								forceMouseHide = true;
+								setTimeout(function() {
+									forceMouseHide = false;
+								}, 200);
+							}, MOUSE_IDLE_HIDE_TIME);
+						}
+					});
+					
+					
+					socket.emit('request_sync', room);
 					done();
 				}
 			});
