@@ -3323,10 +3323,8 @@ function create_line2(line) {
 	var b = [to_x_local(last(line.path)[0] + line.x), to_y_local(last(line.path)[1] + line.y)];
 	if (line.end == "arrow") {	
 		draw_arrow3(_context, a, b, line);
-		_context.fill();
 	} else if (line.end == "T") {
 		draw_T3(_context, a, b, line);
-		_context.stroke();			
 	}
 	
 	canvas2container(_context, _canvas, line);
@@ -3638,13 +3636,14 @@ function on_line_move(e) {
 		temp_draw_context.moveTo(a[0], a[1]);		
 		temp_draw_context.lineTo(b[0], b[1]);
 		temp_draw_context.stroke();
-	
+		
 		if (new_drawing.end == "arrow") {
 			draw_arrow3(temp_draw_context, a, b, new_drawing);
 		} else if (new_drawing.end == "T") {
 			draw_T3(temp_draw_context, a, b, new_drawing);
-			temp_draw_context.stroke();
 		}
+		
+		
 		
 	});
 }
@@ -3688,10 +3687,8 @@ function on_line_end(e) {
 	if (!shifted) {
 		if (new_drawing.end == "arrow") {
 			draw_arrow3(draw_context, a, b, new_drawing);
-			draw_context.fill();
 		} else if (new_drawing.end == "T") {
 			draw_T3(draw_context, a, b, new_drawing);
-			draw_context.stroke();			
 		}
 
 		var success = canvas2container(draw_context, draw_canvas, new_drawing);
