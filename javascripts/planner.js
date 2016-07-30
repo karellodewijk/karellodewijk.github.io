@@ -1031,6 +1031,7 @@ var context_before_drag;
 var move_selected;
 var drag_timeout;
 var last_drag_position, last_drag_update;
+var dragged_entity;
 function on_drag_start(e) {
 	if (this == select_box) {
 		limit_rate(15, select_box_move_state, function() {});
@@ -1074,6 +1075,7 @@ function on_drag_start(e) {
 	}
 	drag_timeout = setTimeout(function() {
 		objectContainer.buttonMode = true;
+		dragged_entity = _this.entity;
 		
 		var mouse_location = renderer.plugins.interaction.eventData.data.global;
 		last_drag_update = Date.now();
@@ -1159,9 +1161,11 @@ function toggle_note(e) {
 
 //move an entity but keep it within the bounds
 function move_entity(entity, delta_x, delta_y) {
-	var new_x = entity.container.x + x_abs(delta_x);
-	var new_y = entity.container.y + y_abs(delta_y);
-	drag_entity(entity, entity.x + x_rel(new_x - entity.container.x), entity.y + y_rel(new_y - entity.container.y));
+	if (entity.container) {
+		var new_x = entity.container.x + x_abs(delta_x);
+		var new_y = entity.container.y + y_abs(delta_y);
+		drag_entity(entity, entity.x + x_rel(new_x - entity.container.x), entity.y + y_rel(new_y - entity.container.y));
+	}
 }
 
 //limits the amount of time f can be called to once every interval
@@ -1265,6 +1269,10 @@ function on_drag_end(e) {
 
 function remove(uid, keep_entity) {
 	if (room_data.slides[active_slide].entities[uid] && room_data.slides[active_slide].entities[uid].container) {
+		if (dragged_entity.uid == uid) {
+			on_drag_end.call(dragged_entity.container)
+		}
+		
 		if (room_data.slides[active_slide].entities[uid].type == "note") {
 			room_data.slides[active_slide].entities[uid].container.menu.remove();
 		}
@@ -1386,9 +1394,9 @@ function align_note_text(entity) {
 		var y = rect.top + to_y_local(entity.y);
 
 		if (entity.container.is_open) {
-			entity.container.menu.attr('style', 'top:' + y +'px; left:' + x + 'px; display: block;');
+			entity.container.menu.attr('style', 'top:' + y +'px; left:' + x + 'px; display:block; z-index:20');
 		} else {
-			entity.container.menu.attr('style', 'top:' + y +'px; left:' + x + 'px; display: block; visibility: hidden;');
+			entity.container.menu.attr('style', 'top:' + y +'px; left:' + x + 'px; display:block; z-index:20; visibility: hidden;');
 		}
 	}
 }
@@ -1710,7 +1718,7 @@ function create_note(note) {
 		$('button', note.container.menu).hide();
 	}
 	
-	$("#edit_window").append(note.container.menu);
+	$("body").append(note.container.menu);
 	
 	$("#note_box", note.container.menu).on('blur', function() {
 		if (!can_edit()) {
@@ -4515,6 +4523,7 @@ function clear_selected() {
 }
 
 function drag_entity(entity, x, y, scale, rotation) {
+	if (!entity.container) return;
 	entity.container.x += x_abs(x-entity.x);
 	entity.container.y += y_abs(y-entity.y);
 	entity.x = x;
