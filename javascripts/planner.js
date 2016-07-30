@@ -3744,11 +3744,11 @@ function create_text2(text_entity) {
 	var text_quality = TEXT_QUALITY;
 	_context.font = ""+ 2 * (text_entity.font_size+1) * scaling * text_quality + "px "+text_entity.font;
 	
-    var metrics = _context.measureText(text);
+    var metrics = _context.measureText(text_entity.text);
 	while (metrics.width > MAX_CANVAS_SIZE) {	
 		text_quality /= 2;
 		_context.font = ""+ 2 * (text_entity.font_size+1) * scaling * text_quality + "px "+text_entity.font;
-		metrics = _context.measureText(text);
+		metrics = _context.measureText(text_entity.text);
 	}
 
 	_canvas.width = metrics.width;
@@ -3797,11 +3797,11 @@ function create_background_text2(text_entity) {
 	var text_quality = TEXT_QUALITY;
 	_context.font = ""+ 2 * (text_entity.font_size+1) * scaling * text_quality + "px "+text_entity.font;
 	
-    var metrics = _context.measureText(text);
+    var metrics = _context.measureText(text_entity.text);
 	while (metrics.width > MAX_CANVAS_SIZE) {	
 		text_quality /= 2;
 		_context.font = ""+ 2 * (text_entity.font_size+1) * scaling * text_quality + "px "+text_entity.font;
-		metrics = _context.measureText(text);
+		metrics = _context.measureText(text_entity.text);
 	}
 
 	_canvas.width = metrics.width;
