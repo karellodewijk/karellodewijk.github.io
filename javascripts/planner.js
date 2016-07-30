@@ -1269,7 +1269,7 @@ function on_drag_end(e) {
 
 function remove(uid, keep_entity) {
 	if (room_data.slides[active_slide].entities[uid] && room_data.slides[active_slide].entities[uid].container) {
-		if (dragged_entity.uid == uid) {
+		if (dragged_entity && dragged_entity.uid == uid) {
 			on_drag_end.call(dragged_entity.container)
 		}
 		
@@ -2099,25 +2099,28 @@ function on_ruler_end(e) {
 var circle_state = {}
 function on_circle_move(e) {
 	limit_rate(15, circle_state, function() {	
-		var mouse_location = e.data.getLocalPosition(background_sprite);
+		//var mouse_location = e.data.getLocalPosition(background_sprite);
+		var mouse_location = renderer.plugins.interaction.eventData.data.global;
+		var x_rel = from_x_local(mouse_location.x)
+		var y_rel = from_y_local(mouse_location.y)
 		
 		var center_x, center_y, radius
 		if (circle_draw_style == "edge") {
-			center_x = (left_click_origin[0] + mouse_x_rel(mouse_location.x)) / 2;
-			center_y = (left_click_origin[1] + mouse_y_rel(mouse_location.y)) / 2;
-			radius = Math.sqrt(Math.pow(left_click_origin[0] - mouse_x_rel(mouse_location.x), 2) +
-							   Math.pow(left_click_origin[1] - mouse_y_rel(mouse_location.y), 2));
+			center_x = (left_click_origin[0] + x_rel) / 2;
+			center_y = (left_click_origin[1] + y_rel) / 2;
+			radius = Math.sqrt(Math.pow(to_x_local(left_click_origin[0]) - to_x_local(x_rel), 2) +
+							   Math.pow(to_y_local(left_click_origin[1]) - to_y_local(y_rel), 2));
 			radius /= 2;
 		} else if (circle_draw_style == "radius") {
 			center_x = left_click_origin[0];
 			center_y = left_click_origin[1];
-			radius = Math.sqrt(Math.pow(left_click_origin[0] - mouse_x_rel(mouse_location.x), 2) + 
-							   Math.pow(left_click_origin[1] - mouse_y_rel(mouse_location.y), 2));
+			radius = Math.sqrt(Math.pow(to_x_local(left_click_origin[0]) - to_x_local(x_rel), 2) +
+							   Math.pow(to_y_local(left_click_origin[1]) - to_y_local(y_rel), 2));
 		}
 		
 		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);	
 		temp_draw_context.beginPath();
-		temp_draw_context.arc(to_x_local(center_x), to_y_local(center_y), background_sprite.height * objectContainer.scale.y  * radius, 0, 2*Math.PI);
+		temp_draw_context.arc(to_x_local(center_x), to_y_local(center_y), radius, 0, 2*Math.PI);
 		temp_draw_context.fill();
 		temp_draw_context.stroke();
 		
@@ -2129,13 +2132,13 @@ function on_circle_move(e) {
 			temp_draw_context.shadowBlur = 0;
 			temp_draw_context.beginPath();
 			temp_draw_context.moveTo(to_x_local(center_x), to_y_local(center_y));		
-			temp_draw_context.lineTo(to_x_local(mouse_x_rel(mouse_location.x)), to_y_local(mouse_y_rel(mouse_location.y)));
+			temp_draw_context.lineTo(to_x_local(x_rel), to_y_local(y_rel));
 			temp_draw_context.stroke();
-			var mid_line_x = to_x_local((center_x + mouse_x_rel(mouse_location.x)) / 2);
-			var mid_line_y = to_y_local((center_y + mouse_y_rel(mouse_location.y)) / 2);
+			var mid_line_x = to_x_local((center_x + x_rel) / 2);
+			var mid_line_y = to_y_local((center_y + y_rel) / 2);
 			temp_draw_context.font = "22px Arial";
-			var length = Math.sqrt(Math.pow(background.size_x * (center_x - mouse_x_rel(mouse_location.x)), 2) + Math.pow(background.size_y * 
-			(center_y - mouse_y_rel(mouse_location.y)), 2))
+			var length = Math.sqrt(Math.pow(background.size_x * (center_x - x_rel), 2) + Math.pow(background.size_y * 
+			(center_y - y_rel), 2))
 			temp_draw_context.lineWidth = to_x_local(0.5)/1000;
 			temp_draw_context.strokeStyle = "#000000";
 			temp_draw_context.fillStyle = "#FFFFFF";
@@ -2157,37 +2160,34 @@ function on_circle_move(e) {
 
 function on_circle_end(e) {
 	limit_rate(15, circle_state, function() {});
-	var mouse_location = e.data.getLocalPosition(background_sprite);
+	var mouse_location = renderer.plugins.interaction.eventData.data.global;		
+	var xrel = from_x_local(mouse_location.x)
+	var yrel = from_y_local(mouse_location.y)	
 
 	var center_x, center_y, radius
 	if (circle_draw_style == "edge") {
-		center_x = (left_click_origin[0] + mouse_x_rel(mouse_location.x)) / 2;
-		center_y = (left_click_origin[1] + mouse_y_rel(mouse_location.y)) / 2;
-		radius = Math.sqrt(Math.pow(left_click_origin[0] - mouse_x_rel(mouse_location.x), 2) +
-				           Math.pow(left_click_origin[1] - mouse_y_rel(mouse_location.y), 2));
+		center_x = (left_click_origin[0] + xrel) / 2;
+		center_y = (left_click_origin[1] + yrel) / 2;
+		radius = Math.sqrt(Math.pow((to_x_local(left_click_origin[0]) - to_x_local(xrel)), 2) +
+						   Math.pow((to_y_local(left_click_origin[1]) - to_y_local(yrel)), 2));
 		radius /= 2;
 	} else if (circle_draw_style == "radius") {
 		center_x = left_click_origin[0];
 		center_y = left_click_origin[1];
-		radius = Math.sqrt(Math.pow(left_click_origin[0] - mouse_x_rel(mouse_location.x), 2) + 
-		                   Math.pow(left_click_origin[1] - mouse_y_rel(mouse_location.y), 2));
+		radius = Math.sqrt(Math.pow(to_x_local(left_click_origin[0]) - to_x_local(xrel), 2) +
+						   Math.pow(to_y_local(left_click_origin[1]) - to_y_local(yrel), 2));
 	}
-	
-	if (just_activated) {
-		var distance_sq = Math.pow(to_x_local(radius), 2)
-		just_activated = false;
-		if (distance_sq < 0.01) return;
-	}
-	new_drawing = undefined;
+
 	
 	temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);	
 	temp_draw_context.beginPath();
-	temp_draw_context.arc(to_x_local(center_x), to_y_local(center_y), background_sprite.height * objectContainer.scale.y * radius, 0, 2*Math.PI);
+	temp_draw_context.arc(to_x_local(center_x), to_y_local(center_y), radius, 0, 2*Math.PI);
 	temp_draw_context.fill();
 	temp_draw_context.stroke();
 
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-	var new_shape = {uid:newUid(), type:'circle', x:center_x, y:center_y, radius:radius, outline_thickness:circle_outline_thickness * zoom_level, outline_color:circle_outline_color, outline_opacity: t2o(circle_outline_transparancy), fill_opacity: t2o(circle_fill_transparancy), fill_color:circle_fill_color, alpha:1, style:$('#circle_type').find('.active').attr('data-style')};
+	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);	
+	var new_shape = {uid:newUid(), type:'circle', x:center_x, y:center_y, radius:y_rel(radius*zoom_level), outline_thickness:circle_outline_thickness * zoom_level, outline_color:circle_outline_color, outline_opacity: t2o(circle_outline_transparancy), fill_opacity: t2o(circle_fill_transparancy), fill_color:circle_fill_color, alpha:1, style:$('#circle_type').find('.active').attr('data-style')};
+	new_drawing = undefined;
 	
 	if (circle_draw_style == "radius" && background.size_x && background.size_x > 0 && background.size_y && background.size_y > 0) {
 		temp_draw_context.save();
@@ -2197,13 +2197,13 @@ function on_circle_end(e) {
 		temp_draw_context.shadowBlur = 0;
 		temp_draw_context.beginPath();
 		temp_draw_context.moveTo(to_x_local(center_x), to_y_local(center_y));		
-		temp_draw_context.lineTo(to_x_local(mouse_x_rel(mouse_location.x)), to_y_local(mouse_y_rel(mouse_location.y)));
+		temp_draw_context.lineTo(to_x_local(xrel), to_y_local(yrel));
 		temp_draw_context.stroke();
-		var mid_line_x = to_x_local((center_x + mouse_x_rel(mouse_location.x)) / 2);
-		var mid_line_y = to_y_local((center_y + mouse_y_rel(mouse_location.y)) / 2);
+		var mid_line_x = to_x_local((center_x + xrel) / 2);
+		var mid_line_y = to_y_local((center_y + yrel) / 2);
 		temp_draw_context.font = "22px Arial";
-		var length = Math.sqrt(Math.pow(background.size_x * (center_x - mouse_x_rel(mouse_location.x)), 2) + Math.pow(background.size_y * 
-		(center_y - mouse_y_rel(mouse_location.y)), 2))
+		var length = Math.sqrt(Math.pow(background.size_x * (center_x - xrel), 2) + Math.pow(background.size_y * 
+		(center_y - yrel), 2))
 		temp_draw_context.lineWidth = to_x_local(0.5)/1000;
 		temp_draw_context.strokeStyle = "#000000";
 		temp_draw_context.fillStyle = "#FFFFFF";
@@ -2214,14 +2214,12 @@ function on_circle_end(e) {
 			label += Math.round(0.01*length)/10 + "km";
 		} else {
 			label += Math.round(10*length)/10 + "m";
-		}
-		temp_draw_context.fillText(label, mid_line_x, mid_line_y);		
+		}	
+		temp_draw_context.fillText(label, mid_line_x, mid_line_y);
 		temp_draw_context.stroke();
-		temp_draw_context.restore();		
-		new_shape.draw_radius = [mouse_x_rel(mouse_location.x), mouse_y_rel(mouse_location.y)];
+		temp_draw_context.restore();
 	}
 	
-
 	var success = canvas2container(temp_draw_context, temp_draw_canvas, new_shape);
 	if (success) {
 		emit_entity(new_shape);
@@ -3387,9 +3385,8 @@ function create_circle2(circle) {
 	var _context = _canvas.getContext("2d");
 	init_shape_canvas(_context, circle);
 
-	_context.beginPath();
-	
-	_context.arc(to_x_local(circle.x), to_y_local(circle.y), background_sprite.height * objectContainer.scale.y * circle.radius, 0, 2*Math.PI);
+	_context.beginPath();	
+	_context.arc(to_x_local(circle.x), to_y_local(circle.y), y_abs(circle.radius), 0, 2*Math.PI);
 	_context.fill();
 	_context.stroke();
 	
