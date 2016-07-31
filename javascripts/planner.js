@@ -760,17 +760,13 @@ function pause_video_controls() {
 }
 
 function toggle_play() {
-	console.log('pressed play')
 	if (background.is_video) {
-		console.log('is_video')
 		if (video_media.paused) {
-			console.log('play')
 			var frame = video_progress();
 			socket.emit("play_video", room, frame, base_playback_rate);
 			initiated_play = true;
 			play_video_controls()
 		} else {
-			console.log('puase')
 			manual_pause = true;
 			video_player.pause();
 			pause_video_controls();
@@ -5044,15 +5040,13 @@ function hard_sync_video(frame, timestamp) {
 	if (sync_in_progress) return;
 	sync_in_progress = true;
 		
-	
-		
 	var time = Date.now();
 	var elapsed_time = time - get_local_time(timestamp);		
 	var estimated_frame = frame + elapsed_time * base_playback_rate / 1000;
 	var lag = video_progress()-estimated_frame;
 	
 	if (lag < 0 || lag > 3) {	
-		video_media.setCurrentTime(estimated_frame + base_playback_rate * 0.5);
+		video_media.setCurrentTime(estimated_frame + 1);
 		sync_in_progress = false;
 	} else {
 		var prog = video_progress();
