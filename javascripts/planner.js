@@ -310,6 +310,8 @@ var video_paused = true;
 var initiated_play = false;
 var im_syncing = false;
 var idleMouseTimer;
+var playback_rate = 1.0;
+var base_playback_rate = 1.0;
 
 var mouse_down_interrupted;
 document.body.onmouseup = function() {
@@ -761,7 +763,7 @@ function toggle_play() {
 	if (background.is_video) {
 		if (video_media.paused) {
 			var frame = video_progress();
-			socket.emit("play_video", room, frame);
+			socket.emit("play_video", room, frame, base_playback_rate);
 			initiated_play = true;
 			play_video_controls()
 		} else {
@@ -795,6 +797,12 @@ function init_video_triggers() {
 			} else {
 				video_media.currentTime = 0;
 			} 
+		}
+	});
+	
+	video_media.addEventListener('ended', function(e) {
+		if (im_syncing) {
+			socket.emit("pause_video", room, 0);
 		}
 	});
 	
@@ -940,9 +948,13 @@ function set_background(new_background, cb) {
 			video_layer.mediaelementplayer({
 				videoHeight: '100%',
 				loop:false,
+				autoPlay:false,
 				enableAutosize: true,
 				alwaysShowControls: true,
-				features: ['playpause','progress','current','duration','tracks','volume'],
+				speeds: ['0.25', '0.50', '1.00', '1.25', '1.50', '2.00'],
+				defaultSpeed: '1.00',		
+				speedChar: 'x',
+				features: ['playpause','speed','progress','current','duration','tracks','volume'],
 				success: function(media, node, player) {
 					video_media = media;
 					video_paused = !room_data.playing;
@@ -975,6 +987,25 @@ function set_background(new_background, cb) {
 						}
 					}
 					
+					if (video_media.pluginType == 'youtube') {
+						var temp = video_media.pluginType;
+						video_player.options.speeds = video_media.pluginApi.getAvailablePlaybackRates().map(function(x) {return x.toFixed(2);});
+						video_player.options.defaultSpeed = '1.00';
+						video_media.pluginType = 'native';
+						video_player.buildspeed(player, player.controls, player.layers, player.media);
+						$('.mejs-playpause-button').after($('.mejs-speed-button'));
+						video_media.pluginType = temp;
+					}
+					
+					base_playback_rate = 1.0;
+					playback_rate = 1.0;			
+					
+					$('.mejs-speed-button').find('.mejs-speed-selector').on('click', 'input[type="radio"]', function() {
+						var newSpeed = parseFloat($(this).attr('value'));
+						socket.emit('change_rate', room, newSpeed);
+						set_playback_rate(newSpeed, newSpeed);
+					});
+										
 					var forceMouseHide = false;
 					$(renderer.view).css('cursor', 'none');
 					$(renderer.view).mousemove(function(ev) {
@@ -4979,22 +5010,18 @@ function handle_pause(frame, timestamp) {
 function sync_video(frame, timestamp) {	
 	var time = Date.now();
 	var elapsed_time = time - get_local_time(timestamp);
-	var estimated_frame = frame + elapsed_time / 1000.0;
+	var estimated_frame = frame + elapsed_time * base_playback_rate / 1000.0;
 	var lag = video_progress()-estimated_frame;
 	
 	console.log('lag: ', lag)
 		
-	if (Math.abs(lag) > 0.1) {
+	if (Math.abs(lag)/base_playback_rate > 0.1) {
 		hard_sync_video(frame, timestamp);
 	} else {	
 		//should allow it to catch up over the course of VIDEO_SYNC_DELAY ms 
 		//Not supported for youtube videos unfortunately
-		if (video_media.playbackRate != -1) {
-			video_media.playbackRate = 1 + lag/VIDEO_SYNC_DELAY; 
-		} else {
-			if (video_media.pluginApi.setPlaybackRate) { //do it through youtube API (doesn't work as youtube only allows fixed set of rates)
-				video_media.pluginApi.setPlaybackRate(1 + lag/VIDEO_SYNC_DELAY);
-			}
+		if (video_media.pluginType != 'youtube') {
+			set_playback_rate(base_playback_rate, base_playback_rate+lag/VIDEO_SYNC_DELAY);
 		}
 	}
 }
@@ -5003,7 +5030,7 @@ function video_progress() {
 	if (video_paused) {
 		return video_media.currentTime;
 	} else {
-		return progress+(Date.now() - progress_update)/1000.0;
+		return progress+ (Date.now() - progress_update) * playback_rate / 1000.0;
 	}
 }
 
@@ -5013,15 +5040,18 @@ function hard_sync_video(frame, timestamp) {
 	if (sync_in_progress) return;
 	sync_in_progress = true;
 		
+	
+		
 	var time = Date.now();
 	var elapsed_time = time - get_local_time(timestamp);		
-	var estimated_frame = frame + elapsed_time / 1000;
+	var estimated_frame = frame + elapsed_time * base_playback_rate / 1000;
 	var lag = video_progress()-estimated_frame;
-
+	
 	if (lag < 0 || lag > 3) {	
-		video_media.setCurrentTime(estimated_frame + 0.5);
+		video_media.setCurrentTime(estimated_frame + base_playback_rate * 0.5);
 		sync_in_progress = false;
 	} else {
+		var prog = video_progress();
 		video_player.pause();
 		setTimeout(function() {
 			if (!video_paused) {
@@ -5034,7 +5064,7 @@ function hard_sync_video(frame, timestamp) {
 				}
 				video_media.addEventListener('play', play_delay_listener);
 			}
-		}, Math.max(0, lag * 1000 - press_play_delay));	
+		}, Math.max(0, (lag * 1000)/base_playback_rate - press_play_delay));	
 	}
 }
 
@@ -5049,6 +5079,23 @@ function handle_sync(frame, timestamp, user_id) {
 	
 	last_video_sync = [frame, timestamp];
 	sync_video(frame, timestamp);		
+}
+
+function set_playback_rate(base, rate) {
+	base_playback_rate = base;
+	playback_rate = rate;
+
+	//update ui
+	var speed_string = base.toFixed(2);	
+	$('.mejs-speed-button').find('button').html(speed_string+'x');
+	$('.mejs-speed-button').find('.mejs-speed-selected').removeClass('mejs-speed-selected');
+	$('.mejs-speed-button').find('input[value="'+speed_string+'"]').next().addClass('mejs-speed-selected');
+	
+	if (video_media.pluginType == 'youtube') {
+		video_media.pluginApi.setPlaybackRate(rate);
+	} else {
+		video_media.playbackRate = rate;
+	}
 }
 
 //connect socket.io socket
@@ -5904,8 +5951,10 @@ $(document).ready(function() {
 					for (var i in entities) {
 						create_entity(entities[i]);
 					}
-					if (background.is_video) {
-						rebuild_timeline();
+				} else {
+					rebuild_timeline();
+					if (room_data.playback_rate) {
+						set_playback_rate(room_data.playback_rate, room_data.playback_rate);
 					}
 				}
 			});
@@ -6064,8 +6113,9 @@ $(document).ready(function() {
 		location.reload();
 	});
 	
-	socket.on('play_video', function(frame, timestamp, user_id) {
+	socket.on('play_video', function(frame, timestamp, rate, user_id) {
 		activity_animation(user_id);
+		set_playback_rate(rate, rate);
 		handle_play(frame, timestamp)
 	});
 	
@@ -6106,6 +6156,10 @@ $(document).ready(function() {
 		wait_for_seek(function() {
 			rebuild_timeline();
 		})
+	});
+	
+	socket.on('change_rate', function(rate) {
+		set_playback_rate(rate, rate);
 	});
 
 });
