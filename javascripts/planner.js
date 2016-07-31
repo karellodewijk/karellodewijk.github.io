@@ -760,13 +760,17 @@ function pause_video_controls() {
 }
 
 function toggle_play() {
+	console.log('pressed play')
 	if (background.is_video) {
+		console.log('is_video')
 		if (video_media.paused) {
+			console.log('play')
 			var frame = video_progress();
 			socket.emit("play_video", room, frame, base_playback_rate);
 			initiated_play = true;
 			play_video_controls()
 		} else {
+			console.log('puase')
 			manual_pause = true;
 			video_player.pause();
 			pause_video_controls();
@@ -1096,7 +1100,7 @@ function on_drag_start(e) {
 			clear_selected();
 		}
 		return;
-	} else if (active_context != "select_context" && active_context != "icon_context" && active_context != "text_context" && active_context != "background_text_context" && active_context != "note_context" && active_context != "ping_context") {
+	} else if (active_context != "select_context" && active_context != "icon_context" && active_context != "text_context" && active_context != "background_text_context" && active_context != "note_context" && active_context != "ping_context" && active_context != "track_context") {
 		return;
 	} else {
 		if (active_context != 'drag_context') {
