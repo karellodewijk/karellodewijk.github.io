@@ -1318,7 +1318,7 @@ function remove(uid, keep_entity) {
 		if (room_data.slides[active_slide].entities[uid] && room_data.slides[active_slide].entities[uid].type == "icon") {
 			try {
 				var counter = $('button[id*="'+room_data.slides[active_slide].entities[uid].tank+'"]').find("span");
-				counter.text((parseInt(counter.text())-1).toString());		
+				counter[0].innerHTML = parseInt(counter[0].innerHTML)-1;	
 				counter = $("#icon_context").find("span").first();
 				counter.text((parseInt(counter.text())-1).toString());
 			} catch (e) {}
@@ -4006,7 +4006,7 @@ function create_icon_cont(icon, texture) {
 function create_icon(icon, cb_after) {
 	try {
 		var counter = $('button[id*="'+icon.tank+'"]').find("span");
-		counter.text((parseInt(counter.text())+1).toString());		
+		counter[0].innerHTML = parseInt(counter[0].innerHTML)+1;
 		counter = $("#icon_counter");
 		counter.text((parseInt(counter.text())+1).toString());
 	} catch(e) {}
