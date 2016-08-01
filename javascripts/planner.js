@@ -766,6 +766,7 @@ function toggle_play() {
 			socket.emit("play_video", room, frame, base_playback_rate);
 			initiated_play = true;
 			play_video_controls()
+			start_syncing();
 		} else {
 			manual_pause = true;
 			video_player.pause();
@@ -778,7 +779,8 @@ var ignore_jump = false;
 function init_video_triggers() {
 	video_media.addEventListener('pause', function(e) {
 		if (manual_pause) {
-			stop_syncing();
+			clearInterval(sync_event);
+			im_syncing = false;
 			video_paused = true;
 			socket.emit("pause_video", room, video_progress());
 			manual_pause = false;
@@ -789,6 +791,8 @@ function init_video_triggers() {
 		if (initiated_play) {	
 			start_syncing();
 			initiated_play = false;
+		} else {
+			stop_syncing();
 		}
 		//TODO: fix dirty hack because the youtube player starts playing when you seek regradless
 		if (video_paused) {
@@ -824,7 +828,9 @@ function init_video_triggers() {
 	$(".mejs-time-rail").on('mousedown', function() {
 		wait_for_seek(function() {
 -			socket.emit("seek_video", room, video_progress(), get_server_time());
-			start_syncing();
+			if (!video_paused) {
+				start_syncing();
+			}
 			rebuild_timeline();
 		})
 	});	
@@ -1006,6 +1012,7 @@ function set_background(new_background, cb) {
 						var newSpeed = parseFloat($(this).attr('value'));
 						socket.emit('change_rate', room, newSpeed);
 						set_playback_rate(newSpeed, newSpeed);
+						start_syncing();
 					});
 										
 					var forceMouseHide = false;
@@ -4969,11 +4976,17 @@ function cleanup() {
 	room_data = {};
 }
 
+//maybe a little bit of a misnomer, stop_syncing means don't send sync events, but if no sync events were received while playing
+//do start syncing. The try stop_syncing is clearInterval(sync_event); im_syncing = false;
 function stop_syncing() {
 	im_syncing = false;
 	clearInterval(sync_event);
 	sync_event = setInterval(function() {
 		im_syncing = false;
+		if (video_paused) {
+			clearInterval(sync_event);
+			return;
+		}
 		if (Date.now() - get_local_time(last_video_sync[1]) > 20000) {
 			start_syncing();
 		}
@@ -5000,13 +5013,12 @@ function handle_play(frame, timestamp) {
 }
 
 function handle_pause(frame, timestamp) {
-	if (!video_paused) {
-		video_paused = true;
-		stop_syncing();
-		video_media.setCurrentTime(frame);
-		video_player.pause();
-		pause_video_controls();
-	}
+	video_paused = true;
+	clearInterval(sync_event);
+	im_syncing = false;
+	video_media.setCurrentTime(frame);
+	video_player.pause();
+	pause_video_controls();
 }
 
 function sync_video(frame, timestamp) {	
@@ -5074,7 +5086,7 @@ function handle_sync(frame, timestamp, user_id) {
 		return;
 	}	
 	if (user_id != my_user.id)  {
-		stop_syncing(); //if we get a sync from soemone else we stop syncing
+		stop_syncing(); //if we get a sync from someone else we stop syncing
 	}
 	
 	last_video_sync = [frame, timestamp];
