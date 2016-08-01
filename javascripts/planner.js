@@ -761,7 +761,7 @@ function pause_video_controls() {
 
 function toggle_play() {
 	if (background.is_video) {
-		if (video_media.paused) {
+		if (video_paused) {
 			var frame = video_progress();
 			socket.emit("play_video", room, frame, base_playback_rate);
 			initiated_play = true;
