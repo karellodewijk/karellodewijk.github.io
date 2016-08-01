@@ -779,6 +779,7 @@ function init_video_triggers() {
 	video_media.addEventListener('pause', function(e) {
 		if (manual_pause) {
 			stop_syncing();
+			video_paused = true;
 			socket.emit("pause_video", room, video_progress());
 			manual_pause = false;
 		}
