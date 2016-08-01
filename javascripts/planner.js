@@ -5066,9 +5066,9 @@ function hard_sync_video(frame, timestamp) {
 		var prog = video_progress();
 		video_player.pause();
 		setTimeout(function() {
+			sync_in_progress = false;
 			if (!video_paused) {
 				video_player.play();
-				sync_in_progress = false;
 				var play_start = Date.now();
 				var play_delay_listener = function(e) {
 					press_play_delay = Date.now() - play_start;
