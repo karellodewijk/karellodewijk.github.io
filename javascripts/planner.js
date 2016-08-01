@@ -797,6 +797,7 @@ function init_video_triggers() {
 			} else {
 				video_media.currentTime = 0;
 			} 
+			video_player.pause();
 		}
 	});
 	
