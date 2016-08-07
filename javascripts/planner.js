@@ -4820,7 +4820,10 @@ function transition(slide) {
 
 function cancel_drag() {
 	clearTimeout(drag_timeout);
-	active_context = context_before_drag;
+	if (context_before_drag) {
+		active_context = context_before_drag;
+	}
+	context_before_drag = null;
 	dragged_entity.mouseup = undefined;
 	dragged_entity.touchend = undefined;
 	dragged_entity.mouseupoutside = undefined;
