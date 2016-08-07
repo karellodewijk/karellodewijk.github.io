@@ -6,10 +6,12 @@ if (location.pathname.indexOf('planner3') != -1) {
 	is_video_replay = true;
 }
 
+/*
 if (is_video_replay) {
 	//servers = ['localhost'];
 	servers = ['server2.wottactic.eu'];
 }
+*/
 
 var image_host;
 function is_safari() {
@@ -119,7 +121,7 @@ try {
 }
 
 //generate unique id
-var valid_chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"; //needs to be 64 chars
+var valid_chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function newUid() {
 	var text = "";
 	for(var i=0; i < 14; i++ ) {
@@ -1262,7 +1264,6 @@ function on_drag_move(e) {
 function on_drag_end(e) {
 	limit_rate(15, drag_state, function() {});
 	objectContainer.buttonMode = false;
-	$('html,body').css('cursor', 'initial');
 	if (this.entity && Math.abs(this.entity.origin_x - this.entity.x) < EPSILON &&  Math.abs(this.entity.origin_y - this.entity.y) < EPSILON) {	
 		if (context_before_drag == 'remove_context') {
 			remove(this.entity.uid);
@@ -4820,6 +4821,7 @@ function transition(slide) {
 
 function cancel_drag() {
 	clearTimeout(drag_timeout);
+	$('html,body').css('cursor', 'initial');
 	if (context_before_drag) {
 		active_context = context_before_drag;
 	}
