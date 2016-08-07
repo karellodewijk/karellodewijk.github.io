@@ -6,12 +6,10 @@ if (location.pathname.indexOf('planner3') != -1) {
 	is_video_replay = true;
 }
 
-
 if (is_video_replay) {
 	//servers = ['localhost'];
 	servers = ['server2.wottactic.eu'];
 }
-
 
 var image_host;
 function is_safari() {
@@ -265,7 +263,7 @@ var assets_loaded = false;
 var select_alpha = 0.6;
 var resources_loading = 0;
 var circle_draw_style = "edge";
-var drag_in_progress = false;
+var drag_delay_running = false;
 var current_text_element;
 var last_mouse_location;
 var ping_texture;
@@ -1082,7 +1080,7 @@ function on_drag_start(e) {
 		select_box.mouseout = undefined;
 	}
 
-	drag_in_progress = true;
+	drag_delay_running = true;
 	if (drag_timeout) {
 		clearTimeout(drag_timeout);
 	}
@@ -1119,7 +1117,7 @@ function on_drag_start(e) {
 	}
 	drag_timeout = setTimeout(function() {
 		if (mouse_down_interrupted) {
-			drag_in_progress = false;
+			drag_delay_running = false;
 			deselect_all();
 			return;
 		}
@@ -1181,7 +1179,7 @@ function on_drag_start(e) {
 			_this.entity.origin_y = _this.entity.y;
 		}
 		
-		drag_in_progress = false;
+		drag_delay_running = false;
 	
 		if (select_box) {
 			objectContainer.removeChild(select_box);
@@ -1334,7 +1332,7 @@ function remove(uid, keep_entity) {
 		if (selected_entities[i].uid == uid) {
 			selected_entities.splice(i, 1);
 			if (active_context == 'drag_context' && move_selected) {
-				cancel_drag();
+				cancel_drag(true);
 			}
 			break;
 		}
@@ -1531,7 +1529,7 @@ function t2o(transparancy) {
 var last_draw_time, last_point;
 function on_left_click(e) {
 	if (active_context == "drag_context") {
-		cancel_drag();
+		cancel_drag(true);
 	}
 	var mouse_location = e.data.getLocalPosition(background_sprite);
 	if (!can_edit()) {
@@ -1628,7 +1626,7 @@ function on_left_click(e) {
 		hovering_over = undefined;
 		setup_mouse_events(on_eraser_move, on_eraser_end);
 	} else if (active_context == 'ping_context') {
-		if (!drag_in_progress) {
+		if (!drag_delay_running) {
 			deselect_all();
 		}
 		
@@ -4574,7 +4572,7 @@ function clear_selected() {
 	selected_entities = [];
 	undo_list.push(["remove", cleared_entities]);
 	if (active_context == "drag_context") {
-		cancel_drag();
+		cancel_drag(true);
 	}
 }
 
@@ -4819,7 +4817,7 @@ function transition(slide) {
 	}
 }
 
-function cancel_drag() {
+function cancel_drag(abort) {
 	clearTimeout(drag_timeout);
 	$('html,body').css('cursor', 'initial');
 	if (context_before_drag) {
@@ -4833,8 +4831,19 @@ function cancel_drag() {
 		dragged_entity.touchendoutside = undefined;
 		dragged_entity.mousemove = undefined;
 		dragged_entity.touchmove = undefined;
+		if (abort) {
+			if (move_selected && selected_entities.length > 0) {
+				for (var i in selected_entities) {
+					drag_entity(selected_entities[i], selected_entities[i].origin_x, selected_entities[i].origin_y);
+				}
+			} else {
+				drag_entity(dragged_entity.entity, dragged_entity.entity.origin_x, dragged_entity.entity.origin_y);
+			}		
+		}
 		dragged_entity = null;
 	}
+	dragged_entity = null;
+	move_selected = false;
 }
 
 function change_slide(slide) {
@@ -4842,7 +4851,7 @@ function change_slide(slide) {
 		return;
 	}
 	if (active_context == "drag_context") {
-		cancel_drag();
+		cancel_drag(true);
 	}
 	undo_list = [];
 	redo_list = [];
