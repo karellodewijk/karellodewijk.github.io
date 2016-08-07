@@ -1116,7 +1116,6 @@ function on_drag_start(e) {
 		}
 		active_context = "drag_context";
 	}
-	e.stopPropagation();
 	drag_timeout = setTimeout(function() {
 		
 		if (mouse_down_interrupted) {
