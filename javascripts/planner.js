@@ -1118,18 +1118,19 @@ function on_drag_start(e) {
 	}
 	e.stopPropagation();
 	drag_timeout = setTimeout(function() {
-		objectContainer.buttonMode = true;
-		dragged_entity = _this;
 		
-		var mouse_location = renderer.plugins.interaction.eventData.data.global;
-		last_drag_update = Date.now();
-		last_drag_position = [from_x_local(mouse_location.x), from_y_local(mouse_location.y)];
-				
 		if (mouse_down_interrupted) {
 			drag_in_progress = false;
 			deselect_all();
 			return;
 		}
+		
+		var mouse_location = renderer.plugins.interaction.eventData.data.global;
+		last_drag_update = Date.now();
+		last_drag_position = [from_x_local(mouse_location.x), from_y_local(mouse_location.y)];
+			
+		objectContainer.buttonMode = true;
+		dragged_entity = _this;
 		
 		if (is_room_locked && !my_user.role) {
 			if (_this.entity && _this.entity.type == 'note') {	
