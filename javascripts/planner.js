@@ -827,7 +827,7 @@ function init_video_triggers() {
 	//little bit of a hack to detect seeks, cause the seeked event doesn't work so well
 	$(".mejs-time-rail").on('mousedown', function() {
 		wait_for_seek(function() {
--			socket.emit("seek_video", room, video_progress(), get_server_time());
+			socket.emit("seek_video", room, video_progress(), get_server_time());
 			if (!video_paused) {
 				start_syncing();
 			}
@@ -1305,7 +1305,9 @@ function remove(uid, keep_entity) {
 			entity.container.menu.remove();
 		}
 		
-		objectContainer.removeChild(entity.container);
+		try { //TODO: work-around for pixi v3 bug
+			objectContainer.removeChild(entity.container);
+		} catch (e) {}
 		delete entity.container;
 		
 		if (entity.type == "icon") {
@@ -4461,7 +4463,6 @@ function undo() {
 						action[1][i][0][3] = room_data.slides[active_slide].entities[uid].rotation;
 					}
 					drag_entity(room_data.slides[active_slide].entities[uid], x, y, scale, rotation);
-					render_scene();
 					socket.emit('drag', room, uid, active_slide, x, y, scale, rotation);
 				}
 			}
@@ -4486,8 +4487,8 @@ function undo() {
 			selected_entities = new_selected_entities;
 			select_entities();
 			redo_list.push(action);
-			render_scene();
 		}
+		render_scene();
 	}
 }
 
@@ -4549,8 +4550,8 @@ function redo() {
 			selected_entities = new_selected_entities;
 			select_entities();
 			undo_list.push(action);
-			render_scene();
 		}
+		render_scene();
 	}	
 }
 
