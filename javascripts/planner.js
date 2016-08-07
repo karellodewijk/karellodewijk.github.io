@@ -1306,7 +1306,7 @@ function remove(uid, keep_entity) {
 	var entity = room_data.slides[active_slide].entities[uid];
 	if (entity && entity.container) {
 		if (dragged_entity && dragged_entity.entity && dragged_entity.entity.uid == uid) {
-			on_drag_end.call(dragged_entity)
+			cancel_drag(true);
 		}
 		
 		if (entity.type == "note") {
