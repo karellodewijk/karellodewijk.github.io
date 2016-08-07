@@ -882,7 +882,6 @@ function set_background(new_background, cb) {
 					$('#wotbase_map_select_container').show();
 				} else {
 					add_custom_map(background.path)
-					$("#map_select").selectpicker('refresh');
 					$('#wotbase_map_select_container').hide();
 					$('#map_select_container').show();
 				}
@@ -916,7 +915,6 @@ function set_background(new_background, cb) {
 			history[background.uid] = background;
 
 			add_custom_map(background.path)
-			$("#map_select").selectpicker('refresh');
 			$('#wotbase_map_select_container').hide();
 			$('#map_select_container').show();
 			
@@ -5016,7 +5014,6 @@ function add_custom_map(url) {
 		map_select.append(node);
 	}
 	map_select.val(url);
-	map_select.selectpicker('refresh');	
 } 
 
 function cleanup() {
@@ -5981,7 +5978,7 @@ $(document).ready(function() {
 		assets_loaded = true;
 		
 		socket.on('connect', function() { 
-			console.log('reconnecting')
+			console.log('Connecting/Reconnecting')
 			socket.emit('join_room', room, game);
 		});
 		

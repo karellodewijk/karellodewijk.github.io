@@ -213,7 +213,7 @@ PIXI.CanvasTransparencyHitArea.prototype.createTextureData = function (texture) 
     canvas.width = textureSource.width;
     canvas.height = textureSource.height;
 
-    var ctx = renderer.context;
+    var ctx = renderer.view.getContext("2d");
 
 	ctx.clearRect(0, 0, textureSource.width, textureSource.height);
 	ctx.drawImage(textureSource, 0, 0);
@@ -239,7 +239,7 @@ PIXI.CanvasTransparencyHitArea.prototype.isTextureTransparentAt = function(x, y)
     var index = (x + y * this.textureWidth) * 4 + 3;
 	
     // value 255 means fully opaque, < 255 means (at least partially) transparent
-    return this.textureData[index] < 255;
+    return this.textureData[index] < 1;
 };
 
 /**
