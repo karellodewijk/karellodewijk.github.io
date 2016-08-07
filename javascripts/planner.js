@@ -1261,7 +1261,6 @@ function on_drag_move(e) {
 
 function on_drag_end(e) {
 	limit_rate(15, drag_state, function() {});
-	objectContainer.buttonMode = false;
 	if (this.entity && Math.abs(this.entity.origin_x - this.entity.x) < EPSILON &&  Math.abs(this.entity.origin_y - this.entity.y) < EPSILON) {	
 		if (context_before_drag == 'remove_context') {
 			remove(this.entity.uid);
@@ -1292,13 +1291,6 @@ function on_drag_end(e) {
 	}
 
 	cancel_drag();
-	
-	if (this == select_box) {
-		make_resizable(select_box);
-		on_select_over.bind(select_box, e)();
-		on_selectbox_move.bind(select_box, e)();
-	}
-	
 	render_scene();
 }
 
@@ -2565,7 +2557,9 @@ function on_selectbox_move(e) {
 		
 		if (mouse_location.x < 0-x_margin || mouse_location.x > 1+x_margin || mouse_location.y < 0-y_margin || mouse_location.y > 1+y_margin)  {
 			on_select_out(e);
-			e.stopPropagation();
+			if (e) {
+				e.stopPropagation();
+			}
 			return;
 		}
 		
@@ -2616,7 +2610,9 @@ function on_selectbox_move(e) {
 			}
 		}
 	});
-	e.stopPropagation();
+	if (e) {
+		e.stopPropagation();
+	}
 }
 
 function on_select_over(e) {
@@ -4819,6 +4815,7 @@ function transition(slide) {
 
 function cancel_drag(abort) {
 	clearTimeout(drag_timeout);
+	objectContainer.buttonMode = false;
 	$('html,body').css('cursor', 'initial');
 	if (context_before_drag) {
 		active_context = context_before_drag;
@@ -4840,7 +4837,11 @@ function cancel_drag(abort) {
 				drag_entity(dragged_entity.entity, dragged_entity.entity.origin_x, dragged_entity.entity.origin_y);
 			}		
 		}
-		dragged_entity = null;
+		if (dragged_entity == select_box) {
+			make_resizable(select_box);
+			on_select_over.bind(select_box)();
+			on_selectbox_move.bind(select_box)();
+		}
 	}
 	dragged_entity = null;
 	move_selected = false;
