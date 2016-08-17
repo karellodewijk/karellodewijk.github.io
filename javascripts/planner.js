@@ -6,10 +6,12 @@ if (location.pathname.indexOf('planner3') != -1) {
 	is_video_replay = true;
 }
 
+/*
 if (is_video_replay) {
 	//servers = ['localhost'];
 	servers = ['server2.wottactic.eu'];
 }
+*/
 
 var image_host;
 function is_safari() {
@@ -174,7 +176,7 @@ var MIN_POLYGON_END_DISTANCE_TOUCH = 0.025;
 var MIN_TRACK_MOVE_DISTANCE_SQ = 0.01 * 0.01;
 var ICON_SCALE = 0.025/20;
 var NOTE_SCALE = 0.03;
-var THICKNESS_SCALE = 0.0015;
+var THICKNESS_SCALE = 1;
 var FONT_SCALE = 0.002;
 var TEXT_QUALITY = 8;
 var ARROW_SCALE = 0.008;
@@ -292,7 +294,10 @@ var temp_draw_canvas;
 var draw_context;
 var temp_draw_context;
 var grid_layer;
+var zoom_level = 1;
+var control_camera = false;
 
+//these variables are only for the video replay room
 var offset = 0; // time offset from the server in ms 
 var sync_start_time;
 var progress = 0;
@@ -413,10 +418,10 @@ function paste() {
 	}
 	
 	select_entities();
-	undo_list.push(["add", new_entities]);	
+	undo_list.push(clone_action(["add", new_entities]));	
 }
 
-function zoom(amount, isZoomIn, e) {
+function zoom(amount, isZoomIn, e) {	
 	var direction = isZoomIn ? 1 : -1;
 	var factor = (1 + amount * direction);
 	
@@ -428,6 +433,20 @@ function zoom(amount, isZoomIn, e) {
 	objectContainer.x -= x_abs(from_x_local(mouse_location.x) * (factor - 1) * objectContainer.scale.x);
 	objectContainer.y -= y_abs(from_y_local(mouse_location.y) * (factor - 1) * objectContainer.scale.y);
 
+	correct();
+	
+	zoom_level = size_y / (background_sprite.height * objectContainer.scale.y);
+}
+
+function emit_pan_zoom() {
+	socket.emit('pan_zoom', room, zoom_level, from_x_local_vect(objectContainer.x), from_y_local_vect(objectContainer.y));
+}
+
+function pan_zoom(new_zoom_level, x, y) {
+	var zoom_amount = (1 / new_zoom_level) - (1 / zoom_level);
+	zoom(Math.abs(zoom_amount), zoom_amount > 0);
+	objectContainer.x = to_x_local_vect(x);
+	objectContainer.y = to_y_local_vect(y);
 	correct();
 }
 
@@ -511,29 +530,24 @@ function resize_renderer(new_size_x, new_size_y) {
 	
 	var last_size_x = size_x;
 	var last_size_y = size_y;
-	size_x = new_size_y;
-	size_y = new_size_y;	
-	objectContainer.scale.x *= size_y/last_size_y;
-	objectContainer.scale.y *= size_y/last_size_y;
+	size_x = new_size_x;
+	size_y = new_size_y;
 	
 	draw_canvas.width = new_size_x;
 	draw_canvas.height = new_size_y;
 	temp_draw_canvas.width = new_size_x;
 	temp_draw_canvas.height = new_size_y;
+
+	objectContainer.scale.x *= size_y/last_size_y;
+	objectContainer.scale.y *= size_y/last_size_y;
 	
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-
-	if (background_sprite.texture && (zoom_level - 1) < 0.0000001) {
-		background_sprite.width = new_size_x / objectContainer.scale.x;
-		background_sprite.height = new_size_y / objectContainer.scale.y;
-	}
-
 	grid_layer.width = background_sprite.width;
 	grid_layer.height = background_sprite.height;
-	
-	renderer.resize(new_size_x, new_size_y);
+
 	$("#edit_window").css('width', '' + new_size_x + 'px');
 	$("#edit_window").css('height', '' + new_size_y + 'px');
+
+	renderer.resize(new_size_x, new_size_y);
 	
 	zoom(0,true);
 };
@@ -625,9 +639,19 @@ function to_x_local(x) {
 	return objectContainer.x + (x * background_sprite.width) * objectContainer.scale.x;
 }
 
+//relative -> local, only scaling, no offset
+function to_x_local_vect(x) {
+	return (x * background_sprite.width) * objectContainer.scale.x;
+}
+
 //local -> relative
 function from_x_local(x) {
 	return (x - objectContainer.x) / objectContainer.scale.x / background_sprite.width;
+}
+
+//local -> relative, only scaling, no offset
+function from_x_local_vect(x) {
+	return x / objectContainer.scale.x / background_sprite.width;
 }
 
 //relative -> local
@@ -635,9 +659,19 @@ function to_y_local(y) {
 	return objectContainer.y +(y * background_sprite.height) * objectContainer.scale.y;
 }
 
+//relative -> local, only scaling, no offset
+function to_y_local_vect(y) {
+	return (y * background_sprite.height) * objectContainer.scale.y;
+}
+
 //local -> relaive
 function from_y_local(y) {
 	return (y - objectContainer.y) / objectContainer.scale.y / background_sprite.height;
+}
+
+//local -> relaive, only scaling, no offset
+function from_y_local_vect(y) {
+	return y / objectContainer.scale.y / background_sprite.height;
 }
 
 function mouse_x_abs(x) {
@@ -866,7 +900,7 @@ function set_background(new_background, cb) {
 				background = new_background;
 				history[background.uid] = background;
 				background_sprite.texture = texture;
-				window.onresize();				
+		
 				room_data.slides[active_slide].entities[new_background.uid] = new_background;
 				resources_loading--;
 				
@@ -891,6 +925,12 @@ function set_background(new_background, cb) {
 				} else {
 					$("#map_size").text("");
 				}
+				
+				window.onresize();		
+
+				background_sprite.width = renderer.view.width / objectContainer.scale.x;
+				background_sprite.height = renderer.view.height / objectContainer.scale.y;
+				zoom_level = size_y / (background_sprite.height * objectContainer.scale.y);
 				
 				render_scene();
 				if (cb)	cb(true);
@@ -928,6 +968,9 @@ function set_background(new_background, cb) {
 			empty_backround.endFill();
 			background_sprite.texture = empty_backround.generateTexture();
 			$("#map_size").text("");
+			
+			background_sprite.width = renderer.view.width / objectContainer.scale.x;
+			background_sprite.height = renderer.view.height / objectContainer.scale.y;
 			
 			var video_type = get_video_type(new_background.path)
 			
@@ -1059,6 +1102,9 @@ function set_background(new_background, cb) {
 		background_sprite.texture = empty_backround.generateTexture();
 		$("#map_size").text("");
 
+		background_sprite.width = renderer.view.width / objectContainer.scale.x;
+		background_sprite.height = renderer.view.height / objectContainer.scale.y;
+		
 		window.onresize();
 		render_scene();	
 		if (cb)	cb(true);
@@ -1093,7 +1139,7 @@ function on_drag_start(e) {
 		if (_this.entity) {
 			deselect_all();
 			remove(_this.entity.uid);
-			undo_list.push(["remove", [_this.entity]]);
+			undo_list.push(clone_action(["remove", [_this.entity]]));
 			socket.emit('remove', room, _this.entity.uid, active_slide);
 			if (active_context == "eraser_context") {
 				on_left_click(e);
@@ -1262,7 +1308,7 @@ function on_drag_end(e) {
 	if (this.entity && Math.abs(this.entity.origin_x - this.entity.x) < EPSILON &&  Math.abs(this.entity.origin_y - this.entity.y) < EPSILON) {	
 		if (context_before_drag == 'remove_context') {
 			remove(this.entity.uid);
-			undo_list.push(["remove", [this.entity]]);
+			undo_list.push(clone_action(["remove", [this.entity]]));
 			socket.emit('remove', room, this.entity.uid, active_slide);
 		} else if (this.entity.type == 'note') {
 			toggle_note.call(this, e);
@@ -1273,19 +1319,19 @@ function on_drag_end(e) {
 		if (selected_entities.length > 0) {
 			for (var i in selected_entities) {
 				var origin = [selected_entities[i].origin_x, selected_entities[i].origin_y];
-				undo_action[1].push([origin, selected_entities[i]]);
+				undo_action[1].push([origin, selected_entities[i].uid]);
 				delete selected_entities[i].origin_x;
 				delete selected_entities[i].origin_y;
 				socket.emit("drag", room, selected_entities[i].uid, active_slide, selected_entities[i].x, selected_entities[i].y);
 			}
 		} else {
 			var origin = [this.entity.origin_x, this.entity.origin_y];
-			undo_action[1].push([origin, this.entity]);
+			undo_action[1].push([origin, this.entity.uid]);
 			delete this.entity.origin_x;
 			delete this.entity.origin_y;
 			socket.emit("drag", room, this.entity.uid, active_slide, this.entity.x, this.entity.y);
 		}
-		undo_list.push(undo_action);
+		undo_list.push(clone_action(undo_action));
 	}
 
 	cancel_drag();
@@ -1303,9 +1349,7 @@ function remove(uid, keep_entity) {
 			entity.container.menu.remove();
 		}
 		
-		try { //TODO: work-around for pixi v3 bug
-			objectContainer.removeChild(entity.container);
-		} catch (e) {}
+		objectContainer.removeChild(entity.container);
 		delete entity.container;
 		
 		if (entity.type == "icon") {
@@ -1379,7 +1423,6 @@ var ping_texture_atlas = {}
 function ping(x, y, color, size) {	
 	var sprite = new PIXI.Sprite(ping_texture);
 	sprite.tint = color;
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 	
 	sprite.anchor.set(0.5);
 	sprite.height = y_abs(0.01) * (size/10) * zoom_level;
@@ -1419,15 +1462,15 @@ function setup_mouse_events(on_move, on_release) {
 
 function align_note_text(entity) {
 	if (entity.container) {
-		var rect = renderer.view.getBoundingClientRect();
-		var x = rect.left + to_x_local(entity.x) + entity.container.width * objectContainer.scale.x;
-		var y = rect.top + to_y_local(entity.y);
-
 		if (entity.container.is_open) {
+			var rect = renderer.view.getBoundingClientRect();
+			var x = rect.left + to_x_local(entity.x) + entity.container.width * objectContainer.scale.x;
+			var y = rect.top + to_y_local(entity.y);
 			entity.container.menu.attr('style', 'top:' + y +'px; left:' + x + 'px; display:block; z-index:20');
 		} else {
-			entity.container.menu.attr('style', 'top:' + y +'px; left:' + x + 'px; display:block; z-index:20; visibility: hidden;');
+			entity.container.menu.css('visibility', 'hidden');
 		}
+
 	}
 }
 
@@ -1437,8 +1480,7 @@ var drawArrow=function(ctx,x1,y1,x2,y2,style,which,angle,d) {
 	'use strict';
 	// calculate the angle of the line
 	var lineangle=Math.atan2(y2-y1,x2-x1);
-	
-	
+
 	var h=Math.abs(d/Math.cos(angle));
 	var angle1=lineangle+Math.PI+angle;
 	var topx=x2+Math.cos(angle1)*h;
@@ -1454,10 +1496,12 @@ var drawArrow=function(ctx,x1,y1,x2,y2,style,which,angle,d) {
 	var cpx=(topx+x1+botx)/3;
 	var cpy=(topy+y1+boty)/3;
 	ctx.quadraticCurveTo(cpx,cpy,topx,topy);
-		
-	ctx.stroke();	
+	
+//	var temp = ctx.shadowBlur;
+//	ctx.shadowBlur = 0;
+	ctx.stroke();
 	ctx.fill();
-
+//	ctx.shadowBlur = temp;
 }
 
 function hexToRGBA(hex, alpha) {
@@ -1470,7 +1514,8 @@ function hexToRGBA(hex, alpha) {
 function init_canvas(ctx, line_thickness, line_color, style, fill_opacity, fill_color, outline_opacity) {
 	var line_color = '#' + ('00000' + (line_color | 0).toString(16)).substr(-6); 
 
-	ctx.lineWidth = line_thickness * (size_x/1000);
+	ctx.lineWidth = line_thickness * (size_y/1000) * THICKNESS_SCALE;
+			
 	ctx.strokeStyle = line_color;
 	ctx.fillStyle = line_color;
 	
@@ -1542,8 +1587,7 @@ function on_left_click(e) {
 	if (active_context == 'draw_context') {
 		setup_mouse_events(on_draw_move, on_draw_end);
 		point_buffer = [];
-		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-		new_drawing = {uid : newUid(), type: 'drawing', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:draw_color, alpha:1, thickness:parseFloat(draw_thickness) * zoom_level, end:$('#draw_end_type').find('.active').attr('data-end'), style:$('#draw_type').find('.active').attr('data-style'), path:[[0, 0]], end_size:draw_end_size};
+		new_drawing = {uid : newUid(), type: 'drawing', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:draw_color, alpha:1, thickness:parseFloat(draw_thickness) * zoom_level, end:$('#draw_end_type').find('.active').attr('data-end'), style:$('#draw_type').find('.active').attr('data-style'), path:[[0, 0]], end_size:draw_end_size*zoom_level, draw_zoom_level:zoom_level};
 		init_canvases(parseFloat(draw_thickness), new_drawing.color, new_drawing.style);
 		draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
 		last_draw_time = Date.now();
@@ -1555,8 +1599,7 @@ function on_left_click(e) {
 	} else if (active_context == 'line_context') {
 		if (!new_drawing) {
 			setup_mouse_events(on_line_move, on_line_end);
-			var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-			new_drawing = {uid : newUid(), type: 'line', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:line_color, alpha:1, thickness:parseFloat(line_thickness) * zoom_level, path:[[0, 0]], end:$('#line_end_type').find('.active').attr('data-end'), style:$('#line_type').find('.active').attr('data-style'), end_size:line_end_size};
+			new_drawing = {uid : newUid(), type: 'line', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], color:line_color, alpha:1, thickness:parseFloat(line_thickness) * zoom_level, path:[[0, 0]], end:$('#line_end_type').find('.active').attr('data-end'), style:$('#line_type').find('.active').attr('data-style'), end_size:line_end_size*zoom_level, draw_zoom_level:zoom_level};
 			init_canvases(parseFloat(line_thickness), new_drawing.color, new_drawing.style);
 			draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
 			just_activated = true;
@@ -1564,8 +1607,7 @@ function on_left_click(e) {
 	} else if (active_context == 'polygon_context') {
 		if (!new_drawing) {
 			setup_mouse_events(on_line_move, on_polygon_end);
-			var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-			new_drawing = {uid : newUid(), type: 'polygon', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], outline_thickness:polygon_outline_thickness * zoom_level, outline_color:polygon_outline_color, outline_opacity: t2o(polygon_outline_transparancy), fill_color:polygon_fill_color, fill_opacity: t2o(polygon_fill_transparancy), alpha:1, path:[[0,0]], style:$('#polygon_type').find('.active').attr('data-style')};
+			new_drawing = {uid : newUid(), type: 'polygon', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], outline_thickness:polygon_outline_thickness * zoom_level, outline_color:polygon_outline_color, outline_opacity: t2o(polygon_outline_transparancy), fill_color:polygon_fill_color, fill_opacity: t2o(polygon_fill_transparancy), alpha:1, path:[[0,0]], style:$('#polygon_type').find('.active').attr('data-style'), draw_zoom_level:zoom_level};
 
 			init_canvases(polygon_outline_thickness, new_drawing.outline_color, new_drawing.style, new_drawing.fill_opacity, new_drawing.fill_color, new_drawing.outline_opacity);
 			draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
@@ -1573,9 +1615,9 @@ function on_left_click(e) {
 			var end_circle_radius = (e.type == "touchstart") ? MIN_POLYGON_END_DISTANCE_TOUCH : MIN_POLYGON_END_DISTANCE;
 			
 			graphics = new PIXI.Graphics();
-			graphics.lineStyle(new_drawing.outline_thickness * x_abs(THICKNESS_SCALE), new_drawing.outline_color, new_drawing.outline_opacity);
+			graphics.lineStyle(new_drawing.outline_thickness * THICKNESS_SCALE, new_drawing.outline_color, new_drawing.outline_opacity);
 			graphics.moveTo(x_abs(mouse_x_rel(mouse_location.x)), y_abs(mouse_y_rel(mouse_location.y)));
-			graphics.drawShape(new PIXI.Circle(x_abs(mouse_x_rel(mouse_location.x)), y_abs(mouse_y_rel(mouse_location.y)), x_abs(end_circle_radius)));
+			graphics.drawShape(new PIXI.Circle(x_abs(mouse_x_rel(mouse_location.x)), y_abs(mouse_y_rel(mouse_location.y)), size_y * end_circle_radius * zoom_level));
 			objectContainer.addChild(graphics);
 			
 			just_activated = true;
@@ -1583,9 +1625,9 @@ function on_left_click(e) {
 		}
 	} else if (active_context == 'curve_context') {
 		if (!new_drawing) {
-			var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-			new_drawing = {uid : newUid(), type: 'curve', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y),  scale:[1,1], color:curve_color, alpha:1, thickness:parseFloat(curve_thickness) * zoom_level, path:[[0, 0]], end:$('#curve_end_type').find('.active').attr('data-end'), style:$('#curve_type').find('.active').attr('data-style'), end_size:curve_end_size};
+			new_drawing = {uid : newUid(), type: 'curve', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y),  scale:[1,1], color:curve_color, alpha:1, thickness:parseFloat(curve_thickness) * zoom_level, path:[[0, 0]], end:$('#curve_end_type').find('.active').attr('data-end'), style:$('#curve_type').find('.active').attr('data-style'), end_size:curve_end_size*zoom_level, draw_zoom_level:zoom_level};
 
+			point_buffer = [to_x_local(mouse_x_rel(mouse_location.x)), to_y_local(mouse_y_rel(mouse_location.y))];
 			init_canvases(parseFloat(curve_thickness), new_drawing.color, new_drawing.style);
 			draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
 
@@ -1594,21 +1636,21 @@ function on_left_click(e) {
 		}
 	} else if (active_context == 'area_context') {
 		if (!new_drawing) {
-			setup_mouse_events(on_curve_move, on_area_end);
-			var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-			new_drawing = {uid : newUid(), type: 'area', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], outline_thickness:parseFloat(area_outline_thickness) * zoom_level, outline_color:area_outline_color, outline_opacity: t2o(area_outline_transparancy), fill_color:area_fill_color, fill_opacity: t2o(area_fill_transparancy), alpha:1, path:[[0, 0]], style:$('#area_type').find('.active').attr('data-style')};
-			
+			new_drawing = {uid : newUid(), type: 'area', x:mouse_x_rel(mouse_location.x), y:mouse_y_rel(mouse_location.y), scale:[1,1], outline_thickness:parseFloat(area_outline_thickness) * zoom_level, outline_color:area_outline_color, outline_opacity: t2o(area_outline_transparancy), fill_color:area_fill_color, fill_opacity: t2o(area_fill_transparancy), alpha:1, path:[[0, 0]], style:$('#area_type').find('.active').attr('data-style'), draw_zoom_level:zoom_level};
+
+			point_buffer = [to_x_local(mouse_x_rel(mouse_location.x)), to_y_local(mouse_y_rel(mouse_location.y))];
 			init_canvases(parseFloat(area_outline_thickness), new_drawing.outline_color, new_drawing.style, new_drawing.fill_opacity, new_drawing.fill_color, new_drawing.outline_opacity);
 			draw_context.moveTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
-		
+
 			var end_circle_radius = (e.type == "touchstart") ? MIN_POLYGON_END_DISTANCE_TOUCH : MIN_POLYGON_END_DISTANCE;
 			
 			graphics = new PIXI.Graphics();
-			graphics.lineStyle(new_drawing.outline_thickness * x_abs(THICKNESS_SCALE), new_drawing.outline_color, new_drawing.outline_opacity);
+			graphics.lineStyle(new_drawing.outline_thickness * THICKNESS_SCALE, new_drawing.outline_color, new_drawing.outline_opacity);
 			graphics.moveTo(x_abs(mouse_x_rel(mouse_location.x)), y_abs(mouse_y_rel(mouse_location.y)));
-			graphics.drawShape(new PIXI.Circle(x_abs(mouse_x_rel(mouse_location.x)), y_abs(mouse_y_rel(mouse_location.y)), x_abs(end_circle_radius)));
+			graphics.drawShape(new PIXI.Circle(x_abs(mouse_x_rel(mouse_location.x)), y_abs(mouse_y_rel(mouse_location.y)), size_y * end_circle_radius * zoom_level));
 			objectContainer.addChild(graphics);
 			
+			setup_mouse_events(on_curve_move, on_area_end);
 			just_activated = true;
 			render_scene();
 		}
@@ -1669,7 +1711,7 @@ function on_eraser_move(e) {
 	limit_rate(15, eraser_state, function() {
 		if (hovering_over && room_data.slides[active_slide].entities[hovering_over.uid]) {
 			remove(hovering_over.uid);
-			undo_list.push(["remove", [hovering_over]]);
+			undo_list.push(clone_action(["remove", [hovering_over]]));
 			socket.emit('remove', room, hovering_over.uid, active_slide);
 		}
 	});
@@ -1708,8 +1750,8 @@ function on_note_end(e) {
 	var mouse_location = e.data.getLocalPosition(background_sprite);	
 	var x = mouse_x_rel(mouse_location.x);
 	var y = mouse_y_rel(mouse_location.y);
-	var note = {uid:newUid(), type: 'note', x:x, y:y, scale:[1,1], color:text_color, alpha:1, text:"", font_size:font_size, font:'Arial'};
-	undo_list.push(["add", [note]]);
+	var note = {uid:newUid(), type: 'note', x:x, y:y, scale:[1,1], color:text_color, alpha:1, text:"", font_size:font_size, font:'Arial', height:zoom_level};
+	undo_list.push(clone_action(["add", [note]]));
 	create_note(note);
 	note.container.is_open = true;
 	align_note_text(note);
@@ -1727,14 +1769,10 @@ function create_note(note) {
 	var sprite = new PIXI.Sprite(texture);
 
 	var ratio = sprite.width / sprite.height;
-
-	sprite.height = x_abs(NOTE_SCALE);
+	
+	sprite.height = x_abs(NOTE_SCALE) * note.height; 
 	sprite.width = sprite.height * ratio;
-	
-	//sprite.height = y_abs(NOTE_SCALE);
-	//sprite.width = x_abs(NOTE_SCALE);
-	
-	//note.container = new PIXI.Container();
+		
 	sprite.x = x_abs(note.x);
 	sprite.y = y_abs(note.y);
 
@@ -1742,7 +1780,7 @@ function create_note(note) {
 	note.container.entity = note; 
 	note.container.is_open = false;
 
-	note.container.menu = $('<div class="popover fade right in" role="tooltip"><div style="margin-top: -15px;" class="arrow"></div><h3 style="display: none;" class="popover-title"></h3><div class="popover-content"><textarea style="height:400px; width:300px;" id="note_box"></textarea><br /><span id="notification_area" style="float: left;" hidden>Saved</span><div style="float:right; padding:3px;"></div></div></div>');
+	note.container.menu = $('<div class="popover fade right in" role="tooltip"><h3 style="display: none;" class="popover-title"></h3><div class="popover-content"><textarea style="height:400px; width:300px;" id="note_box"></textarea><br /><span id="notification_area" style="float: left;" hidden>Saved</span><div style="float:right; padding:3px;"></div></div></div>');
 	
 	$("#note_box", note.container.menu).val(note.text);
 	
@@ -1768,7 +1806,7 @@ function create_note(note) {
 		
 	make_draggable(note.container);	
 	objectContainer.addChild(note.container);
-		
+
 	render_scene();
 	sprite.texture.on('update', function() {	
 		render_scene();
@@ -1851,158 +1889,113 @@ function on_track_move(e) {
 }
 
 function on_area_end(e) {
-	try {
-		var mouse_location = e.data.getLocalPosition(background_sprite);	
-		var x = mouse_x_rel(mouse_location.x);
-		var y = mouse_y_rel(mouse_location.y);
-		//x = Math.max(0, x);
-		//y = Math.max(0, y);
-		//x = Math.min(1, x);
-		//y = Math.min(1, y);
-		x -= new_drawing.x;
-		y -= new_drawing.y;
-	} catch (e) {}
+	var mouse_location = renderer.plugins.interaction.eventData.data.global;
+	var new_x = mouse_location.x;
+	var new_y = mouse_location.y;
 	
-	var distance_to_start_sq = x*x + y*y;
+	var distance_to_start_sq = Math.pow(new_drawing.x - from_x_local(new_x),2) 
+							 + Math.pow(new_drawing.y - from_y_local(new_y),2);
 
 	var end_circle_radius = (e.type == "touchend" || e.type == "touchendoutside") ? MIN_POLYGON_END_DISTANCE_TOUCH : MIN_POLYGON_END_DISTANCE;
 
 	if (just_activated) {
-		var a;
-		if (new_drawing.path.length == 1) {
-			a = [to_x_local(new_drawing.x), to_y_local(new_drawing.y)];
-		} else {
-			a = [to_x_local(new_drawing.path[new_drawing.path.length-2][0] + new_drawing.x),
-				 to_y_local(new_drawing.path[new_drawing.path.length-2][1] + new_drawing.y)];
-		}
-		var b = [to_x_local(x + new_drawing.x), to_y_local(y + new_drawing.y)];
-		var distance_sq = Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2)
 		just_activated = false;
-		if (distance_sq < 0.01) return;
+		if (distance_to_start_sq < EPSILON) return;
 	}
 	
-	if (distance_to_start_sq < (end_circle_radius*end_circle_radius)) {
-		setup_mouse_events(undefined, undefined);
+	if (distance_to_start_sq < (end_circle_radius*end_circle_radius) * zoom_level ) {
+		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);	
+		var end_points = smooth_draw(temp_draw_context, point_buffer, true);
+		temp_draw_context.fill();
+		draw_end(temp_draw_context, new_drawing, end_points[0], end_points[1]);
 		
-		new_drawing.path.push([0, 0]);
-
-		draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
-		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);
-		
-		draw_context.beginPath();
-		draw_path2(draw_context, null, new_drawing, new_drawing.path.length, 0, new_drawing.path.length, false, true);
-		draw_context.fill();
-		
-		var success = canvas2container(draw_context, draw_canvas, new_drawing);
+		var success = canvas2container(temp_draw_context, temp_draw_canvas, new_drawing);
 		if (success) {
 			emit_entity(new_drawing);
-			undo_list.push(["add", [new_drawing]]);
+			undo_list.push(clone_action(["add", [new_drawing]]));
 		}
-		
-		objectContainer.removeChild(graphics);
-		render_scene();
-		
+
+		objectContainer.removeChild(graphics);	
+		render_scene();	
 		stop_drawing();
 		setup_mouse_events(undefined, undefined);
-		new_drawing = null;
-	
-	} else {
-		new_drawing.path.push([x, y]);
+		new_drawing = null;	
 		
-		if (new_drawing.path.length > 9) {
-			var n = 30;
-			var start_index = Math.max(new_drawing.path.length-10, 0);
-			var stop_index = new_drawing.path.length;
-			draw_path2(null, draw_context, new_drawing, 30, start_index, stop_index);
-		}
+	} else {
+		point_buffer.push(mouse_location.x, mouse_location.y);
+		new_drawing.path.push([from_x_local(new_x) - new_drawing.x, from_y_local(new_y) - new_drawing.y]);
+		
 		on_curve_move(e);
 	}
 }
 
 var curve_state = {};
+var point_buffer = []
 function on_curve_move(e) {
-	limit_rate(15, curve_state, function() {
-		var mouse_location = e.data.getLocalPosition(background_sprite);
-		var x = mouse_x_rel(mouse_location.x);
-		var y = mouse_y_rel(mouse_location.y);
-		var new_x = x - new_drawing.x;
-		var new_y = y - new_drawing.y;
-		new_drawing.path.push([new_x, new_y]);
+	limit_rate(20, curve_state, function() {
+		var mouse_location = renderer.plugins.interaction.eventData.data.global;
 
+		var new_x = mouse_location.x;
+		var new_y = mouse_location.y;	
+				
 		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);	
-		var n = 30;
-		var start_index = Math.max(new_drawing.path.length-10, 0);
-		var stop_index = new_drawing.path.length;
+		point_buffer.push(new_x, new_y);
+		var end_points = smooth_draw(temp_draw_context, point_buffer);
+		point_buffer.pop();
+		point_buffer.pop();
 
-		temp_draw_context.beginPath();
-		draw_path2(temp_draw_context, null, new_drawing, 30, start_index, stop_index, new_drawing.end);
-		
+		new_drawing.path.push([from_x_local(mouse_location.x) - new_drawing.x, from_y_local(mouse_location.y) - new_drawing.y]);
+		draw_end(temp_draw_context, new_drawing, end_points[0], end_points[1]);
 		new_drawing.path.pop();
+		
+		last_point = [new_x, new_y];
 	});
 }
 
 function on_curve_end(e) {
-	var mouse_location = e.data.getLocalPosition(background_sprite);	
-	var x = mouse_x_rel(mouse_location.x);
-	var y = mouse_y_rel(mouse_location.y);
-	var new_x = x - new_drawing.x;
-	var new_y = y - new_drawing.y;
-	
-	var last_x, last_y;
-	if (new_drawing.path.length > 0) {
-		last_x = new_drawing.path[new_drawing.path.length-1][0];
-		last_y = new_drawing.path[new_drawing.path.length-1][1];
-	} else {
-		last_x = 0;
-		last_y = 0;
-	}
+	var mouse_location = renderer.plugins.interaction.eventData.data.global;
+	var new_x = mouse_location.x;
+	var new_y = mouse_location.y;
 
-	var distance_to_last_sq = (new_x - last_x) * (new_x - last_x) + (new_y - last_y) * (new_y - last_y);
-	
+	var distance_to_last_sq = Math.pow(from_x_local(new_x) - new_drawing.x - new_drawing.path[new_drawing.path.length-1][0],2) 
+							+ Math.pow(from_y_local(new_y) - new_drawing.y - new_drawing.path[new_drawing.path.length-1][1],2);
+
+
 	if (just_activated) {
 		just_activated = false;
-		if (distance_to_last_sq < 0.01) return;
+		if (distance_to_last_sq < EPSILON) return;
 	}
 	
-	var end_circle_radius = (e.type == "touchend" || e.type == "touchendoutside" || e.type == "touchstart" || e.type == "touchstartoutside") ? MIN_POLYGON_END_DISTANCE_TOUCH : MIN_POLYGON_END_DISTANCE;
-	
-	
-	if (distance_to_last_sq < (end_circle_radius*end_circle_radius)) {	
-		draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
+	var end_circle_radius = (e.type == "touchend" || e.type == "touchendoutside" || e.type == "touchstart" || e.type == "touchstartoutside") ? MIN_POLYGON_END_DISTANCE_TOUCH : MIN_POLYGON_END_DISTANCE;	
+	if (distance_to_last_sq < (end_circle_radius*end_circle_radius)*zoom_level) {	
 		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);	
 
-		draw_path2(draw_context, null, new_drawing, new_drawing.path.length, 0, new_drawing.path.length, new_drawing.end);		
-		
-		var success = canvas2container(draw_context, draw_canvas, new_drawing);
+		var end_points = smooth_draw(temp_draw_context, point_buffer);
+		draw_end(temp_draw_context, new_drawing, end_points[0], end_points[1]);
+				
+		var success = canvas2container(temp_draw_context, temp_draw_canvas, new_drawing);
 		if (success) {
 			emit_entity(new_drawing);
-			undo_list.push(["add", [new_drawing]]);
+			undo_list.push(clone_action(["add", [new_drawing]]));
 		}
-		
 		objectContainer.removeChild(graphics);
-		render_scene();
 		
+		render_scene();	
 		stop_drawing();
 		setup_mouse_events(undefined, undefined);
 		new_drawing = null;
 	} else {
-		new_drawing.path.push([new_x, new_y]);
-		objectContainer.removeChild(graphics);
-		
+		point_buffer.push(mouse_location.x, mouse_location.y);
+		new_drawing.path.push([from_x_local(new_x) - new_drawing.x, from_y_local(new_y) - new_drawing.y]);
+
+		objectContainer.removeChild(graphics);		
 		graphics = new PIXI.Graphics();
-		graphics.lineStyle(new_drawing.thickness * x_abs(THICKNESS_SCALE), new_drawing.color, 1);
-		graphics.moveTo(x_abs(mouse_x_rel(mouse_location.x)), y_abs(mouse_y_rel(mouse_location.y)));
-		graphics.drawShape(new PIXI.Circle(x_abs(mouse_x_rel(mouse_location.x)), y_abs(mouse_y_rel(mouse_location.y)), x_abs(end_circle_radius)));
+		graphics.lineStyle(new_drawing.thickness * THICKNESS_SCALE, new_drawing.color, 1);
+		graphics.moveTo(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)));
+		graphics.drawShape(new PIXI.Circle(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)), size_y * end_circle_radius * zoom_level));
 		objectContainer.addChild(graphics);
-		render_scene();
+		render_scene();	
 		
-		if (new_drawing.path.length > 9) {
-			draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
-			var n = 30;
-			var start_index = Math.max(new_drawing.path.length-10, 0);
-			var stop_index = new_drawing.path.length;
-			draw_path2(null, draw_context, new_drawing, 30, start_index, stop_index);
-		}
 		on_curve_move(e);
 	}
 }
@@ -2012,10 +2005,6 @@ function on_polygon_end(e) {
 		var mouse_location = e.data.getLocalPosition(background_sprite);	
 		var x = mouse_x_rel(mouse_location.x);
 		var y = mouse_y_rel(mouse_location.y);
-		//x = Math.max(0, x);
-		//y = Math.max(0, y);
-		//x = Math.min(1, x);
-		//y = Math.min(1, y);
 		x -= new_drawing.x;
 		y -= new_drawing.y;
 	} catch (e) {}
@@ -2039,7 +2028,7 @@ function on_polygon_end(e) {
 		if (distance_sq < 0.01) return;
 	}
 	
-	if (distance_to_start_sq < (end_circle_radius*end_circle_radius)) {
+	if (distance_to_start_sq < (end_circle_radius*end_circle_radius) * zoom_level) {
 		new_drawing.path.push([0, 0]);
 		draw_context.lineTo(to_x_local(new_drawing.x), to_y_local(new_drawing.y));
 		draw_context.stroke();
@@ -2048,7 +2037,7 @@ function on_polygon_end(e) {
 		var success = canvas2container(draw_context, draw_canvas, new_drawing);
 		if (success) {
 			emit_entity(new_drawing);
-			undo_list.push(["add", [new_drawing]]);
+			undo_list.push(clone_action(["add", [new_drawing]]));
 		}
 		
 		objectContainer.removeChild(graphics);
@@ -2068,7 +2057,7 @@ function on_polygon_end(e) {
 
 function draw_shape(outline_thickness, outline_opacity, outline_color, fill_opacity, fill_color, shape) {
 	var graphic = new PIXI.Graphics();
-	graphic.lineStyle(outline_thickness * x_abs(THICKNESS_SCALE), outline_color, outline_opacity);
+	graphic.lineStyle(outline_thickness * THICKNESS_SCALE, outline_color, outline_opacity);
 	graphic.beginFill(fill_color, fill_opacity);
 	graphic.drawShape(shape);
 	graphic.endFill();
@@ -2211,18 +2200,17 @@ function on_circle_end(e) {
 						   Math.pow(to_y_local(left_click_origin[1]) - to_y_local(yrel), 2));
 	}
 
-	
 	temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);	
 	temp_draw_context.beginPath();
 	temp_draw_context.arc(to_x_local(center_x), to_y_local(center_y), radius, 0, 2*Math.PI);
 	temp_draw_context.fill();
 	temp_draw_context.stroke();
 
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);	
-	var new_shape = {uid:newUid(), type:'circle', x:center_x, y:center_y, radius:y_rel(radius*zoom_level), outline_thickness:circle_outline_thickness * zoom_level, outline_color:circle_outline_color, outline_opacity: t2o(circle_outline_transparancy), fill_opacity: t2o(circle_fill_transparancy), fill_color:circle_fill_color, alpha:1, style:$('#circle_type').find('.active').attr('data-style')};
+	var new_shape = {uid:newUid(), type:'circle', x:center_x, y:center_y, radius:from_y_local_vect(radius), outline_thickness:circle_outline_thickness * zoom_level, outline_color:circle_outline_color, outline_opacity: t2o(circle_outline_transparancy), fill_opacity: t2o(circle_fill_transparancy), fill_color:circle_fill_color, alpha:1, style:$('#circle_type').find('.active').attr('data-style'), draw_zoom_level:zoom_level};
 	new_drawing = undefined;
 	
 	if (circle_draw_style == "radius" && background.size_x && background.size_x > 0 && background.size_y && background.size_y > 0) {
+		new_shape.draw_radius = [xrel, yrel];
 		temp_draw_context.save();
 		temp_draw_context.lineWidth = 2 * (size_x/1000);
 		temp_draw_context.strokeStyle = "#FFFFFF";
@@ -2256,7 +2244,7 @@ function on_circle_end(e) {
 	var success = canvas2container(temp_draw_context, temp_draw_canvas, new_shape);
 	if (success) {
 		emit_entity(new_shape);
-		undo_list.push(["add", [new_shape]]);
+		undo_list.push(clone_action(["add", [new_shape]]));
 	}
 		
 	stop_drawing();
@@ -2297,13 +2285,12 @@ function on_rectangle_end(e) {
 	temp_draw_context.fillRect(to_x_local(left_x), to_y_local(left_y), to_x_local(right_x)-to_x_local(left_x), to_y_local(right_y)-to_y_local(left_y)); 
 	temp_draw_context.strokeRect(to_x_local(left_x), to_y_local(left_y), to_x_local(right_x)-to_x_local(left_x), to_y_local(right_y)-to_y_local(left_y));
 
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-	var new_shape = {uid:newUid(), type:'rectangle', x:left_x, y:left_y, width:(right_x - left_x), height:(right_y - left_y), outline_thickness:rectangle_outline_thickness * zoom_level, outline_color:rectangle_outline_color, outline_opacity: t2o(rectangle_outline_transparancy), fill_opacity: t2o(rectangle_fill_transparancy), fill_color:rectangle_fill_color, alpha:1, style:$('#rectangle_type').find('.active').attr('data-style') };
+	var new_shape = {uid:newUid(), type:'rectangle', x:left_x, y:left_y, width:(right_x - left_x), height:(right_y - left_y), outline_thickness:rectangle_outline_thickness * zoom_level, outline_color:rectangle_outline_color, outline_opacity: t2o(rectangle_outline_transparancy), fill_opacity: t2o(rectangle_fill_transparancy), fill_color:rectangle_fill_color, alpha:1, style:$('#rectangle_type').find('.active').attr('data-style'), draw_zoom_level:zoom_level};
 	
 	var success = canvas2container(temp_draw_context, temp_draw_canvas, new_shape);
 	if (success) {
 		emit_entity(new_shape);
-		undo_list.push(["add", [new_shape]]);
+		undo_list.push(clone_action(["add", [new_shape]]));
 	}
 		
 	stop_drawing();
@@ -2400,7 +2387,7 @@ function on_select_end(e) {
 	}
 	
 	select_entities();
-	undo_list.push(["select", selected_entities, previously_selected_entities]);
+	undo_list.push(clone_action(["select", selected_entities, previously_selected_entities]));
 	render_scene();
 }
 
@@ -2466,7 +2453,7 @@ function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock
 			scale = [entity.scale[0], entity.scale[1]];
 		}
 		var origin = [entity.x, entity.y, [scale[0], scale[1]]];
-		undo_action[1].push([origin, entity]);	
+		undo_action[1].push([origin, entity.uid]);	
 	
 		var x = entity.x;
 		var y = entity.y;
@@ -2484,7 +2471,7 @@ function select_box_mouseup(e, ref_x, ref_y, ref_width, ref_height, lock_x, lock
 		socket.emit('drag', room, entity.uid, active_slide, x, y, scale);
 
 	}
-	undo_list.push(undo_action);
+	undo_list.push(clone_action(undo_action));
 	
 	select_box.mousedown = undefined;
 	select_box.mousemove = on_selectbox_move;
@@ -2545,7 +2532,6 @@ function on_selectbox_move(e) {
 		mouse_location.x /= select_box.width;
 		mouse_location.y /= select_box.height;
 		
-		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 		var margin = y_abs(ROTATE_ARROW_MARGIN) * zoom_level;
 		var x_margin = margin/select_box.width;
 		var y_margin = margin/select_box.height;
@@ -2664,7 +2650,6 @@ function redraw_select_box() {
 			select_box.x = x_min + select_box.width/2;
 			select_box.y = y_min + select_box.height/2;
 			
-			var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 			rotate_arrow0.x = x_min + select_box.width + rotate_arrow0.width/2 + y_abs(ROTATE_ARROW_MARGIN) * zoom_level;
 			rotate_arrow0.y = y_min + select_box.height/2;
 			rotate_arrow1.x = x_min + select_box.width/2;
@@ -2805,7 +2790,7 @@ function stop_rotate_selection(base, angle, e) {
 			orig_rotation = entity.rotation;
 		}
 		var origin = [entity.x, entity.y, [scale[0], scale[1]], orig_rotation];
-		undo_action[1].push([origin, entity]);
+		undo_action[1].push([origin, entity.uid]);
 		
 		var x_diff = sprite.x - sprite.x_orig;
 		var y_diff = sprite.y - sprite.y_orig;
@@ -2818,7 +2803,7 @@ function stop_rotate_selection(base, angle, e) {
 		socket.emit("drag", room, entity.uid, active_slide, x_rel(x_abs(entity.x) + x_diff), y_rel(y_abs(entity.y) + y_diff), entity.scale, rotation)
 		drag_entity(entity, x_rel(x_abs(entity.x) + x_diff), y_rel(y_abs(entity.y) + y_diff), entity.scale, rotation);
 	}
-	undo_list.push(undo_action);
+	undo_list.push(clone_action(undo_action));
 	select_box_dirty = true;
 	render_scene();	
 }
@@ -2862,7 +2847,6 @@ function select_entities() {
 		make_resizable(select_box);
 		
 		var texture = new PIXI.Texture.fromImage(image_host + "rotate.png");
-		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 
 		var ratio = texture.width / texture.height;
 		var arrow_height = y_abs(ROTATE_ARROW_SCALE) * zoom_level;
@@ -2897,7 +2881,6 @@ function select_entities() {
 
 function draw_select_box(shape) {
 	var graphic = new PIXI.Graphics();
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 	graphic.lineStyle(1 * zoom_level, 16777215, 0.2);
 	graphic.beginFill(16777215, 0.2);
 	graphic.drawShape(shape);
@@ -2915,7 +2898,7 @@ function select_all() {
 		}
 	}
 	select_entities();
-	undo_list.push(["select", selected_entities, previously_selected_entities]);
+	undo_list.push(clone_action(["select", selected_entities, previously_selected_entities]));
 }
 
 function remove_select_box() {
@@ -2949,110 +2932,6 @@ function deselect_all() {
 	selected_entities = [];
 }
 
-function draw_path(graphic, path, start_index, stop_index) {
-	var path_x = [];
-	var path_y = [];
-	
-	for (var i = 0; i < path.length; i++) {
-		path_x.push(x_abs(new_drawing.x + path[i][0]));
-		path_y.push(y_abs(new_drawing.y + path[i][1]));
-	}
-
-	var cx = computeControlPoints(path_x);
-	var cy = computeControlPoints(path_y);		
-
-	if (start_index == 0) {
-		graphic.moveTo(path_x[0], path_y[0]);
-		graphic.lineTo(path_x[1], path_y[1]);
-		start_index	= 1;
-	}
-
-	graphic.moveTo(path_x[start_index], path_y[start_index])
-	for (var i = start_index; i < stop_index; i++) {
-		graphic.bezierCurveTo(cx.p1[i], cy.p1[i], cx.p2[i], cy.p2[i], path_x[i+1], path_y[i+1]);
-	}
-	
-	graphic.graphicsData[graphic.graphicsData.length-1].shape.closed = false;	
-}
-
-function draw_path2(context, context2, drawing, n, start_index, stop_index, end, smooth_out, skip_move) {	
-	var i = Math.max(drawing.path.length-n, 0);
-	var path = drawing.path.slice(i);
-	stop_index -= i;
-	start_index -= i;
-	
-	var path_x = [];
-	var path_y = [];
-	
-	for (var i = 0; i < path.length; i++) {
-		path_x.push(to_x_local(drawing.x + path[i][0]));
-		path_y.push(to_y_local(drawing.y + path[i][1]));
-	}
-	
-	//smooth out basically means push some of the end points at the beginning 
-	//and some of beginning points at the end before we calculate the control points
-	if (smooth_out) {
-		var slice_size = Math.min(4, path_x.length-1);
-		path_x = path_x.slice(path_x.length-slice_size-1, path_x.length-1).concat(path_x.concat(path_x.slice(1, slice_size+1)))
-		path_y = path_y.slice(path_y.length-slice_size-1, path_y.length-1).concat(path_y.concat(path_y.slice(1, slice_size+1)))
-		start_index += slice_size;
-		stop_index += slice_size;
-	}
-
-	var cx = computeControlPoints(path_x);
-	var cy = computeControlPoints(path_y);		
-
-	if (context) {
-		if (!skip_move) {
-			context.moveTo(path_x[start_index], path_y[start_index]);
-		}
-		if (context2) {
-			context.lineDashOffset = context2.lineDashOffset;
-		}
-		if (stop_index - start_index == 2) {
-			context.lineTo(path_x[1], path_y[1]);
-			start_index++;
-		}
-
-		var i = start_index;
-		for (; i < stop_index-1; i++) {
-			context.bezierCurveTo(cx.p1[i], cy.p1[i], cx.p2[i], cy.p2[i], path_x[i+1], path_y[i+1]);
-		}
-	}
-
-	if (context2) {
-		if (path.length == start_index) {
-			context2.moveTo(path[0].x, path[0].y);
-			context2.lineTo(path[1].x, path[1].y);
-		} else if (path.length > start_index) {
-			var i = start_index;
-			context2.bezierCurveTo(cx.p1[i], cy.p1[i], cx.p2[i], cy.p2[i], path_x[i+1], path_y[i+1]);
-		}
-		context2.stroke();
-	}
-	
-	
-	if (end == "arrow") {
-		context.stroke();
-		if (stop_index - start_index > 2) {
-			draw_arrow3(context, [cx.p1[cx.p1.length-1], cy.p1[cy.p1.length-1]], [path_x[path_x.length-1], path_y[path_y.length-1]], drawing);
-		} else {
-			draw_arrow3(context, [path_x[path_x.length-2], path_y[path_y.length-2]], [path_x[path_x.length-1], path_y[path_y.length-1]], drawing);
-		}
-	} else if (end == "T") {
-		if (stop_index - start_index > 2) {
-			draw_T3(context, [cx.p1[cx.p1.length-1], cy.p1[cy.p1.length-1]], [path_x[path_x.length-1], path_y[path_y.length-1]], drawing);
-		} else {
-			draw_T3(context, [path_x[path_x.length-2], path_y[path_y.length-2]], [path_x[path_x.length-1], path_y[path_y.length-1]], drawing);
-		}
-		context.stroke();
-	} else {
-		context.stroke();
-	}
-
-}
-
-
 var INTERPOLATION_RESOLUTION = 25;
 var INTERPOLATION_TENSION = 0.5;
 var INTERPOLATION_LOOKBACK = 10;
@@ -3065,6 +2944,7 @@ function smooth_draw(context, point_buffer, closed) {
 		context.lineTo(splinePoints[i], splinePoints[i+1]);
 	}
 	context.stroke();
+	return [[splinePoints[splinePoints.length-4], splinePoints[splinePoints.length-3]], [splinePoints[splinePoints.length-2], splinePoints[splinePoints.length-1]]];
 }
 
 function smooth_draw_incremental(context1, context2, point_buffer, complete) {
@@ -3130,7 +3010,9 @@ function on_draw_move(e) {
 		point_buffer.pop();
 
 		new_drawing.path.push([from_x_local(mouse_location.x) - new_drawing.x, from_y_local(mouse_location.y) - new_drawing.y]);
-		draw_end(temp_draw_context, new_drawing);
+		
+		draw_end_path(temp_draw_context, new_drawing);
+		
 		new_drawing.path.pop();
 		
 		last_point = [new_x, new_y];
@@ -3150,14 +3032,14 @@ function on_draw_end(e) {
 	new_drawing.path.push([from_x_local(mouse_location.x) - new_drawing.x, from_y_local(mouse_location.y) - new_drawing.y]);
 	
 	draw_context.beginPath();
-	draw_end(draw_context, new_drawing);
+	draw_end_path(draw_context, new_drawing);
 	
 	var success = canvas2container(draw_context, draw_canvas, new_drawing);
 	if (success) {
 		emit_entity(new_drawing);
-		undo_list.push(["add", [new_drawing]]);
+		undo_list.push(clone_action(["add", [new_drawing]]));
 	}
-	
+		
 	temp_draw_context.clearRect(0, 0, temp_draw_canvas.width, temp_draw_canvas.height);
 	draw_context.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
 	draw_context.beginPath();
@@ -3238,81 +3120,41 @@ function drawRotatedImage(context, image, angle) {
 }
 
 
-function draw_end(context, drawing) {
+function draw_end_path(context, drawing) {
+	if (drawing.path.length >= ARROW_LOOKBACK) {
+		var i = Math.max(0, drawing.path.length-ARROW_LOOKBACK);
+		var a = [to_x_local(drawing.x + drawing.path[i][0]), to_y_local(drawing.y + drawing.path[i][1])]
+		var b = [to_x_local(drawing.x + drawing.path[drawing.path.length-1][0]), to_y_local(drawing.y + drawing.path[drawing.path.length-1][1])]
+		draw_end(context, drawing, a, b);
+	}
+}
+
+//draw end. The default scale is if you are drawing on a canvas the exact size of the render window
+function draw_end(context, drawing, a, b, scale = 1/zoom_level) {
+	var size = (ARROW_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
+	if (drawing.end_size) {			
+		size = drawing.end_size * (size_y/1000) * scale;
+	}
 	context.stroke();
 	context.beginPath();
-	if (drawing.path.length >= ARROW_LOOKBACK) {	
-		if (drawing.end == "arrow") {
-			draw_arrow2(context, drawing, ARROW_LOOKBACK);
-		} else if (drawing.end == "T") {
-			draw_T2(context, drawing, ARROW_LOOKBACK);
-		}
+	if (drawing.end == "arrow") {
+		draw_arrow(context, a, b, size);
+	} else if (drawing.end == "T") {
+		draw_T(context, a, b, size);
 	}
 }
 
-function draw_arrow2(context, drawing, i) {
-	var i = Math.max(0, drawing.path.length-i);
-	var size = (ARROW_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
-	if (drawing.end_size) {
-		size = drawing.end_size * ARROW_SCALE2;
-	}	
-	var x0 = x_abs(drawing.path[i][0] - drawing.path[drawing.path.length-1][0]);
-	var y0 = y_abs(drawing.path[i][1] - drawing.path[drawing.path.length-1][1]);
-	l = Math.sqrt(Math.pow(x0,2) + Math.pow(y0,2));
-	x0 /= l;
-	y0 /= l;
-	start_x = to_x_local(drawing.path[drawing.path.length-1][0] + drawing.x);
-	start_y = to_y_local(drawing.path[drawing.path.length-1][1] + drawing.y);
-	
-	drawArrow(context, start_x, start_y, start_x-x0,start_y-y0, 3, 1, Math.PI/8, size);	
-}
-
-
-function draw_arrow3(context, a, b, drawing) {
-	var size = (ARROW_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
-	if (drawing.end_size) {
-		size = drawing.end_size * ARROW_SCALE2;
-	}
+function draw_arrow(context, a, b, size) {
 	var x_diff = b[0] - a[0];
 	var y_diff = b[1] - a[1];
 	l = Math.sqrt(Math.pow(x_diff,2) + Math.pow(y_diff,2));
 	x_diff /= l;
 	y_diff /= l;
-	
-	drawArrow(context, b[0], b[1], b[0]+x_diff, b[1]+y_diff, 3, 1, Math.PI/8, size);
+	drawArrow(context, b[0], b[1], b[0]+x_diff, b[1]+y_diff, 3, 1, Math.PI/8, size * ARROW_SCALE2);
 }
 
-function draw_T2(context, drawing, i) {
-	var i = Math.max(0, drawing.path.length-i);
-	var size = (TEND_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
-	if (drawing.end_size) {
-		size = drawing.end_size * TEND_SCALE2;
-	}
-	var x0 = drawing.path[i][0] - drawing.path[drawing.path.length-1][0];
-	var y0 = drawing.path[i][1] - drawing.path[drawing.path.length-1][1];
-	l = Math.sqrt(Math.pow(x0,2) + Math.pow(y0,2));
-	x0 /= l;
-	y0 /= l;
-	start_x = to_x_local(drawing.path[drawing.path.length-1][0] + drawing.x);
-	start_y = to_y_local(drawing.path[drawing.path.length-1][1] + drawing.y);	
-	var x_ort = - y0;
-	var y_ort = x0;
-	
-	context.stroke();
-	var temp_dash = context.getLineDash()
-	context.setLineDash([]);
-	context.beginPath();
-	context.moveTo(start_x - size * x_ort, start_y - size * y_ort);
-	context.lineTo(start_x + size * x_ort, start_y + size * y_ort);
-	context.stroke();
-	context.setLineDash(temp_dash);
-}
-
-function draw_T3(context, a, b, drawing) {
-	var size = (TEND_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
-	if (drawing.end_size) {
-		size = drawing.end_size * TEND_SCALE2;
-	}
+function draw_T(context, a, b, size) {
+	size *= TEND_SCALE2;
 	var x_diff = b[0] - a[0];
 	var y_diff = b[1] - a[1];
 	l = Math.sqrt(Math.pow(x_diff,2) + Math.pow(y_diff,2));
@@ -3346,7 +3188,7 @@ function canvas2sprite(_context, _canvas) {
 
 function canvas2container(_context, _canvas, entity) {
 	var sprite = createSprite(_context, _canvas);
-		
+	
 	if (sprite) {
 		entity.container = sprite;		
 		//rescale to objectContainer
@@ -3370,68 +3212,63 @@ function canvas2container(_context, _canvas, entity) {
 	}
 }
 
-function create_line2(line) {
-	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
-	var _canvas = document.createElement("canvas");
-	_canvas.width = 2 * renderer.view.width;
-	_canvas.height = 2 * renderer.view.height;
-	_context = _canvas.getContext("2d");
-	
-	init_canvas(_context, line.thickness, line.color, line.style);
-	
-	_context.moveTo(to_x_local(line.x), to_y_local(line.y));
-	for (var i = 0; i < line.path.length; ++i) {
-		var x = to_x_local(line.path[i][0] + line.x);
-		var y = to_y_local(line.path[i][1] + line.y);
-		_context.lineTo(x,y);
-	}
-	_context.stroke();
-	
-	var a;
-	if (line.path.length == 1) {
-		a = [to_x_local(line.x), to_y_local(line.y)];
-	} else {
-		a = [to_x_local(line.path[line.path.length-2][0] + line.x),
-			 to_y_local(line.path[line.path.length-2][1] + line.y)];
-	}
-	var b = [to_x_local(last(line.path)[0] + line.x), to_y_local(last(line.path)[1] + line.y)];
-	if (line.end == "arrow") {	
-		draw_arrow3(_context, a, b, line);
-	} else if (line.end == "T") {
-		draw_T3(_context, a, b, line);
-	}
-	
-	canvas2container(_context, _canvas, line);
-}
-
-function init_shape_canvas(_context, shape) {
-	init_canvas(_context, shape.outline_thickness, shape.outline_color, shape.style, shape.fill_opacity, shape.fill_color, shape.outline_opacity)
+function init_shape_canvas(_context, shape, scale = 1) {
+	init_canvas(_context, shape.outline_thickness * scale, shape.outline_color, shape.style, shape.fill_opacity, shape.fill_color, shape.outline_opacity)
 }
 
 function create_rectangle2(rectangle) {
-	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = 2 * renderer.view.width;
-	_canvas.height = 2 * renderer.view.height;
 	var _context = _canvas.getContext("2d");
-	init_shape_canvas(_context, rectangle);
+	
+	var base_resolution_x = background_sprite.width;
+	var base_resolution_y = background_sprite.height;
+	var quality = 1;
+	if (rectangle.draw_zoom_level) {
+		quality = 1 / rectangle.draw_zoom_level;
+	}
+	
+	var margin = 50;	
+	_canvas.width = base_resolution_x * rectangle.width * quality + margin;
+	_canvas.height = base_resolution_y * rectangle.height * quality + margin;
+	
+	init_shape_canvas(_context, rectangle, quality);
+	
+	_context.fillRect(margin/2, margin/2, base_resolution_x * rectangle.width * quality, base_resolution_y * rectangle.height * quality); 
+	_context.strokeRect(margin/2, margin/2, base_resolution_x * rectangle.width * quality, base_resolution_y * rectangle.height * quality);
 
-	_context.fillRect(to_x_local(rectangle.x), to_y_local(rectangle.y), to_x_local(rectangle.width), to_y_local(rectangle.height)); 
-	_context.strokeRect(to_x_local(rectangle.x), to_y_local(rectangle.y), to_x_local(rectangle.width), to_y_local(rectangle.height));
+	canvas2container2(_context, _canvas, rectangle);
+	objectContainer.addChild(rectangle.container)
 
-	canvas2container(_context, _canvas, rectangle);
+	rectangle.container.x = x_abs(rectangle.x) - (margin/2) / quality;
+	rectangle.container.y = y_abs(rectangle.y) - (margin/2) / quality;
+	rectangle.container.width /= quality;
+	rectangle.container.height /= quality;
+	
+	render_scene();
 }
 
-function create_circle2(circle) {
-	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
-	var _canvas = document.createElement("canvas");
-	_canvas.width = 2 * renderer.view.width;
-	_canvas.height = 2 * renderer.view.height;
-	var _context = _canvas.getContext("2d");
-	init_shape_canvas(_context, circle);
 
+function create_circle2(circle) {
+	var _canvas = document.createElement("canvas");
+	var _context = _canvas.getContext("2d");
+	
+	var base_resolution_x = background_sprite.width;
+	var base_resolution_y = background_sprite.height;
+	var quality = 1;
+	if (circle.draw_zoom_level) {
+		quality = 1 / circle.draw_zoom_level;
+	}
+	
+	var margin = 50;	
+	_canvas.width = 2 * base_resolution_y * circle.radius * quality + margin;
+	_canvas.height = 2 * base_resolution_y * circle.radius * quality + margin;
+	
+	init_shape_canvas(_context, circle, quality);
+
+	var radius = to_x_local_vect(circle.radius);
+	
 	_context.beginPath();	
-	_context.arc(to_x_local(circle.x), to_y_local(circle.y), y_abs(circle.radius), 0, 2*Math.PI);
+	_context.arc(base_resolution_y * circle.radius * quality + margin/2, base_resolution_y * circle.radius * quality + margin/2, base_resolution_y * circle.radius * quality, 0, 2*Math.PI);
 	_context.fill();
 	_context.stroke();
 	
@@ -3441,11 +3278,11 @@ function create_circle2(circle) {
 		_context.strokeStyle = "#FFFFFF";
 		_context.fillStyle = "#FFFFFF";
 		_context.beginPath();
-		_context.moveTo(to_x_local(circle.x),to_y_local(circle.y));		
-		_context.lineTo(to_x_local(circle.draw_radius[0]), to_y_local(circle.draw_radius[1]));
+		_context.moveTo(base_resolution_y * circle.radius * quality + margin/2, base_resolution_y * circle.radius * quality + margin/2);		
+		_context.lineTo((base_resolution_y * quality) * (circle.radius + circle.draw_radius[0] - circle.x) + margin/2, (base_resolution_y * quality) * (circle.radius  + circle.draw_radius[1] - circle.y) + margin/2);
 		_context.stroke();
-		var mid_line_x = to_x_local((circle.x + circle.draw_radius[0]) / 2);
-		var mid_line_y = to_y_local((circle.y + circle.draw_radius[1]) / 2);
+		var mid_line_x = base_resolution_y * quality * (circle.radius + (circle.draw_radius[0] - circle.x)/2) + margin/2;
+		var mid_line_y = base_resolution_y * quality * (circle.radius + (circle.draw_radius[1] - circle.y)/2) + margin/2;
 		_context.font = "22px Arial";
 		var length = Math.sqrt(Math.pow(background.size_x * (circle.x - circle.draw_radius[0]), 2) + Math.pow(background.size_y * 
 		(circle.y - circle.draw_radius[1]), 2))
@@ -3464,84 +3301,171 @@ function create_circle2(circle) {
 		_context.restore();
 	}
 	
-	canvas2container(_context, _canvas, circle);
-}
-
-function create_polygon2(polygon) {
-	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
-	var _canvas = document.createElement("canvas");
-	_canvas.width = 2 * renderer.view.width;
-	_canvas.height = 2 * renderer.view.height;
-	var _context = _canvas.getContext("2d");
-	init_shape_canvas(_context, polygon);
-
-	_context.beginPath();
-	_context.moveTo(to_x_local(polygon.x), to_y_local(polygon.y));	
-	for (var i = 0; i < polygon.path.length; ++i) {
-		var x = to_x_local(polygon.path[i][0] + polygon.x);
-		var y = to_y_local(polygon.path[i][1] + polygon.y);
-		_context.lineTo(x,y);
-	}
-	_context.lineTo(to_x_local(polygon.x), to_y_local(polygon.y));
-	_context.stroke();
-	_context.fill();
+	canvas2container2(_context, _canvas, circle);
+	objectContainer.addChild(circle.container)
 	
-	canvas2container(_context, _canvas, polygon);
+	circle.container.x = x_abs(circle.x) - base_resolution_y * circle.radius - (margin/2) / quality;
+	circle.container.y = y_abs(circle.y) - base_resolution_y * circle.radius - (margin/2) / quality;
+	circle.container.width /= quality;
+	circle.container.height /= quality;
+	
+	render_scene();
 }
 
-function create_area2(area) {
-	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
+function canvas2container2(_context, _canvas, entity) {
+	var texture = PIXI.Texture.fromCanvas(_canvas);
+	var sprite = new PIXI.Sprite(texture);
+		
+	if (sprite) {
+		entity.container = sprite;		
+		
+		//make draggable
+		sprite.texture.baseTexture.source.src = entity.uid;
+		sprite.hitArea = new PIXI.TransparencyHitArea.create(sprite, false);
+		make_draggable(sprite);
+		sprite.entity = entity;
+		
+		//send off
+		room_data.slides[active_slide].entities[entity.uid] = entity;
+		return true; //success
+	} else {
+		return false; //failure
+	}
+}
+
+function draw_entity(drawing, draw_function) {
+	var color = '#' + ('00000' + (drawing.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	_canvas.width = 2 * renderer.view.width;
-	_canvas.height = 2 * renderer.view.height;
 	var _context = _canvas.getContext("2d");
-	init_shape_canvas(_context, area);
 
-	_context.beginPath();
-	draw_path2(_context, null, area, area.path.length, 0, area.path.length, false, true);
-	_context.fill();	
+	var points = []
 
-	canvas2container(_context, _canvas, area);
+	var base_resolution_x = background_sprite.width;
+	var base_resolution_y = background_sprite.height;
+	var quality = 1;
+	if (drawing.draw_zoom_level) {
+		quality /= drawing.draw_zoom_level;
+	}
+			
+	if (drawing.path.length > 0) {
+		var left = 9999, top = 9999, right = -9999, bottom = -9999;
+		for (var i = 0; i < drawing.path.length; i++) {
+			var x = drawing.path[i][0];
+			var y = drawing.path[i][1];
+			left = Math.min(left, x);
+			top = Math.min(top, y);
+			right = Math.max(right, x);
+			bottom = Math.max(bottom, y);
+			points.push(base_resolution_x * x * quality, base_resolution_y * y * quality);
+		}
+
+		var margin = 50;
+		if (drawing.end_size) {
+			margin = drawing.end_size * quality * 3;
+		}
+				
+		_canvas.width = base_resolution_x * (right - left) * quality + margin;
+		_canvas.height = base_resolution_y * (bottom - top) * quality + margin;
+		
+		//shift everything, this should make all coords > margin.
+		var x_diff = -left * base_resolution_x * quality + margin/2;
+		var y_diff = -top * base_resolution_y * quality + margin/2;
+		for (var i = 0; i < points.length; i+=2) {
+			points[i] += x_diff;
+			points[i+1] += y_diff;
+		}
+		
+		draw_function(_context, points, quality);
+		
+		canvas2container2(_context, _canvas, drawing);
+		
+		drawing.container.height /= quality;
+		drawing.container.width /= quality;
+		drawing.container.x = x_abs(drawing.x) + x_abs(left) - (margin/2) / quality;
+		drawing.container.y = y_abs(drawing.y) + y_abs(top) - (margin/2) / quality;
+	
+		objectContainer.addChild(drawing.container);
+		render_scene();
+	}
 }
 
 function create_drawing2(drawing) {
-	var color = '#' + ('00000' + (drawing.color | 0).toString(16)).substr(-6); 
-	var _canvas = document.createElement("canvas");
-	_canvas.width = 2 * renderer.view.width;
-	_canvas.height = 2 * renderer.view.height;
-	var _context = _canvas.getContext("2d");
-
-	init_canvas(_context, drawing.thickness, drawing.color, drawing.style);
-	
-	var points = []
-
-	for (var i = 0; i < drawing.path.length; i++) {
-		points.push(to_x_local(drawing.x + drawing.path[i][0]), to_y_local(drawing.y + drawing.path[i][1]));
-	}	
-	
-	smooth_draw(_context, points);
-
-	draw_end(_context, drawing);
-	
-	canvas2container(_context, _canvas, drawing);
+	draw_entity(drawing, function(_context, points, quality) {
+		init_canvas(_context, drawing.thickness * quality, drawing.color, drawing.style);
+		var end_points = smooth_draw(_context, points);
+		if (drawing.end) {
+			if (drawing.path.length >= ARROW_LOOKBACK) {
+				var j = Math.max(0, drawing.path.length-ARROW_LOOKBACK);
+				end_points[0] = [points[2*j], points[2*j+1]];
+			}
+			draw_end(_context, drawing, end_points[0], end_points[1], quality);
+		}
+	});
 }
 
 function create_curve2(drawing) {
-	var color = '#' + ('00000' + (drawing.color | 0).toString(16)).substr(-6); 
-	var _canvas = document.createElement("canvas");
-	_canvas.width = 2 * renderer.view.width;
-	_canvas.height = 2 * renderer.view.height;
-	var _context = _canvas.getContext("2d");
+	draw_entity(drawing, function(_context, points, quality) {
+		init_canvas(_context, drawing.thickness * quality, drawing.color, drawing.style);
+		var end_points = smooth_draw(_context, points, false);
+		if (drawing.end) {
+			draw_end(_context, drawing, end_points[0], end_points[1], quality);
+		}
+	});
+}
 
-	init_canvas(_context, drawing.thickness, drawing.color, drawing.style);
-	
-	_context.beginPath();
-	_context.moveTo(size_x*(drawing.x), size_y*(drawing.y));
+function create_area2(area) {
+	if (area.path[area.path.length-1] == [0,0]) {
+		area.path.pop();
+	}
+	draw_entity(area, function(_context, points, quality) {
+		init_shape_canvas(_context, area, quality);
+		var end_points = smooth_draw(_context, points, true);
+		_context.fill();
+	});
+}
+
+function create_line2(line) {
+	draw_entity(line, function(_context, points, quality) {		
+		init_canvas(_context, line.thickness * quality, line.color, line.style);
+
+		_context.moveTo(points[0], points[1]);
+		for (var i = 2; i < points.length; i+=2) {
+			_context.lineTo(points[i], points[i+1]);
+		}
+		_context.stroke();
 		
-	var n = drawing.path.length;
-	draw_path2(_context, undefined, drawing, n, 0, n, drawing.end);
-	
-	canvas2container(_context, _canvas, drawing);
+		var a;
+		if (line.path.length == 1) {
+			a = [x_diff, y_diff];
+		} else {
+			a = [points[points.length-4], points[points.length-3]];
+		}
+		var b = [points[points.length-2], points[points.length-1]];
+		draw_end(_context, line, a, b, quality);
+	});
+}
+
+function create_polygon2(polygon) {
+	draw_entity(polygon, function(_context, points, quality) {
+		init_shape_canvas(_context, polygon, quality);
+
+		_context.moveTo(points[0], points[1]);
+		for (var i = 2; i < points.length; i+=2) {
+			_context.lineTo(points[i], points[i+1]);
+		}
+		_context.lineTo(points[0], points[1]);
+		_context.stroke();
+		_context.fill();
+		
+		var a;
+		if (polygon.path.length == 1) {
+			a = [x_diff, y_diff];
+		} else {
+			a = [points[points.length-4], points[points.length-3]];
+		}
+		var b = [points[points.length-2], points[points.length-1]];
+		draw_end(_context, polygon, a, b, quality);
+	});
 }
 
 function start_drawing() {
@@ -3649,7 +3573,6 @@ function on_icon_end(e) {
 		color = 16777215; //white
 	}
 	
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 	var size = icon_size*icon_extra_scale*ICON_SCALE;
 	size *= zoom_level;
 	var x = mouse_x_rel(mouse_location.x) - (size/2);
@@ -3661,7 +3584,7 @@ function on_icon_end(e) {
 		icon.label_color = "#000000";
 	}
 	
-	undo_list.push(["add", [icon]]);
+	undo_list.push(clone_action(["add", [icon]]));
 	create_icon(icon, snap_and_emit_entity);
 }
 
@@ -3672,9 +3595,8 @@ function on_text_end(e) {
 	var mouse_location = e.data.getLocalPosition(background_sprite);	
 	var x = mouse_x_rel(mouse_location.x);
 	var y = mouse_y_rel(mouse_location.y);
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 	var text = {uid:newUid(), type: 'text', x:x, y:y, scale:[1,1], color:text_color, alpha:1, text:msg, font_size:font_size * zoom_level, font:'Arial'};
-	undo_list.push(["add", [text]]);
+	undo_list.push(clone_action(["add", [text]]));
 	current_text_element = text;
 	create_text2(text);
 	snap_and_emit_entity(text);
@@ -3685,9 +3607,8 @@ function on_background_text_end(e) {
 	var mouse_location = e.data.getLocalPosition(background_sprite);	
 	var x = mouse_x_rel(mouse_location.x);
 	var y = mouse_y_rel(mouse_location.y);
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
 	var background_text = {uid:newUid(), type: 'background_text', x:x, y:y, scale:[1,1], color:background_text_color, alpha:1, text:$('#text_tool_background_text').val(), font_size:background_font_size * zoom_level, font:'Arial'};
-	undo_list.push(["add", [background_text]]);
+	undo_list.push(clone_action(["add", [background_text]]));
 	create_background_text2(background_text);
 	snap_and_emit_entity(background_text);
 }
@@ -3712,14 +3633,7 @@ function on_line_move(e) {
 		temp_draw_context.lineTo(b[0], b[1]);
 		temp_draw_context.stroke();
 		
-		if (new_drawing.end == "arrow") {
-			draw_arrow3(temp_draw_context, a, b, new_drawing);
-		} else if (new_drawing.end == "T") {
-			draw_T3(temp_draw_context, a, b, new_drawing);
-		}
-		
-		
-		
+		draw_end(temp_draw_context, new_drawing, a, b);	
 	});
 }
 
@@ -3729,11 +3643,6 @@ function on_line_end(e) {
 		var mouse_location = e.data.getLocalPosition(background_sprite);
 		var x = mouse_x_rel(mouse_location.x);
 		var y = mouse_y_rel(mouse_location.y);
-
-		//x = Math.max(0, x);
-		//y = Math.max(0, y);
-		//x = Math.min(1, x);
-		//y = Math.min(1, y);
 		x -= new_drawing.x;
 		y -= new_drawing.y;
 		if ((new_drawing.path.length == 0) || x != last(new_drawing.path)[0] || y != last(new_drawing.path)[1]) {
@@ -3760,18 +3669,14 @@ function on_line_end(e) {
 	draw_context.stroke();
 		
 	if (!shifted) {
-		if (new_drawing.end == "arrow") {
-			draw_arrow3(draw_context, a, b, new_drawing);
-		} else if (new_drawing.end == "T") {
-			draw_T3(draw_context, a, b, new_drawing);
-		}
+		draw_end(draw_context, new_drawing, a, b);
 
 		var success = canvas2container(draw_context, draw_canvas, new_drawing);
 		if (success) {
 			emit_entity(new_drawing);
-			undo_list.push(["add", [new_drawing]]);
+			undo_list.push(clone_action(["add", [new_drawing]]));
 		}
-		
+				
 		setup_mouse_events(undefined, undefined);
 		stop_drawing();
 		new_drawing = null;
@@ -3781,9 +3686,8 @@ function on_line_end(e) {
 function create_text2(text_entity) {
 	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-	var scaling = background_sprite.scale.y * objectContainer.scale.y;
-
+	var scaling = objectContainer.scale.y;
+	
 	var _context = _canvas.getContext("2d");
 
 	var text_quality = TEXT_QUALITY;
@@ -3834,8 +3738,7 @@ function create_text2(text_entity) {
 function create_background_text2(text_entity) {
 	var color = '#' + ('00000' + (line.color | 0).toString(16)).substr(-6); 
 	var _canvas = document.createElement("canvas");
-	var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-	var scaling = background_sprite.scale.y * objectContainer.scale.y;
+	var scaling = objectContainer.scale.y;
 
 	var _context = _canvas.getContext("2d");
 
@@ -3922,9 +3825,7 @@ function create_icon_cont(icon, texture) {
 	if (icon.label && icon.label != "") {
 		var color = '#' + ('00000' + (icon.label_color | 0).toString(16)).substr(-6); 
 		var _canvas = document.createElement("canvas");
-		
-		var zoom_level = size_x / (background_sprite.height * objectContainer.scale.y);
-		
+				
 		var scaling = 1 / sprite.scale.y;
 		_canvas.width = 1.8 * icon.label.length * icon.label_font_size * scaling * 1.5 * TEXT_QUALITY;
 		_canvas.height = 1.8 * icon.label_font_size * scaling * 2 * TEXT_QUALITY + 30;
@@ -4068,59 +3969,6 @@ function make_undraggable(root) {
 	delete root.touchstart;
 }
 
-/*computes control points given knots K, this is the brain of the operation*/
-function computeControlPoints(K) {
-	var p1=new Array();
-	var p2=new Array();
-	var n = K.length-1;
-	
-	/*rhs vector*/
-	var a=new Array();
-	var b=new Array();
-	var c=new Array();
-	var r=new Array();
-	
-	/*left most segment*/
-	a[0]=0;
-	b[0]=2;
-	c[0]=1;
-	r[0] = K[0]+2*K[1];
-	
-	/*internal segments*/
-	for (var i = 1; i < n - 1; i++)
-	{
-		a[i]=1;
-		b[i]=4;
-		c[i]=1;
-		r[i] = 4 * K[i] + 2 * K[i+1];
-	}
-			
-	/*right segment*/
-	a[n-1]=2;
-	b[n-1]=7;
-	c[n-1]=0;
-	r[n-1] = 8*K[n-1]+K[n];
-	
-	/*solves Ax=b with the Thomas algorithm (from Wikipedia)*/
-	for (var i = 1; i < n; i++)
-	{
-		var m = a[i]/b[i-1];
-		b[i] = b[i] - m * c[i - 1];
-		r[i] = r[i] - m*r[i-1];
-	}
- 
-	p1[n-1] = r[n-1]/b[n-1];
-	for (var i = n - 2; i >= 0; --i)
-		p1[i] = (r[i] - c[i] * p1[i+1]) / b[i];
-		
-	/*we have p1, now compute p2*/
-	for (var i=0;i<n-1;i++)
-		p2[i]=2*K[i+1]-p1[i+1];
-	
-	p2[n-1]=0.5*(K[n]+p1[n-1]);
-	
-	return {p1:p1, p2:p2};
-}
 
 function center_anchor(obj) {
 	var anchor_diff_x = 0.5 - obj.anchor.x;
@@ -4163,8 +4011,8 @@ function create_entity(entity) {
 
 	if (entity.container) {
 		if (entity.scale) {
-			entity.container.scale.x = entity.container.orig_scale[0] * entity.scale[0];
-			entity.container.scale.y = entity.container.orig_scale[1] * entity.scale[1];
+			entity.container.scale.x *= entity.container.orig_scale[0] * entity.scale[0];
+			entity.container.scale.y *= entity.container.orig_scale[1] * entity.scale[1];
 		}
 	
 		if (entity.container.anchor) {
@@ -4329,11 +4177,12 @@ function update_lock() {
 	if (my_user.role == "owner") {
 		$('#lock').show();
 		$('#nuke_room').show();
+		$('#lock_camera').show();
 
 	} else {
 		$('#lock').hide();
 		$('#nuke_room').hide();
-
+		$('#lock_camera').hide();
 	}
 }
 
@@ -4426,7 +4275,27 @@ function clear(type) {
 			socket.emit('remove', room, key, active_slide);
 		}
 	}
-	undo_list.push(["remove", cleared_entities]);
+	undo_list.push(clone_action(["remove", cleared_entities]));
+}
+
+function clone_action(action) {
+	if (action[1].length) {
+		temp_containers = [];
+		for (var i = 0; i < action[1].length; i++) {
+			temp_containers.push(action[1][i].container);
+			action[1][i].container = null;
+		}
+	}
+	
+	var new_action = JSON.stringify(action);
+	
+	if (action[1].length) {
+		for (var i = 0; i < action[1].length; i++) {
+			action[1][i].container = temp_containers[i];
+		}
+	}
+	
+	return JSON.parse(new_action);
 }
 
 function undo() {
@@ -4440,14 +4309,14 @@ function undo() {
 					socket.emit('remove', room, action[1][i].uid, active_slide);
 				}
 			}
-			redo_list.push(action);
+			redo_list.push(clone_action(action));		
 		} else if (action[0] == "drag") {
 			for (var i in action[1]) {
 				var x = action[1][i][0][0];
 				var y = action[1][i][0][1];
 				var scale = action[1][i][0][2];
 				var rotation = action[1][i][0][3];
-				var uid = action[1][i][1].uid;
+				var uid = action[1][i][1];
 				
 				if (room_data.slides[active_slide].entities[uid]) { //still exists
 					action[1][i][0][0] = room_data.slides[active_slide].entities[uid].x;
@@ -4464,7 +4333,7 @@ function undo() {
 					socket.emit('drag', room, uid, active_slide, x, y, scale, rotation);
 				}
 			}
-			redo_list.push(action);
+			redo_list.push(clone_action(action));
 		} else if (action[0] == "remove") {
 			for (var i in action[1]) {
 				var entity = action[1][i];
@@ -4472,7 +4341,7 @@ function undo() {
 				socket.emit('create_entity', room, entity, active_slide);
 				create_entity(entity);
 			}
-			redo_list.push(action);
+			redo_list.push(clone_action(action));
 		} else if (action[0] == "select") {
 			var new_selected_entities = [];
 			for (var i in action[2]) {
@@ -4484,10 +4353,10 @@ function undo() {
 			deselect_all();
 			selected_entities = new_selected_entities;
 			select_entities();
-			redo_list.push(action);
+			redo_list.push(clone_action(action));
 		}
-		render_scene();
 	}
+	render_scene();
 }
 
 function redo() {
@@ -4500,14 +4369,14 @@ function redo() {
 					create_entity(action[1][i]);
 				}
 			}
-			undo_list.push(action);
+			undo_list.push(clone_action(action));
 		} else if (action[0] == "drag") {
 			for (var i in action[1]) {
 				var x = action[1][i][0][0];
 				var y = action[1][i][0][1];
 				var scale = action[1][i][0][2];
 				var rotation = action[1][i][0][3];
-				var uid = action[1][i][1].uid;
+				var uid = action[1][i][1];
 				if (room_data.slides[active_slide].entities[uid]) { //still exists
 					action[1][i][0][0] = room_data.slides[active_slide].entities[uid].x;
 					action[1][i][0][1] = room_data.slides[active_slide].entities[uid].y;
@@ -4520,11 +4389,10 @@ function redo() {
 						action[1][i][0][3] = room_data.slides[active_slide].entities[uid].rotation;
 					}
 					drag_entity(room_data.slides[active_slide].entities[uid], x, y, scale, rotation);
-					render_scene();
 					socket.emit('drag', room, uid, active_slide, x, y, scale, rotation);
 				}
 			}
-			undo_list.push(action);
+			undo_list.push(clone_action(action));
 		} else if (action[0] == "remove") {
 			for (var i in action[1]) {
 				var entity = action[1][i];
@@ -4534,7 +4402,7 @@ function redo() {
 					socket.emit('remove', room, entity.uid, active_slide);
 				}
 			}
-			undo_list.push(action);
+			undo_list.push(clone_action(action));
 		} else if (action[0] == "select") {
 			var new_selected_entities = [];
 			for (var i in action[1]) {
@@ -4547,10 +4415,11 @@ function redo() {
 			deselect_all();
 			selected_entities = new_selected_entities;
 			select_entities();
-			undo_list.push(action);
+			undo_list.push(clone_action(action));
 		}
 		render_scene();
-	}	
+	}
+	
 }
 
 function clear_selected() {
@@ -4565,7 +4434,7 @@ function clear_selected() {
 	}
 	deselect_all();
 	selected_entities = [];
-	undo_list.push(["remove", cleared_entities]);
+	undo_list.push(clone_action(["remove", cleared_entities]));
 	if (active_context == "drag_context") {
 		cancel_drag(true);
 	}
@@ -5190,6 +5059,9 @@ $(document).ready(function() {
 	
 	renderer.view.addEventListener("wheel", function(e) {
 		zoom(0.1, e.deltaY < 0, e);
+		if (control_camera) {
+			emit_pan_zoom();
+		}
 		e.preventDefault();
 	});
 
@@ -5233,6 +5105,9 @@ $(document).ready(function() {
 
 	renderer.view.addEventListener('contextmenu', function(e) {
 		setup_mouse_events(undefined);
+		if (control_camera) {
+			emit_pan_zoom();
+		}
 		e.preventDefault();
 	});
 
@@ -5240,6 +5115,9 @@ $(document).ready(function() {
 	$(renderer.view).mouseup(function(e) {
 		if (e.which === 3 || e.which === 2) {
 			setup_mouse_events(undefined);
+			if (control_camera) {
+				emit_pan_zoom();
+			}
 			e.preventDefault();
 		}
 	});
@@ -5727,6 +5605,18 @@ $(document).ready(function() {
 			socket.emit("lock_room", room, is_room_locked);
 		});
 		
+		$('#lock_camera').click(function () {
+			var node = $(this).find('div');	
+			if (node.hasClass('icon-lock_camera')) {
+				node.removeClass('icon-lock_camera').addClass('icon-unlock_camera');
+				emit_pan_zoom();
+				control_camera = true;
+			} else {
+				node.removeClass('icon-unlock_camera').addClass('icon-lock_camera');
+				control_camera = false;
+			}
+		});
+		
 		$('#grid').click(function () {
 			grid_layer.visible = !grid_layer.visible;
 			room_data.slides[active_slide].show_grid = grid_layer.visible;
@@ -6018,6 +5908,12 @@ $(document).ready(function() {
 			})
 		} catch (e) {}
 		
+		var on_done = function() {
+			if (room_data.pan_zoom) {
+				pan_zoom(room_data.pan_zoom[0], room_data.pan_zoom[1], room_data.pan_zoom[2]);
+			}
+		}
+		
 		if (background_entity) {
 			//we need to set the background before we add other entities
 			set_background(background_entity, function() {
@@ -6031,7 +5927,10 @@ $(document).ready(function() {
 						set_playback_rate(room_data.playback_rate, room_data.playback_rate);
 					}
 				}
+				on_done();
 			});
+		} else {
+			on_done();
 		}
 						
 		for (var key in room_data.trackers) {
@@ -6187,6 +6086,11 @@ $(document).ready(function() {
 		activity_animation(user_id)
 	});
 	
+	socket.on('pan_zoom', function(new_zoom_level, x, y, user_id) {
+		activity_animation(new_zoom_level, x, y);
+		pan_zoom(new_zoom_level, x, y);
+	});
+	
 	socket.on('force_reconnect', function() {
 		location.reload();
 	});
@@ -6239,5 +6143,5 @@ $(document).ready(function() {
 	socket.on('change_rate', function(rate) {
 		set_playback_rate(rate, rate);
 	});
-
+	
 });
