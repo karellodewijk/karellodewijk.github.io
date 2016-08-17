@@ -421,7 +421,9 @@ function paste() {
 	undo_list.push(clone_action(["add", new_entities]));	
 }
 
-function zoom(amount, isZoomIn, e) {	
+function zoom(amount, isZoomIn, e) {
+	var old_zoom_level = zoom_level;
+	
 	var direction = isZoomIn ? 1 : -1;
 	var factor = (1 + amount * direction);
 	
@@ -443,7 +445,7 @@ function emit_pan_zoom() {
 }
 
 function pan_zoom(new_zoom_level, x, y) {
-	var zoom_amount = (1 / new_zoom_level) - (1 / zoom_level);
+	var zoom_amount = zoom_level / new_zoom_level - 1;
 	zoom(Math.abs(zoom_amount), zoom_amount > 0);
 	objectContainer.x = to_x_local_vect(x);
 	objectContainer.y = to_y_local_vect(y);
@@ -714,6 +716,7 @@ function get_video_type(path) {
 }
 
 function reset_background() {
+	pan_zoom(1,0,0);
 	video_ready = false;
 	if (video_media) {
 		video_media.setCurrentTime(0);
