@@ -3140,7 +3140,7 @@ function draw_end_path(context, drawing) {
 
 //draw end. The default scale is if you are drawing on a canvas the exact size of the render window
 function draw_end(context, drawing, a, b, scale = 1/zoom_level) {
-	var size = (ARROW_SCALE * drawing.thickness * background_sprite.height) * objectContainer.scale.y;
+	var size = 10 * (size_y/1000) * scale;
 	if (drawing.end_size) {			
 		size = drawing.end_size * (size_y/1000) * scale;
 	}
