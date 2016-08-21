@@ -186,9 +186,9 @@ var VIDEO_EXTENSIONS = ['mp4','webgl','avi'];
 var VIDEO_SYNC_DELAY = 10000; //in ms
 var MOUSE_IDLE_HIDE_TIME = 5000;
 var MAX_CANVAS_SIZE = 4096;
-var ICON_LABEL_SCALE = 1.5;
-var TEXT_SCALE = 0.75;
-var BACKGROUND_TEXT_SCALE = 0.75;
+var ICON_LABEL_SCALE = 1.3;
+var TEXT_SCALE = 0.80;
+var BACKGROUND_TEXT_SCALE = 0.80;
 
 var chat_color = random_darkish_color();
 var room_data;
