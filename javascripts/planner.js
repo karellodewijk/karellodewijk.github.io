@@ -3810,9 +3810,9 @@ function create_icon_cont(icon, texture) {
 	
 	center_anchor(sprite);
 	
-	if (icon.label && icon.label != "") {	
-		var text = create_text_sprite(icon.label, icon.label_color, ICON_LABEL_SCALE * icon.label_font_size * 0.025 / icon.size, icon.label_font, icon.label_background, !icon.label_background, icon.label_font_modifier)
-		
+	if (icon.label && icon.label != "") {
+		var text = create_text_sprite(icon.label, icon.label_color, ICON_LABEL_SCALE * icon.label_font_size, icon.label_font, icon.label_background, true, icon.label_font_modifier)
+	
 		var label_pos = icon.label_pos;
 		if (!label_pos) {
 			label_pos = "pos_bottom";
