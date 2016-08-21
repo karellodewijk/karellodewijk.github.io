@@ -3817,6 +3817,12 @@ function create_icon_cont(icon, texture) {
 		if (!label_pos) {
 			label_pos = "pos_bottom";
 		}
+
+		icon.container.addChild(text);
+		
+		var ratio = text.width / text.height;
+		text.height = x_abs(icon.label_font_size / 450) / icon.container.scale.y
+		text.width = text.height * ratio;
 		
 		var sprite_width = sprite.width / sprite.scale.x
 		var sprite_height = sprite.height / sprite.scale.y
@@ -3845,9 +3851,6 @@ function create_icon_cont(icon, texture) {
 			text.x += sprite_width/2;
 		}
 		
-		
-		icon.container.addChild(text);
-
 	}
 	
 	icon.container.entity = icon; 
