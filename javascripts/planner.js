@@ -3954,14 +3954,8 @@ function create_entity(entity) {
 
 	if (entity.container) {
 		if (entity.scale) {
-			console.log("scale: ", entity.scale)
-			console.log("orig scale: ", entity.container.orig_scale[0])
-			console.log("cont scale: ", entity.container.scale)
-			
-			entity.container.scale.x *= entity.container.orig_scale[0] * entity.scale[0];
-			entity.container.scale.y *= entity.container.orig_scale[1] * entity.scale[1];
-			
-			console.log("new cont scale: ", entity.container.scale)
+			entity.container.scale.x = entity.container.orig_scale[0] * entity.scale[0];
+			entity.container.scale.y = entity.container.orig_scale[1] * entity.scale[1];
 		}
 	
 		if (entity.container.anchor) {
