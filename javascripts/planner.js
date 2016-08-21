@@ -187,6 +187,8 @@ var VIDEO_SYNC_DELAY = 10000; //in ms
 var MOUSE_IDLE_HIDE_TIME = 5000;
 var MAX_CANVAS_SIZE = 4096;
 var ICON_LABEL_SCALE = 1.5;
+var TEXT_SCALE = 0.75;
+var BACKGROUND_TEXT_SCALE = 0.75;
 
 var chat_color = random_darkish_color();
 var room_data;
@@ -3747,7 +3749,7 @@ function create_text_sprite(msg, color, font_size, font, background, label_shado
 
 function create_text2(text_entity) {
 	var color = '#' + ('00000' + (text_entity.color | 0).toString(16)).substr(-6); 
-	var sprite = create_text_sprite(text_entity.text, color, text_entity.font_size, text_entity.font, false, true)
+	var sprite = create_text_sprite(text_entity.text, color, TEXT_SCALE * text_entity.font_size, text_entity.font, false, true)
 	
 	if (sprite) {
 		text_entity.container = sprite;		
@@ -3769,7 +3771,7 @@ function create_text2(text_entity) {
 
 function create_background_text2(text_entity) {
 	var color = '#' + ('00000' + (text_entity.color | 0).toString(16)).substr(-6); 
-	var sprite = create_text_sprite(text_entity.text, color, text_entity.font_size, text_entity.font, true, false)
+	var sprite = create_text_sprite(text_entity.text, color, BACKGROUND_TEXT_SCALE * text_entity.font_size, text_entity.font, true, false)
 	
 	if (sprite) {
 		text_entity.container = sprite;		
@@ -5096,7 +5098,7 @@ function wot_connect() {
 							hex_color = "#FFAAAA";
 						}
 						
-						var icon = {uid:entity.id.toString(), type: 'icon', tank:entity.type, x:-1, y:-1, size:0.02, color:color, alpha:1, label:entity.tank.substring(0,10), label_font_size:5, label_color: hex_color, label_font: "Arial", label_font_modifier: "bold", label_pos:"pos_bottom", label_background:false, label_shadow:true, label_shadow:false, maxHealth:entity.maxHealth, player:entity.name}
+						var icon = {uid:entity.id.toString(), type: 'icon', tank:entity.type, x:-1, y:-1, size:0.02, color:color, alpha:1, label:entity.tank.substring(0,10), label_font_size:8, label_color: hex_color, label_font: "Arial", label_font_modifier: "bold", label_pos:"pos_bottom", label_background:false, label_shadow:true, label_shadow:false, maxHealth:entity.maxHealth, player:entity.name}
 
 						if (entity.position) {
 							var coords = transform_coords(entity.position);
@@ -5116,13 +5118,14 @@ function wot_connect() {
 					} else if ('player_team' in entity) {
 						player_team = entity['player_team']
 					} else if ('map_id' in entity) {
-						console.log(entity['map_id']);
+						console.log("map id: ", entity['map_id']);
 						var map_id = entity['map_id'];
 						var node = $('#map_select').find("[data-mapid='" + map_id + "']");
-						console.log(node.val())
-						try_select_map($('#map_select'), node.val(), false, function() {
-							render_scene()
-						});
+						if (node) {
+							try_select_map($('#map_select'), node.val(), false, function() {
+								render_scene()
+							});
+						}
 					} else if ('remove' in entity) {
 						var id = entity['remove'].toString()
 						objectContainer.removeChild(icons[id].container)
