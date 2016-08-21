@@ -3751,6 +3751,10 @@ function create_text2(text_entity) {
 	var color = '#' + ('00000' + (text_entity.color | 0).toString(16)).substr(-6); 
 	var sprite = create_text_sprite(text_entity.text, color, TEXT_SCALE * text_entity.font_size, text_entity.font, false, true)
 	
+	var ratio = sprite.width / sprite.height;
+	sprite.height = x_abs(text_entity.font_size / 440)
+	sprite.width = sprite.height * ratio;
+	
 	if (sprite) {
 		text_entity.container = sprite;		
 		sprite.x = x_abs(text_entity.x)
@@ -3772,6 +3776,10 @@ function create_text2(text_entity) {
 function create_background_text2(text_entity) {
 	var color = '#' + ('00000' + (text_entity.color | 0).toString(16)).substr(-6); 
 	var sprite = create_text_sprite(text_entity.text, color, BACKGROUND_TEXT_SCALE * text_entity.font_size, text_entity.font, true, false)
+
+	var ratio = sprite.width / sprite.height;
+	sprite.height = x_abs(text_entity.font_size / 440)
+	sprite.width = sprite.height * ratio;
 	
 	if (sprite) {
 		text_entity.container = sprite;		
