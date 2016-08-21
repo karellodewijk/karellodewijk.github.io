@@ -3590,8 +3590,7 @@ function on_icon_end(e) {
 	var x = mouse_x_rel(mouse_location.x) - (size/2);
 	var y = mouse_y_rel(mouse_location.y) - (size/2);
 	
-	console.log(size)
- 	var icon = {uid:newUid(), type: 'icon', tank:selected_icon, x:x, y:y, size:size, color:color, alpha:1, label:$('#icon_label').val(), label_font_size: label_font_size*zoom_level, label_color: "#ffffff", label_font: "Arial", label_pos:label_position, label_background:$('#label_background').get(0).checked}
+ 	var icon = {uid:newUid(), type: 'icon', tank:selected_icon, x:x, y:y, size:size, color:color, alpha:1, label:$('#icon_label').val(), label_font_size: label_font_size * zoom_level, label_color: "#ffffff", label_font: "Arial", label_pos:label_position, label_background:$('#label_background').get(0).checked}
 	
 	if (icon.label_background) {
 		icon.label_color = "#000000";
@@ -3811,16 +3810,16 @@ function create_icon_cont(icon, texture) {
 	
 	center_anchor(sprite);
 	
-	if (icon.label && icon.label != "") {
-		var text = create_text_sprite(icon.label, icon.label_color, ICON_LABEL_SCALE * icon.label_font_size * (0.025/icon.size), icon.label_font, icon.label_background, !icon.label_background, icon.label_font_modifier)
+	if (icon.label && icon.label != "") {	
+		var text = create_text_sprite(icon.label, icon.label_color, ICON_LABEL_SCALE * icon.label_font_size * 0.025 / icon.size, icon.label_font, icon.label_background, !icon.label_background, icon.label_font_modifier)
 		
 		var label_pos = icon.label_pos;
 		if (!label_pos) {
 			label_pos = "pos_bottom";
 		}
 		
-		var sprite_width = sprite.width
-		var sprite_height = sprite.height
+		var sprite_width = sprite.width / sprite.scale.x
+		var sprite_height = sprite.height / sprite.scale.y
 		
 		if (label_pos == 'pos_bottom') {
 			text.x -= text.width/2;
@@ -3829,22 +3828,23 @@ function create_icon_cont(icon, texture) {
 			text.x -= text.width/2;
 			text.y -= text.height + sprite_height/2;
 		} else if (label_pos == 'pos_left') {
-			text.x -= text.width + sprite_width/2;
+			text.x -= (text.width + sprite_width/2);
 			text.y -= text.height/2;
 		} else if (label_pos == 'pos_right') {
 			text.x += sprite_width/2;
 			text.y -= text.height/2;
 		} else if (label_pos == 'pos_top_left') {
-			text.x -= text.width + sprite_width/2;
-			text.y -= sprite_height + text.height/2;	
+			text.x -= (text.width + sprite_width/2);
+			text.y -= sprite_height/2 + text.height/2;	
 		} else if (label_pos == 'pos_top_right') {
 			text.x += sprite_width/2;
-			text.y -= sprite_height + text.height/2;			
+			text.y -= sprite_height/2 + text.height/2;			
 		} else if (label_pos == 'pos_bottom_left') {
-			text.x -= text.width + sprite_width/2;
+			text.x -= (text.width + sprite_width/2);
 		} else if (label_pos == 'pos_bottom_right') {
 			text.x += sprite_width/2;
 		}
+		
 		
 		icon.container.addChild(text);
 
