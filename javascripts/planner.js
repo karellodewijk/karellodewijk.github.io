@@ -434,6 +434,7 @@ function zoom(amount, isZoomIn, e) {
 	correct();
 
 	zoom_level = size_y / (background_sprite.height * objectContainer.scale.y);
+	$('#zoom_level').text((1/zoom_level).toFixed(2));
 	var zoom_factor = old_zoom_level / zoom_level;
 	
 	if (wot_live) {
@@ -455,6 +456,7 @@ function pan_zoom(new_zoom_level, x, y) {
 	objectContainer.y = to_y_local_vect(y);
 	
 	zoom_level = size_y / (background_sprite.height * objectContainer.scale.y);
+	$('#zoom_level').text((1/zoom_level).toFixed(2));
 	render_scene();
 }
 
@@ -943,6 +945,7 @@ function set_background(new_background, cb) {
 				grid_layer.height = background_sprite.height;
 				
 				zoom_level = size_y / (background_sprite.height * objectContainer.scale.y);
+				$('#zoom_level').text((1/zoom_level).toFixed(2));
 				
 				render_scene();
 				if (cb)	cb(true);
