@@ -446,9 +446,7 @@ function emit_pan_zoom() {
 	socket.emit('pan_zoom', room, zoom_level, from_x_local_vect(objectContainer.x), from_y_local_vect(objectContainer.y));
 }
 
-function pan_zoom(new_zoom_level, x, y) {
-	console.trace();
-	
+function pan_zoom(new_zoom_level, x, y) {	
 	var zoom_factor = zoom_level / new_zoom_level;
 	
 	objectContainer.scale.x *= zoom_factor;
