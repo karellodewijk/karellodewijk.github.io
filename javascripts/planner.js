@@ -3278,12 +3278,14 @@ function create_rectangle2(rectangle) {
 	_context.strokeRect(margin/2, margin/2, base_resolution * rectangle.width * quality, base_resolution * rectangle.height * quality);
 
 	canvas2container2(_context, _canvas, rectangle);
-	objectContainer.addChild(rectangle.container)
 
 	rectangle.container.x = x_abs(rectangle.x) - (margin/2) / quality;
 	rectangle.container.y = y_abs(rectangle.y) - (margin/2) / quality;
 	rectangle.container.width /= quality;
 	rectangle.container.height /= quality;
+	
+	rectangle.container.orig_scale = [rectangle.container.scale.x, rectangle.container.scale.y];
+	objectContainer.addChild(rectangle.container)
 	
 	render_scene();
 }
@@ -3342,12 +3344,14 @@ function create_circle2(circle) {
 	}
 	
 	canvas2container2(_context, _canvas, circle);
-	objectContainer.addChild(circle.container)
 	
 	circle.container.x = x_abs(circle.x) - base_resolution * circle.radius - (margin/2) / quality;
 	circle.container.y = y_abs(circle.y) - base_resolution * circle.radius - (margin/2) / quality;
 	circle.container.width /= quality;
 	circle.container.height /= quality;
+	
+	circle.container.orig_scale = [circle.container.scale.x, circle.container.scale.y];
+	objectContainer.addChild(circle.container)
 	
 	render_scene();
 }
@@ -3416,15 +3420,14 @@ function draw_entity(drawing, draw_function) {
 		
 		draw_function(_context, points, quality);
 		
-		canvas2container2(_context, _canvas, drawing);
-		
+		canvas2container2(_context, _canvas, drawing);	
 		
 		drawing.container.height /= (quality) ;
 		drawing.container.width /= (quality) ;
 		drawing.container.x = x_abs(drawing.x) + x_abs(left) - (margin/2) / quality;
 		drawing.container.y = y_abs(drawing.y) + y_abs(top) - (margin/2) / quality;
 	
-
+		drawing.container.orig_scale = [drawing.container.scale.x, drawing.container.scale.y];
 		objectContainer.addChild(drawing.container);
 		
 		render_scene();
@@ -3999,8 +4002,8 @@ function create_entity(entity) {
 
 	if (entity.container) {
 		if (entity.scale) {
-			entity.container.scale.x *= entity.container.orig_scale[0] * entity.scale[0];
-			entity.container.scale.y *= entity.container.orig_scale[1] * entity.scale[1];
+			entity.container.scale.x = entity.container.orig_scale[0] * entity.scale[0];
+			entity.container.scale.y = entity.container.orig_scale[1] * entity.scale[1];
 		}
 			
 		if (entity.container.anchor) {
