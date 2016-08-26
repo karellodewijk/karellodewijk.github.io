@@ -79,7 +79,6 @@ function hashstring(str) {
 }
 
 var server = servers[hashstring(room) % servers.length];
-
 console.log("connecting to server: ", server)
 
 function parse_domain(domain) {
@@ -90,6 +89,18 @@ function parse_domain(domain) {
 	return '.' + subDomain.join('.')
 }
 
+/*
+//get sid from cookie, maybe later
+function getCookie(name) {
+	var value = "; " + document.cookie;
+	var parts = value.split("; " + name + "=");
+	if (parts.length == 2) return parts.pop().split(";").shift();
+}
+
+var sid = getCookie("connect.sid");
+*/
+var sid = $("#sid").attr("data-sid")
+
 var socket;
 try {
 	if (Modernizr.websockets) {
@@ -98,7 +109,7 @@ try {
 			reconnectionDelayMax: 500,
 			'reconnection limit' : 1000,
 			'max reconnection attempts': Infinity,
-			query: "connect_sid="+$("#sid").attr("data-sid")+"&host="+parse_domain(location.hostname)
+			query: "connect_sid="+sid+"&host="+parse_domain(location.hostname)
 		});	
 	} else {
 		socket = io.connect(server, {
@@ -107,7 +118,7 @@ try {
 			reconnectionDelayMax: 500,
 			'reconnection limit' : 1000,
 			'max reconnection attempts': Infinity,
-			query: "connect_sid="+$("#sid").attr("data-sid")+"&host="+parse_domain(location.hostname)
+			query: "connect_sid="+sid+"&host="+parse_domain(location.hostname)
 		});	
 	}
 } catch(e) {
@@ -3172,7 +3183,8 @@ function draw_end_path(context, drawing) {
 }
 
 //draw end. The default scale is if you are drawing on a canvas the exact size of the render window
-function draw_end(context, drawing, a, b, scale = 1/zoom_level) {
+function draw_end(context, drawing, a, b, scale) {
+	if (scale === undefined) scale = 1/zoom_level;
 	var size = 10 * (size_y/1000) * scale;
 	if (drawing.end_size) {			
 		size = drawing.end_size * (size_y/1000) * scale;
@@ -3254,7 +3266,8 @@ function canvas2container(_context, _canvas, entity) {
 	}
 }
 
-function init_shape_canvas(_context, shape, scale = 1) {
+function init_shape_canvas(_context, shape, scale) {
+	if(scale === undefined) scale = 1;
 	init_canvas(_context, shape.outline_thickness * scale, shape.outline_color, shape.style, shape.fill_opacity, shape.fill_color, shape.outline_opacity)
 }
 
@@ -3729,7 +3742,8 @@ function on_line_end(e) {
 }
 
 
-function create_text_sprite(msg, color, font_size, font, background, label_shadow, font_modifier = "") {
+function create_text_sprite(msg, color, font_size, font, background, label_shadow, font_modifier) {
+	if(font_modifier === undefined) font_modifier = "";
 	var _canvas = document.createElement("canvas");
 	var scaling = objectContainer.scale.y;
 	var _context = _canvas.getContext("2d");
@@ -4092,6 +4106,9 @@ function update_my_user() {
 		if (tactic_name && tactic_name != "") {
 			$("#save").show();
 		}
+		$('#sign_in_text').text(my_user.name.substring(0,9));
+		$('#login_dropdown').removeClass('btn-warning')
+		$('#login_dropdown').addClass('btn-success')
 	} else {
 		$("#store_tactic_popover").hide();
 		$("#save").hide();
@@ -5004,7 +5021,9 @@ function set_playback_rate(base, rate) {
 	}
 }
 
-function create_hp_bar(scale = 1) {
+function create_hp_bar(scale) {
+	if(scale === undefined) scale = 1;
+	
 	var width = to_x_local_vect(0.125 * scale);
 	var height = to_y_local_vect(0.015 * scale);
 	
@@ -5217,8 +5236,9 @@ function wot_connect() {
 							}
 							
 						}
-						difference = new Set([...new Set(Object.keys(icons))].filter(x => !ids.has(x)));
-						for (let i of difference) {
+						difference = Object.keys(icons).filter(function(a) {return !ids.has(a)});
+						
+						for (var i in difference) {
 							if (icons[i] && icons[i].container) {
 								icons[i].container.alpha = 0.5;
 							}
@@ -6074,7 +6094,7 @@ $(document).ready(function() {
 		}
 	});
 	
-	socket.on('room_data', function(new_room_data, my_id, new_tactic_name) {
+	socket.on('room_data', function(new_room_data, my_id, new_tactic_name, locale) {
 		cleanup();
 		room_data = new_room_data;
 		video_paused = new_room_data.video_paused;
@@ -6082,6 +6102,15 @@ $(document).ready(function() {
 		is_room_locked = room_data.locked;
 		my_user_id = my_id;
 		tactic_name = new_tactic_name;
+		
+		/*
+		$("#locale_icon").addClass("icon-"+locale);
+		$("#locale_text").text(locale);
+		$("#language_select").find('a').each(function() { 
+			$(this).attr('href', $(this).attr('href') + parse_domain(location.href.split('://')[1]))
+		});
+		*/
+		
 		if (tactic_name && tactic_name != "") {
 			document.title = "Tactic - " +  tactic_name;
 		}
@@ -6108,6 +6137,8 @@ $(document).ready(function() {
 		var on_done = function() {
 			if (room_data.pan_zoom) {
 				pan_zoom(room_data.pan_zoom[0], room_data.pan_zoom[1], room_data.pan_zoom[2]);
+			} else {
+				pan_zoom(1, 0, 0);
 			}
 			if (wot_live) {
 				wot_connect();
