@@ -459,7 +459,7 @@ function emit_pan_zoom() {
 
 function pan_zoom(new_zoom_level, x, y) {	
 	var zoom_factor = zoom_level / new_zoom_level;
-	
+
 	objectContainer.scale.x *= zoom_factor;
 	objectContainer.scale.y *= zoom_factor;	
 	
@@ -908,7 +908,9 @@ function wait_for_seek(cb) {
 	}, 5);
 }
 
-function change_background_dim(height) {
+function change_background_dim(height) {	
+	var old_zoom_level = zoom_level;
+
 	var ratio = background_sprite.texture.width / background_sprite.texture.height;
 	var width = height * ratio; 
 	
@@ -931,11 +933,13 @@ function change_background_dim(height) {
 	}
 	
 	zoom_level = size_y / (background_sprite.height * objectContainer.scale.y);
-	//pan_zoom(1,0,0);
+	pan_zoom(old_zoom_level, from_x_local_vect(objectContainer.x), from_y_local_vect(objectContainer.y))
+	
 }
 
-function set_background(new_background, cb) {	
+function set_background(new_background, cb) {
 	if (new_background.path != "") {
+		
 		if (!new_background.is_video) {		
 			resources_loading++;
 
@@ -943,7 +947,7 @@ function set_background(new_background, cb) {
 
 			var on_loaded = function() {
 				reset_background()
-
+				
 				background = new_background;
 				history[background.uid] = background;
 				background_sprite.texture = texture;
@@ -972,10 +976,9 @@ function set_background(new_background, cb) {
 				} else {
 					$("#map_size").text("");
 				}
-				
-				window.onresize();		
-
+					
 				change_background_dim(renderer.view.height)
+				window.onresize();
 				
 				render_scene();
 				
