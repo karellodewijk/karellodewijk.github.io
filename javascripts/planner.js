@@ -99,28 +99,18 @@ function getCookie(name) {
 
 var sid = getCookie("connect.sid");
 */
+
 var sid = $("#sid").attr("data-sid")
 
 var socket;
 try {
-	if (Modernizr.websockets) {
-		socket = io.connect(server, {
-			reconnectionDelay: 100,
-			reconnectionDelayMax: 500,
-			'reconnection limit' : 1000,
-			'max reconnection attempts': Infinity,
-			query: "connect_sid="+sid+"&host="+parse_domain(location.hostname)
-		});	
-	} else {
-		socket = io.connect(server, {
-			transports: ['polling'],
-			reconnectionDelay: 100,
-			reconnectionDelayMax: 500,
-			'reconnection limit' : 1000,
-			'max reconnection attempts': Infinity,
-			query: "connect_sid="+sid+"&host="+parse_domain(location.hostname)
-		});	
-	}
+	socket = io.connect(server, {
+		reconnectionDelay: 100,
+		reconnectionDelayMax: 500,
+		'reconnection limit' : 1000,
+		'max reconnection attempts': Infinity,
+		query: "connect_sid="+sid+"&host="+parse_domain(location.hostname)
+	});	
 } catch(e) {
 	console.log(e);
 }
@@ -4219,8 +4209,13 @@ function chat(message, color) {
 	$("#chat_box").scrollTop($("#chat_box")[0].scrollHeight);
 }
 
+function supports_color_input() {
+  var colorInput = $('<input type="color" value="!" />')[0];
+  return colorInput.type === 'color' && colorInput.value !== '!';
+};
+
 function initialize_color_picker(slider_id, variable_name) {
-	if (Modernizr.inputtypes.color) {
+	if (supports_color_input()) {
 		$('#' + slider_id + ' ~ input').show();
 	} else {
 		$('#' + slider_id + ' ~ input').hide();
@@ -5266,11 +5261,7 @@ $(document).ready(function() {
 	size_x = size;
 	size_y = size;
 
-	if (Modernizr.webgl && !nowebgl) {
-		renderer = PIXI.autoDetectRenderer(size, size, {transparent:true});
-	} else {
-		renderer = new PIXI.CanvasRenderer(size, size, {transparent:true});
-	}
+	renderer = PIXI.autoDetectRenderer(size, size, {transparent:true});
 	renderer.autoResize = true;
 	useWebGL = renderer instanceof PIXI.WebGLRenderer;
 
