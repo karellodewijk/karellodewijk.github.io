@@ -84,8 +84,7 @@
 			   v_texcoord.y > 1.0) {
 			 discard;
 		   }
-		   gl_FragColor = texture2D(texture, v_texcoord);
-		   gl_FragColor.w *= u_global_alpha;
+		   gl_FragColor = u_global_alpha * texture2D(texture, v_texcoord);
 		}
 	`
 
@@ -110,8 +109,7 @@
 		varying vec2 v_texcoord;
 		 
 		void main() {
-		   gl_FragColor = texture2D(texture, v_texcoord);
-		   gl_FragColor.w *= u_global_alpha;
+		   gl_FragColor = u_global_alpha * texture2D(texture, v_texcoord);
 		}
 	`
 	
@@ -147,8 +145,7 @@
 		uniform float u_global_alpha;
 
 		void main() {
-		   gl_FragColor = u_color;
-		   gl_FragColor.w *= u_global_alpha;
+		   gl_FragColor = u_global_alpha * u_color;
 		}
 	`
 
@@ -171,11 +168,8 @@
 
 		varying vec4 v_color;
 		
-		uniform float u_global_alpha;
-
 		void main() {
 		   gl_FragColor = v_color;
-		   gl_FragColor.w *= u_global_alpha;
 		}
 	`
 	
@@ -232,7 +226,7 @@
 			
 			w = max(w, 0.0);
 	
-			gl_FragColor = w * color1 + (1.0 - w) *  color2;
+			gl_FragColor = w * color1 + (1.0 - w) * color2;
 		}
 	`
 	
@@ -254,10 +248,12 @@
 		precision mediump float;
 
 		uniform vec4 u_color;
+		uniform float u_global_alpha;
 		varying float v_alpha;
+		
 
 		void main() {
-		   gl_FragColor = v_alpha * vec4(u_color.xyz, u_color.w);
+		   gl_FragColor = u_global_alpha * v_alpha * vec4(u_color.xyz, u_color.w);
 		}
 	`
 	
@@ -283,9 +279,10 @@
 		
 		varying float v_alpha;
 		varying vec2 v_texcoord;
+		uniform float u_global_alpha;
 
 		void main() {
-		   gl_FragColor = v_alpha * texture2D(texture, v_texcoord);
+		   gl_FragColor = u_global_alpha * v_alpha * texture2D(texture, v_texcoord);
 		}
 	`
 	
@@ -1309,8 +1306,12 @@
 					}
 				}
 			} else {
-				//we can just use it directly
-				buffer = imagedata.data;
+				//we can just use it directly				
+				if (!(buffer instanceof Uint8Array)) {
+					buffer = new Uint8Array(imagedata.data);
+				} else {
+					buffer = imagedata.data;
+				}
 			}
 			
 			var program = this._select_program(this.direct_texture_program);
@@ -1651,6 +1652,8 @@
 			return program;
 		},
 		_draw_shadow(transform, draw_cb) {
+			if (this.shadowOffsetX == 0 && this.shadowOffsetX==0 && this.shadowBlur == 0) return;
+			
 			var gl = this.gl;
 			
 			var old_texture = gl.getParameter(gl.ACTIVE_TEXTURE);
@@ -1884,9 +1887,7 @@
 				program = this._select_program(this.simple_program);
 				gl.uniform4fv(program.colorLocation, this.fillStyleRGBA);
 			}
-
-			
-							
+				
 			var points = [x, y, x+width, y, x+width, y+height, x, y+height];	
 				
 			var _this = this;
@@ -1896,7 +1897,7 @@
 				_this._set_zindex();
 				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 			});
-
+			
 			var transform = matrixMultiply(this._transform, this.projectionMatrix);
 			gl.uniformMatrix4fv(program.transformLocation, false, transform);
 			gl.uniform1f(program.globalAlphaLocation, this.globalAlpha);
@@ -2306,9 +2307,15 @@
 			var _this = this;
 			var image_loaded = function() {
 				var program = _this._select_program(_this.image_program);
-
-				var img_width = img.width;
-				var img_height = img.height;
+				
+				var img_width, img_height;
+				if (img instanceof HTMLImageElement) {
+					img_width = img.naturalWidth;
+					img_height = img.naturalHeight;
+				} else {
+					img_width = img.width;
+					img_height = img.height;					
+				}
 				
 				if (dstX === undefined) {
 					dstX = srcX;
@@ -2383,6 +2390,7 @@
 
 				matrix = matrixMultiply(matrix, _this.projectionMatrix);
 				gl.uniformMatrix4fv(program.transformLocation, false, matrix);
+				gl.uniform1f(program.globalAlphaLocation, _this.globalAlpha);
 				
 				_this.__prepare_clip();
 				gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
@@ -2394,7 +2402,7 @@
 				_this.__execute_clip();
 			}
 			
-			if (img.complete) {
+			if (img.complete || (!(img instanceof HTMLImageElement))) {
 				image_loaded();
 			} else {
 				img.addEventListener('load', image_loaded);
