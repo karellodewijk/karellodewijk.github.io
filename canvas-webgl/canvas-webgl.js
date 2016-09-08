@@ -1210,28 +1210,28 @@
 							-Math.sin(angle), Math.cos(angle), 0, 0,
 							0,0,1,0,
 							0,0,0,1];
-			this._transform = matrixMultiply(this._transform, rotation);
+			this._transform = matrixMultiply(rotation, this._transform);
 		},
 		scale(x, y) {
 			var scale = [x, 0, 0, 0,
 						 0, y, 0, 0,
 						 0, 0, 1, 0,
 						 0, 0, 0, 1];
-			this._transform = matrixMultiply(this._transform, scale);
+			this._transform = matrixMultiply(scale, this._transform);
 		},
 		translate(x, y) {
 			var translate = [1, 0, 0, 0,
 						     0, 1, 0, 0,
 						     0, 0, 1, 0,
 						     x, y, 0, 1];
-			this._transform = matrixMultiply(this._transform, translate);
+			this._transform = matrixMultiply(translate, this._transform);
 		},
 		transform(a, b, c, d, e, f) {
 			var transform = [a, b, 0, 0,
 						     c, d, 0, 0,
 						     0, 0, 1, 0,
 						     e, f, 0, 1];	
-			this._transform = matrixMultiply(this._transform, transform);
+			this._transform = matrixMultiply(transform, this._transform);
 		},
 		resetTransform() {
 			this._transform = [1, 0, 0, 0,
@@ -1252,8 +1252,8 @@
 		save() {
 			var saveState = {_transform:this._transform, clipPlane:this.clipPlane, strokeStyle:this.strokeStyle, fillStyle:this.fillStyle, globalAlpha:this.globalAlpha, lineWidth:this.lineWidth,
 							  lineCap:this.lineCap, lineJoin:this.lineJoin, miterLimit:this.miterLimit,lineDashOffset:this.lineDashOffset, shadowOffsetX:this.shadowOffsetX, 
-							  shadowOffsetY:this.shadowOffsetY, shadowColor:this.shadowColor, filter:this.filter, globalCompositeOperation:this.globalCompositeOperation, 
-							  font:this.font, textAlign:this.textAlign, textBaseLine:this.textBaseLine, direction:this.direction, imageSmoothingEnabled:this.imageSmoothingEnabled,
+							  shadowOffsetY:this.shadowOffsetY, shadowBlur:this.shadowBlur, shadowColor:this.shadowColor, filter:this.filter, globalCompositeOperation:this.globalCompositeOperation, 
+							  font:this.font, textAlign:this.textAlign, textBaseline:this.textBaseline, direction:this.direction, imageSmoothingEnabled:this.imageSmoothingEnabled,
 							  imageSmoothingQuality:this.imageSmoothingQuality, lineDash:this.lineDash};
 			if (this.saveStack) {
 				this.saveStack.push(saveState);
@@ -1277,11 +1277,12 @@
 			this.shadowOffsetX = s.shadowOffsetX;
 			this.shadowOffsetY = s.shadowOffsetY;
 			this.shadowColor = s.shadowColor;
+			this.shadowBlur = s.shadowBlur;
 			this.filter = s.filter;
 			this.globalCompositeOperation = s.globalCompositeOperation;
 			this.font = s.font;
 			this.textAlign = s.textAlign;
-			this.textBaseLine = s.textBaseLine;
+			this.textBaseline = s.textBaseline;
 			this.direction = s.direction;
 			this.imageSmoothingEnabled = s.imageSmoothingEnabled;
 			this.imageSmoothingQuality = s.imageSmoothingQuality;
