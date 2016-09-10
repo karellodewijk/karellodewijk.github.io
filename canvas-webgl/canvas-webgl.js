@@ -1019,6 +1019,8 @@
 		
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
+		
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);
@@ -1038,6 +1040,7 @@
 
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
@@ -1061,6 +1064,7 @@
 		
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
@@ -1083,6 +1087,7 @@
 
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
@@ -1107,6 +1112,7 @@
 
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);			
@@ -1123,6 +1129,7 @@
 
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
@@ -1145,6 +1152,7 @@
 		
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
@@ -1168,6 +1176,7 @@
 		
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
@@ -1188,6 +1197,7 @@
 
 		program.positionLocation = gl.getAttribLocation(program, "a_position");
 		program.vertexBuffer = gl.createBuffer();
+		program.indexBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 		gl.enableVertexAttribArray(program.positionLocation);
 		gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
@@ -1488,8 +1498,7 @@
 			var _path = this.path;
 			if(path) {  
 				_path = path;
-			}
-			
+			}		
 			if (!this.clipPlane) {
 				this.clipPlane = [];
 			}
@@ -1504,14 +1513,12 @@
 					this.clipPlane.push(currentPath[triangles[i]*2], currentPath[triangles[i]*2+1]);
 					this.clipPlane.push(currentPath[triangles[i+1]*2], currentPath[triangles[i+1]*2+1]);
 					this.clipPlane.push(currentPath[triangles[i+2]*2], currentPath[triangles[i+2]*2+1]);
-				}
-								
+				}			
 				if (!closed) {
 					currentPath.pop();
 					currentPath.pop();
 				}
 			}
-			
 		},
 		resetClip() {
 			delete this.clipPlane;
@@ -1519,14 +1526,13 @@
 			delete this.clipTexture
 		},
 		__prepare_clip() {
-			if (this.clipPlane && this.clipPlane.length > 0) {
+			if (this.clipPlane) {
 				var gl = this.gl;
 				if (!this.clipFramebuffer) {
 					this.clipFramebuffer = gl.createFramebuffer();
 					gl.bindFramebuffer(gl.FRAMEBUFFER, this.clipFramebuffer);
 					this.clipFramebuffer.width = this.width;
 					this.clipFramebuffer.height = this.height;					
-					gl.activeTexture(gl.TEXTURE0);
 					this.clipTexture = gl.createTexture();		
 					gl.bindTexture(gl.TEXTURE_2D, this.clipTexture);
 					gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.clipFramebuffer.width, this.clipFramebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -1537,31 +1543,26 @@
 					gl.clearColor(0, 0, 0, 0);
 				} else {				
 					gl.bindFramebuffer(gl.FRAMEBUFFER, this.clipFramebuffer);
-					gl.activeTexture(gl.TEXTURE0);
 					gl.bindTexture(gl.TEXTURE_2D, this.clipTexture);
 					gl.clear(gl.COLOR_BUFFER_BIT);
-				}	
+				}
 			}
 		},
 		__execute_clip(z_index) {
-			if (this.clipPlane && this.clipPlane.length > 0) {
-				var gl = this.gl;
+			var gl = this.gl;
+			if (this.clipPlane && this.clipPlane.length > 0 ) {			
 				var program = this._select_program(this.texture_program);
 				gl.activeTexture(gl.TEXTURE3);
 				gl.bindTexture(gl.TEXTURE_2D, this.clipTexture);
 				gl.uniform1i(program.textureLocation, 3);
-				gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-				
-				//var transform = matrixMultiply(this._transform, this.projectionMatrix);
-				//gl.uniformMatrix4fv(program.transformLocation, false, transform);
-				
+				gl.bindFramebuffer(gl.FRAMEBUFFER, null);				
+				gl.uniformMatrix4fv(program.transformLocation, false, this.projectionMatrix);				
 				gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);				
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.clipPlane), gl.STATIC_DRAW);
 				gl.uniform1f(program.zindexLocation, z_index);
-				gl.drawArrays(gl.TRIANGLES, 0, this.clipPlane.length/2);			
-				
-				gl.bindTexture(gl.TEXTURE_2D, null);
+				gl.drawArrays(gl.TRIANGLES, 0, this.clipPlane.length/2);
 			}
+			gl.bindTexture(gl.TEXTURE_2D, null);
 		},
 		
 		isPointInPath(path, x, y) {
@@ -1956,7 +1957,7 @@
 			if(path) {  
 				_path = path;
 			}
-			
+						
 			var gl = this.gl;			
 			var program;
 			
@@ -1970,6 +1971,8 @@
 				gl.uniform4fv(program.colorLocation, this.fillStyleRGBA);
 			}
 			
+			var vertices = [];
+			var indices = []
 			for (var i in _path.paths) {
 				var currentPath = _path.paths[i];
 				var closed = currentPath[0] == currentPath[currentPath.length-2] && currentPath[1] == currentPath[currentPath.length-1];			
@@ -1977,41 +1980,54 @@
 					currentPath.push(currentPath[0],  currentPath[1]);
 				}
 				var triangles = earcut(currentPath);
-
-				var data = []				
-				for (var i = 0; i < triangles.length; i+=3) {
-					data.push(currentPath[triangles[i]*2], currentPath[triangles[i]*2+1]);
-					data.push(currentPath[triangles[i+1]*2], currentPath[triangles[i+1]*2+1]);
-					data.push(currentPath[triangles[i+2]*2], currentPath[triangles[i+2]*2+1]);
+				
+				if (triangles.length > 0) {
+					var offset = vertices.length/2;
+					for (var j in triangles) {
+						indices.push(offset+triangles[j]);
+					}
+					for (var j in currentPath) {
+						vertices.push(currentPath[j])
+					}
 				}
 
 				if (!closed) {
 					currentPath.pop();
 					currentPath.pop();
 				}
-								
-				var _this = this;
-				
-				this._draw_shadow(this._transform, this.currentZIndex, function() {	
-					gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);				
-					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-					gl.drawArrays(gl.TRIANGLES, 0, data.length/2);
-				});
-				this.currentZIndex -=EPSILON;
-
-				var transform = matrixMultiply(this._transform, this.projectionMatrix);
-				gl.uniformMatrix4fv(program.transformLocation, false, transform);
-				this._set_zindex();
-				gl.uniform1f(program.globalAlphaLocation, this.globalAlpha);
-				
-				this.__prepare_clip();
-				gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
-				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-				gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
-				gl.drawArrays(gl.TRIANGLES, 0, data.length/2);
-				this.__execute_clip(this.currentZIndex)
-				this.currentZIndex -=EPSILON;
 			}
+			
+			this.__prepare_clip();
+			
+			var _this = this;		
+			this._draw_shadow(this._transform, this.currentZIndex, function() {	
+				gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);					
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer);
+				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);	
+				gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer);
+				gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+			});
+			this.currentZIndex -=EPSILON;
+
+			var transform = matrixMultiply(this._transform, this.projectionMatrix);
+			gl.uniformMatrix4fv(program.transformLocation, false, transform);
+			this._set_zindex();
+			gl.uniform1f(program.globalAlphaLocation, this.globalAlpha);
+	
+			gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);					
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);	
+			gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);
+			
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer);
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+			
+			this.__execute_clip(this.currentZIndex)
+			this.currentZIndex -=EPSILON;
+			
 		},
 		fillRect(x, y, width, height) {
 			var gl = this.gl;			
@@ -2029,6 +2045,7 @@
 				
 			var points = [x, y, x+width, y, x+width, y+height, x, y+height];	
 			
+			this.__prepare_clip();
 			var _this = this;
 			this._draw_shadow(this._transform, this.currentZIndex, function() {	
 				gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);				
@@ -2043,7 +2060,7 @@
 			gl.uniform1f(program.globalAlphaLocation, this.globalAlpha);
 			this._set_zindex();
 			
-			this.__prepare_clip();
+			
 			gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(points), gl.STATIC_DRAW);
 			gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
@@ -2082,9 +2099,9 @@
 			}
 
 			if (use_linedash) {
-				var to_draw_or_not_to_draw, new_array;
-				[new_array, to_draw_or_not_to_draw] = this._prepare_line_dash(array, closed, lineWidthDiv2);
-				array = new_array;
+				var result = this._prepare_line_dash(array, closed, lineWidthDiv2);
+				to_draw_or_not_to_draw = result[1];
+				array = result[0];
 			}
 			
 			var triangle_buffer = [];
@@ -2336,7 +2353,8 @@
 				triangle_buffer = new_triangle_buffer;
 				to_draw_buffer = new_to_draw_buffer;
 			}
-						
+				
+			this.__prepare_clip();
 			var _this = this;
 			this._draw_shadow(this._transform, this.currentZIndex, function() {
 				if (use_linedash) {
@@ -2356,7 +2374,7 @@
 			gl.uniform1f(program.globalAlphaLocation, this.globalAlpha);
 			this._set_zindex();
 			
-			this.__prepare_clip();
+			
 			if (use_linedash) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, program.toDrawBuffer);
 				gl.vertexAttribPointer(program.toDrawLocation, 1, gl.FLOAT, false, 0, 0);	
@@ -2563,19 +2581,24 @@
 				//var points = [0, 0, 1, 0, 1, 1, 0, 1]
 				var points = [0, 0, 1, 0, 1, 1, 0, 1]
 				
+				//TODO: canvasMark fails when I enable clipping on drawImage
+				_this.__prepare_clip();				
 				_this._draw_shadow(matrix, temp_z_index, function() {	
+					gl.activeTexture(gl.TEXTURE4);
+					gl.bindTexture(gl.TEXTURE_2D, _this.imageTexture);	
 					gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);				
 					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(points), gl.STATIC_DRAW);
 					gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 				});
 				temp_z_index -= EPSILON;
 
+				gl.activeTexture(gl.TEXTURE4);
+				gl.bindTexture(gl.TEXTURE_2D, _this.imageTexture);	
+				
 				matrix = matrixMultiply(matrix, _this.projectionMatrix);
 				gl.uniformMatrix4fv(program.transformLocation, false, matrix);
 				gl.uniform1f(program.globalAlphaLocation, _this.globalAlpha);
 				
-				//TODO: canvasMark fails when I enable clipping on drawImage
-				//_this.__prepare_clip();
 				gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
 				gl.vertexAttribPointer(program.positionLocation, 2, gl.FLOAT, false, 0, 0);	
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(points), gl.STATIC_DRAW);
@@ -2583,7 +2606,7 @@
 				gl.uniform1f(program.zindexLocation, temp_z_index);
 				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);	
 				
-				//_this.__execute_clip(temp_z_index)
+				_this.__execute_clip(temp_z_index)
 				temp_z_index -= EPSILON;
 			}
 			
