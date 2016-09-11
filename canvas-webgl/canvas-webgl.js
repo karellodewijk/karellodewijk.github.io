@@ -1209,8 +1209,7 @@
 		
 		//init some other random webgl stuff
 		gl.enable(gl.DEPTH_TEST);
-		gl.depthFunc(gl.LESS);
-		
+		gl.depthFunc(gl.LESS);		
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 		gl.enable(gl.BLEND);
 
@@ -1761,6 +1760,26 @@
 			}
 			
 			return [new_path, to_draw_or_not_to_draw];
+		},
+		set globalCompositeOperation(new_globcomp) {
+			var gl = this.gl;
+			switch(new_globcomp) {
+				case 'source-over':
+					gl.blendEquation(gl.FUNC_ADD);
+					gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);					
+					break;
+				case 'copy':
+					gl.blendEquation(gl.FUNC_ADD);
+					gl.blendFunc(gl.ONE, gl.ZERO);
+					break;
+				default:
+				    return; //couldn't find it, so don't change it
+			}
+			this._globalCompositeOperation = new_globcomp;
+			
+		},
+		get globalCompositeOperation() {
+			return this._globalCompositeOperation;
 		},
 		get fillStyle() {
 			return this._fillStyle;
