@@ -1,0 +1,165 @@
+
+.squad_icons {
+  background-image: url('squad_icons.png');
+}
+
+.squad_icons-medic {
+  background-position: -0px -0px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-ammo_crate {
+  background-position: -0px -100px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-attack {
+  background-position: -0px -200px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-attack_flag {
+  background-position: -0px -300px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-automatic_rifleman {
+  background-position: -0px -400px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-build {
+  background-position: -0px -500px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-defend {
+  background-position: -0px -600px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-defense_flag {
+  background-position: -0px -700px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-fort {
+  background-position: -0px -800px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-grenadier {
+  background-position: -0px -900px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-grey_flag {
+  background-position: -0px -1000px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-hmg {
+  background-position: -0px -1100px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-infantry {
+  background-position: -0px -1200px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-insurgent_flag {
+  background-position: -0px -1300px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-light_at {
+  background-position: -0px -1400px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-main_base {
+  background-position: -0px -1500px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-armored {
+  background-position: -0px -1600px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-medic_icon {
+  background-position: -0px -1700px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-militia_flag {
+  background-position: -0px -1800px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-rally_point {
+  background-position: -0px -1900px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-rifleman {
+  background-position: -0px -2000px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-russian_flag {
+  background-position: -0px -2100px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-scout {
+  background-position: -0px -2200px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-sniper {
+  background-position: -0px -2300px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-squad_leader {
+  background-position: -0px -2400px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-squad_member {
+  background-position: -0px -2500px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-suppliy_truck {
+  background-position: -0px -2600px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-taken {
+  background-position: -0px -2700px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-truck {
+  background-position: -0px -2800px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-us_flag {
+  background-position: -0px -2900px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-vehicle {
+  background-position: -0px -3000px;
+  width: 100px;
+  height: 100px;
+}
+.squad_icons-waypoint {
+  background-position: -0px -3100px;
+  width: 100px;
+  height: 100px;
+}
