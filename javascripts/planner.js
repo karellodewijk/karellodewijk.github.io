@@ -295,6 +295,7 @@ var temp_draw_context;
 var grid_layer;
 var zoom_level = 1;
 var control_camera = false;
+var touches = [];
 
 //these variables are only for the video replay room
 var offset = 0; // time offset from the server in ms 
@@ -1518,9 +1519,9 @@ function update_pings() {
 		
 		if (delta <= 0) {
 			sprite.container.removeChild(sprite);
+			render_scene();
 			return false;	
 		}
-		
 		render_scene();
 		return true;
 	});
@@ -5403,6 +5404,7 @@ $(document).ready(function() {
 	$(temp_draw_canvas).hide();
 	$(draw_canvas).hide();
 	
+	//animation loop
 	function animate() {
 		if (video_ready) {
 			progress_timeline();
@@ -5418,6 +5420,8 @@ $(document).ready(function() {
 		requestAnimationFrame(animate);
 	}
 	animate();
+	
+
 	
 	loader.once('complete', function () {
 		//generate ticks, leveraged from: http://thenewcode.com/864/Auto-Generate-Marks-on-HTML5-Range-Sliders-with-JavaScript
