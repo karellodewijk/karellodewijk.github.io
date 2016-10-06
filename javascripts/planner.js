@@ -450,10 +450,6 @@ function zoom(amount, isZoomIn, center, e) {
 	zoom_level = size_y / (background_sprite.height * objectContainer.scale.y);
 	var zoom_factor = old_zoom_level / zoom_level;
 	
-	if (wot_live) {
-		wot_scale(zoom_factor);
-	}
-	
 	for (var i in room_data.slides[active_slide].entities) {
 		var entity = room_data.slides[active_slide].entities[i];
 		if (entity.type == 'icon' && entity.container && entity.draw_zoom_level) {
@@ -5180,14 +5176,6 @@ function create_hp_bar(scale) {
 }
 
 var icons = {}
-function wot_scale(factor) {
-	for (var i in icons) {
-		if (icons[i] && icons[i].container) {
-			icons[i].container.scale.x /= factor;
-			icons[i].container.scale.y /= factor;
-		}
-	}
-}
 
 function wot_connect() {
 	var top, left, bottom, right, width, height;
@@ -5219,7 +5207,13 @@ function wot_connect() {
 		bar.x -= bar.width / 2
 		bar.y -= icon.container.height + bar.height
 		icon.container.addChild(bar);
-		var name = create_text_sprite(icon.player.substring(0,9), icon.label_color, 12, "Arial", false, true, "bold");
+		
+		var name = create_text_sprite(icon.player.substring(0,9), icon.label_color, 8, "Arial", false, true, "bold");
+		var ratio = name.width / name.height;
+		name.height = x_abs(8 / 530)
+		name.width = name.height * ratio;	
+	
+		
 		name.x -= name.width/2
 		name.y -= icon.container.height + bar.height + name.height
 		icon.container.addChild(name);			
