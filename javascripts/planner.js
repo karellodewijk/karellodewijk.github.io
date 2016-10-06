@@ -423,6 +423,16 @@ function paste() {
 	undo_list.push(clone_action(["add", new_entities]));	
 }
 
+function adjust_icon_zoom(icon) {
+	if (icon.container && icon.draw_zoom_level) {
+		var sprite = icon.container;
+		var scale = zoom_level / icon.draw_zoom_level;
+		var ratio = sprite.width / sprite.height;
+		sprite.height = x_abs(icon.size) * scale;
+		sprite.width = sprite.height * ratio;
+	}
+}
+
 function zoom(amount, isZoomIn, center, e) {
 	var old_zoom_level = zoom_level
 	var direction = isZoomIn ? 1 : -1;
@@ -442,6 +452,13 @@ function zoom(amount, isZoomIn, center, e) {
 	
 	if (wot_live) {
 		wot_scale(zoom_factor);
+	}
+	
+	for (var i in room_data.slides[active_slide].entities) {
+		var entity = room_data.slides[active_slide].entities[i];
+		if (entity.type == 'icon' && entity.container && entity.draw_zoom_level) {
+			adjust_icon_zoom(entity)
+		}
 	}
 }
 
@@ -3655,7 +3672,7 @@ function on_icon_end(e) {
 	var x = mouse_x_rel(mouse_location.x) - (size/2);
 	var y = mouse_y_rel(mouse_location.y) - (size/2);
 	
- 	var icon = {uid:newUid(), type: 'icon', tank:selected_icon, x:x, y:y, size:size, color:color, alpha:1, label:$('#icon_label').val(), label_font_size: label_font_size * zoom_level, label_color: "#ffffff", label_font: "Arial", label_pos:label_position, label_background:$('#label_background').get(0).checked}
+ 	var icon = {uid:newUid(), type: 'icon', tank:selected_icon, x:x, y:y, size:size, color:color, alpha:1, label:$('#icon_label').val(), label_font_size: label_font_size * zoom_level, label_color: "#ffffff", label_font: "Arial", label_pos:label_position, label_background:$('#label_background').get(0).checked, draw_zoom_level:zoom_level}
 	
 	if (icon.label_background) {
 		icon.label_color = "#000000";
@@ -3943,6 +3960,8 @@ function create_icon_cont(icon, texture) {
 	make_draggable(icon.container);	
 
 	objectContainer.addChild(icon['container']);
+	
+	adjust_icon_zoom(icon)
 	render_scene();	
 	
 	room_data.slides[active_slide].entities[icon.uid] = icon;
