@@ -6050,7 +6050,23 @@ $(document).ready(function() {
 			}
 			render_scene();
 		});
+		
+		$('#zoom_in').click(function() {
+			zoom(0.1, true, [0.5, 0.5]);
+			$('#zoom_level').text((1/zoom_level).toFixed(2));
+			if (control_camera) {
+				emit_pan_zoom();
+			}
+		});
 
+		$('#zoom_out').click(function() {
+			zoom(0.1, false, [0.5, 0.5]);
+			$('#zoom_level').text((1/zoom_level).toFixed(2));
+			if (control_camera) {
+				emit_pan_zoom();
+			}			
+		});
+		
 		//tool select
 		$('#contexts').on('click', 'button', function (e) {
 			stop_drawing();
