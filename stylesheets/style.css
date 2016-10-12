@@ -5,6 +5,7 @@ div#preload { display: none; }
 	font-family: 'Open Sans', sans-serif;
 	line-height: 1.7;
 	color: #494949;
+	font-weight:400;
 }
 
 #quote {
@@ -18,6 +19,7 @@ body {
 h1,h2,h3,h4 {
 	font-weight: 700;
 	font-family: 'Roboto Slab', serif;
+	color: #444444;
 }
 
 h1 { 
