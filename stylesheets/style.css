@@ -8,18 +8,18 @@ div#preload { display: none; }
 	font-weight:400;
 }
 
+.jumbotron h1, .jumbotron h2, .jumbotronh3, .jumbotronh4 {
+	font-weight: 700;
+	font-family: 'Roboto Slab', serif;
+	color: #444444;
+}
+
 #quote {
 	color:white;
 }
 
 body {
 	background: #DDDDDD;
-}
-
-h1,h2,h3,h4 {
-	font-weight: 700;
-	font-family: 'Roboto Slab', serif;
-	color: #444444;
 }
 
 h1 { 
