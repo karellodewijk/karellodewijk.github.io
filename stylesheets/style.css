@@ -8,10 +8,16 @@ div#preload { display: none; }
 	font-weight:400;
 }
 
-.jumbotron h1, .jumbotron h2, .jumbotronh3, .jumbotronh4 {
+.jumbotron h2, .jumbotron h3, .jumbotron h4 {
 	font-weight: 700;
 	font-family: 'Roboto Slab', serif;
 	color: #444444;
+}
+
+.call_to_action h1 { 
+	text-shadow: 1px 1px 1px #ccc;
+	font-weight: 700;
+	font-family: 'Roboto Slab', serif;
 }
 
 #quote {
@@ -20,10 +26,6 @@ div#preload { display: none; }
 
 body {
 	background: #DDDDDD;
-}
-
-h1 { 
-    text-shadow: 1px 1px 1px #ccc;
 }
 
 .call_to_action {
