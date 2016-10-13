@@ -1,5 +1,5 @@
-var servers = $("#socket_io_servers").attr("data-socket_io_servers").split(',')
-//var servers = [location.host];
+//var servers = $("#socket_io_servers").attr("data-socket_io_servers").split(',')
+var servers = [location.host];
 
 var is_video_replay = false;
 if (location.pathname.indexOf('planner3') != -1) {
@@ -965,7 +965,7 @@ function change_background_dim(height) {
 	grid_layer.width = background_sprite.width;
 	grid_layer.height = background_sprite.height;
 	var ratio = height/old_height;
-	if (ratio != 1) {
+	if (ratio != 1 && room_data) {
 		for (let key in room_data.slides[active_slide].entities) {
 			var entity = room_data.slides[active_slide].entities[key];
 			if (entity.container) {
