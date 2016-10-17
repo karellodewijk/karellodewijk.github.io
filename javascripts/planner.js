@@ -3250,7 +3250,7 @@ function create_drawing2(drawing, quality_scale, thickness_scale) {
 	if (!thickness_scale) thickness_scale = 1;
 	var extra_margin = drawing.thickness;
 	if (drawing.end_size) {
-		extra_margin = drawing.end_size;
+		extra_margin = 2 * drawing.end_size;
 	}
 	draw_entity(drawing, quality_scale, thickness_scale, extra_margin, function(_context, points, quality, base_thickness) {
 		init_canvas_simple(_context, drawing.thickness * base_thickness, drawing.color, drawing.style, [10*quality, 10*quality]);	
@@ -3270,7 +3270,7 @@ function create_curve2(drawing, quality_scale, thickness_scale) {
 	if (!thickness_scale) thickness_scale = 1;
 	var extra_margin = drawing.thickness;
 	if (drawing.end_size) {
-		extra_margin = drawing.end_size;
+		extra_margin = 2 * drawing.end_size;
 	}
 	draw_entity(drawing, quality_scale, thickness_scale, extra_margin, function(_context, points, quality, base_thickness) {
 		init_canvas_simple(_context, drawing.thickness * base_thickness, drawing.color, drawing.style, [10*quality, 10*quality]);
@@ -3286,7 +3286,7 @@ function create_line2(line, quality_scale, thickness_scale) {
 	if (!thickness_scale) thickness_scale = 1;
 	var extra_margin = line.thickness;
 	if (line.end_size) {
-		extra_margin = line.end_size;
+		extra_margin = 2 * line.end_size;
 	}
 	draw_entity(line, quality_scale, thickness_scale, extra_margin, function(_context, points, quality, base_thickness) {
 		init_canvas_simple(_context, line.thickness * base_thickness, line.color, line.style, [10*quality, 10*quality]);
