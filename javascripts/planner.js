@@ -664,7 +664,7 @@ window.onresize = function() {
 		if ($('#left_side_bar').length) {
 			$('#left_side_bar').detach().appendTo($("body"));
 			$('#map_select_box').prependTo($(".left_column"));
-			$('#home_button').prependTo($("#right_navbar"));
+			$('#home_button').prependTo($("#right-buttons"));
 			iface_width = RIGHT_BAR_MIN_WIDTH;
 		}
 		
@@ -4751,6 +4751,8 @@ function initialize_map_select(map_select) {
 	map_select.empty().append(options); //ie fix no-op
 	map_select.val("");
 	
+	map_select.selectpicker('refresh');
+	
 	map_select.change(function() {
 		var path = map_select.val().trim();
 		if (!background || background.path != path) {
@@ -5227,7 +5229,7 @@ function wot_connect() {
 }
 
 //connect socket.io socket
-$(document).ready(function() {
+$(document).ready(function() {	
 	dpi = document.getElementById('dpitest').offsetHeight;
 	
 	//sorts maps alphabetically, can't presort cause it depends on language
