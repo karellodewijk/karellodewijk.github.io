@@ -789,6 +789,7 @@ function get_video_type(path) {
 }
 
 function reset_background() {
+	background_sprite.alpha = 1;
 	video_ready = false;
 	if (video_media) {
 		video_media.setCurrentTime(0);
@@ -904,6 +905,7 @@ function init_video_triggers() {
 		}
 		//TODO: fix dirty hack because the youtube player starts playing when you seek regradless
 		if (video_paused) {
+			window.onresize();
 			video_player.pause();
 			if (last_video_sync) {
 				video_media.currentTime = last_video_sync[0];
@@ -918,6 +920,10 @@ function init_video_triggers() {
 		if (im_syncing) {
 			socket.emit("pause_video", room, 0);
 		}
+	});
+	
+	video_media.addEventListener('canplay', function(e) {
+		window.onresize();
 	});
 	
 	video_media.addEventListener('timeupdate', function(e) {
@@ -1061,6 +1067,8 @@ function set_background(new_background, cb) {
 			}
 		} else {
 			reset_background();
+			
+			background_sprite.alpha = 0;
 			
 			background = new_background;
 			history[background.uid] = background;
