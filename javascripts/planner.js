@@ -4751,7 +4751,9 @@ function initialize_map_select(map_select) {
 	map_select.empty().append(options); //ie fix no-op
 	map_select.val("");
 	
-	map_select.selectpicker('refresh');
+	if (map_select.selectpicker) {
+		map_select.selectpicker('refresh');
+	}
 	
 	map_select.change(function() {
 		var path = map_select.val().trim();
