@@ -1,8 +1,9 @@
 var servers = $("#socket_io_servers").attr("data-socket_io_servers").split(',')
 //var servers = [location.host];
 
+var game = $('meta[name=game]').attr("content");
 var is_video_replay = false;
-if (location.pathname.indexOf('planner3') != -1) {
+if (location.pathname.indexOf(game+'3') != -1) {
 	is_video_replay = true;
 }
 
@@ -18,8 +19,6 @@ if (is_safari()) {
 	image_host = static_host + "/icons/";
 }
 var asset_host = static_host + "/";
-
-var game = $('meta[name=game]').attr("content");
 
 var loader = PIXI.loader;
 var assets = [];
@@ -628,7 +627,7 @@ function resize_renderer(new_size_x, new_size_y) {
 window.onresize = function() {
 	change_background_dim(renderer.view.height)
 	
-	if (window.location.pathname.indexOf("planner3") != -1) {
+	if (is_video_replay) {
 		resize_renderer($(window).width(), $(window).height());
 		return;
 	}
@@ -897,6 +896,7 @@ function init_video_triggers() {
 	});
 	
 	video_media.addEventListener('play', function(e) {
+		window.onresize();
 		if (initiated_play) {	
 			start_syncing();
 			initiated_play = false;
@@ -905,7 +905,6 @@ function init_video_triggers() {
 		}
 		//TODO: fix dirty hack because the youtube player starts playing when you seek regradless
 		if (video_paused) {
-			window.onresize();
 			video_player.pause();
 			if (last_video_sync) {
 				video_media.currentTime = last_video_sync[0];
@@ -1207,9 +1206,9 @@ function set_background(new_background, cb) {
 			empty_backround.lineTo(renderer.width, renderer.height);
 			empty_backround.lineTo(0, renderer.height);
 		} else {
-			empty_backround.lineTo(window.innerWidth, 0);
-			empty_backround.lineTo(window.innerWidth, window.innerHeight);
-			empty_backround.lineTo(0, window.innerHeight);			
+			empty_backround.lineTo($(window).width(), 0);
+			empty_backround.lineTo($(window).width(), $(window).height());
+			empty_backround.lineTo(0, $(window).height());
 		}
 		empty_backround.lineTo(0, 0);
 		
@@ -5463,7 +5462,7 @@ $(document).ready(function() {
 	$(renderer.view).parent().append(draw_canvas);
 	$(temp_draw_canvas).hide();
 	$(draw_canvas).hide();
-		
+	
 	//animation loop
 	function animate() {
 		if (video_ready) {
