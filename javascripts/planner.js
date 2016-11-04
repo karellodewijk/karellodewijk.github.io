@@ -3544,6 +3544,7 @@ function emit_entity(entity) {
 	entity.z_index = room_data.slides[active_slide].z_top;
 	entity.container = container;
 	set_anchor(entity.container, 0.5, 0.5);
+	render_scene();
 }
 
 function on_icon_end(e) {	
