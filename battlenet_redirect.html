@@ -12,7 +12,8 @@
 		};
 		
 		var dest = getQueryString('dest');
-		window.location.replace(dest + window.location.search + window.location.hash);
+		var code = getQueryString('code');
+		window.location.replace(dest + "?code=" + code);
     </script>
   </body>
 </html>
