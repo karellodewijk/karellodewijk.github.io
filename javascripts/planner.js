@@ -620,8 +620,10 @@ function resize_renderer(new_size_x, new_size_y) {
 	grid_layer.width = background_sprite.width;
 	grid_layer.height = background_sprite.height;
 	
-	var mouse_location = renderer.plugins.interaction.eventData.data.global;
-	zoom(0, true, [from_x_local(mouse_location.x), from_y_local(mouse_location.y)]);
+	if (renderer.plugins.interaction.eventData.data) {
+		var mouse_location = renderer.plugins.interaction.eventData.data.global;	
+		zoom(0, true, [from_x_local(mouse_location.x), from_y_local(mouse_location.y)]);
+	}
 };
 
 window.onresize = function() {
@@ -2303,7 +2305,7 @@ function on_circle_move(e) {
 			temp_draw_context.stroke();
 			var mid_line_x = to_x_local((center_x + x_rel) / 2);
 			var mid_line_y = to_y_local((center_y + y_rel) / 2);
-			temp_draw_context.font = "22px Arial";
+			temp_draw_context.font = "33px Arial";
 			var length = Math.sqrt(Math.pow(background.size_x * (center_x - x_rel), 2) + Math.pow(background.size_y * 
 			(center_y - y_rel), 2))
 			temp_draw_context.lineWidth = to_x_local(0.5)/1000 * DRAW_QUALITY;
@@ -2346,8 +2348,13 @@ function on_circle_end(e) {
 	}
 
 	var new_shape = {uid:newUid(), type:'circle', x:center_x, y:center_y, radius:from_y_local_vect(radius), outline_thickness:circle_outline_thickness * zoom_level, outline_color:circle_outline_color, outline_opacity: t2o(circle_outline_transparancy), fill_opacity: t2o(circle_fill_transparancy), fill_color:circle_fill_color, alpha:1, style:$('#circle_type').find('.active').attr('data-style'), draw_zoom_level:zoom_level};
+
+	if (circle_draw_style == "radius" && background.size_x && background.size_x > 0 && background.size_y && background.size_y > 0) {
+		new_shape.draw_radius = [xrel - new_shape.x, yrel - new_shape.y];
+	}
+
 	new_drawing = undefined;
-	
+
 	create_circle2(new_shape, DRAW_QUALITY);
 	emit_entity(new_shape);
 	undo_list.push(clone_action(["add", [new_shape]]));
@@ -3411,8 +3418,8 @@ function create_circle2(circle, quality_scale, thickness_scale) {
 	_context.arc(offset, offset, base_resolution * circle.radius * quality, 0, 2*Math.PI);
 	_context.fill();
 	_context.stroke();
-	
-	if (circle.draw_radius) {
+
+	if (circle.draw_radius) {		
 		_context.save();
 		_context.lineWidth = 2 * (size_y/1000);
 		_context.strokeStyle = "#FFFFFF";
@@ -3423,7 +3430,7 @@ function create_circle2(circle, quality_scale, thickness_scale) {
 		_context.stroke();
 		var mid_line_x = offset + base_resolution * quality * (circle.draw_radius[0]) / 2;
 		var mid_line_y = offset + base_resolution * quality * (circle.draw_radius[1]) / 2;
-		_context.font = "22px Arial";
+		_context.font = "33px Arial";
 		var length = Math.sqrt(Math.pow(background.size_x * (circle.draw_radius[0]), 2) + Math.pow(background.size_y * 
 		(circle.draw_radius[1]), 2))
 		_context.lineWidth = to_y_local(0.5)/1000;
@@ -6065,7 +6072,7 @@ $(document).ready(function() {
 				case "draw_context":
 				case "ruler_context":
 				case "rectangle_context":
-				case "cicle_context":
+				case "circle_context":
 				case "line_context":
 				case "curve_context":
 				case "polygon_context":
