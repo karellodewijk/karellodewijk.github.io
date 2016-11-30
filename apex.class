@@ -1,0 +1,22 @@
+global class SamlConnectedAppPlugin extends Auth.ConnectedAppPlugin{
+    global override boolean authorize(Id userId, Id connectedAppId, boolean isAdminApproved) {
+        User u = [select id, First_SAML_Login__c from User where id =: userId].get(0);
+        if(u.First_SAML_Login__c == null){
+            u.First_SAML_Login__c = System.now();
+            try{
+                update u;
+            }catch(exception e){
+                System.debug('Exception:' + e.getMessage());
+            }
+        }
+        return true;
+    }
+
+    //Return a user’s permission set assignments
+    global override Map<String,String> customAttributes(Id userId, Map<String,String> formulaDefinedAttributes) {  
+        User u = [select id, Name, CommunityNickname from User where id =: userId];
+        formulaDefinedAttributes.put('nickname',u.CommunityNickname);
+        formulaDefinedAttributes.put('fullname',u.Name);
+        return formulaDefinedAttributes;
+    }
+}
