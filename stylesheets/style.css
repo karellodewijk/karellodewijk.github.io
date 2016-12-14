@@ -1,5 +1,11 @@
 div#preload { display: none; }
 
+* {
+	padding: 0px; 
+	margin:  0px;
+	border: 0;
+}
+
 .jumbotron, .jumbotron p, .jumbotron ol, .jumbotron ul {
 	font-size: 14px;
 	font-family: 'Open Sans', sans-serif;
@@ -23,6 +29,18 @@ div#preload { display: none; }
 	vertical-align:top;
 	border: 1px solid black;
 	min-height: calc(100vh - 148px);
+}
+
+html, body {position: absolute; min-width:100%; min-height: 100%;}
+
+#footer {
+	position: absolute;
+    bottom:0;
+    height: 50px;
+	width: 100%;
+	border: 0;
+	margin: 0;
+	border-radius: 0;
 }
 
 .content_margin {
