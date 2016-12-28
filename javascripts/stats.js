@@ -120,13 +120,13 @@ if (player && server) {
 
 	function populate() {					
 		if (src != "all") {
-			$("#last_100").text($("#last_100").text().replace("100", "10"));
-			$("#last_1000").text($("#last_1000").text().replace("1,000", "100"));
-			$("#last_5000").text($("#last_5000").text().replace("5,000", "500"));
+			$("#last_100").text($("#last_100").text().replace("100 ", "10 "));
+			$("#last_1000").text($("#last_1000").text().replace("1,000 ", "100 "));
+			$("#last_5000").text($("#last_5000").text().replace("5,000 ", "500 "));
 		} else {
-			$("#last_100").text($("#last_100").text().replace("10", "100"));
-			$("#last_1000").text($("#last_1000").text().replace("100", "1,000"));
-			$("#last_5000").text($("#last_5000").text().replace("500", "5,000"));			
+			$("#last_100").text($("#last_100").text().replace("10 ", "100 "));
+			$("#last_1000").text($("#last_1000").text().replace("100 ", "1,000 "));
+			$("#last_5000").text($("#last_5000").text().replace("500 ", "5,000 "));			
 		}
 		
 		$.when(
@@ -157,6 +157,7 @@ if (player && server) {
 				get_wg_data("/tanks/stats/?extra=random&", fields, function(data) {
 					stats_data = data;
 					stats_data = stats_data.map(function(x) { x[src].id = x.tank_id; return x; });
+					
 					if (src == "all") {
 						for (var i in stats_data) {
 							stats_data[i][wn9_src].id = stats_data[i].tank_id;
@@ -296,7 +297,8 @@ if (player && server) {
 				var expected_totals = {expDamage:0, expSpot:0, expFrag:0, expDef:0, expWinRate:0}
 				var achieved_totals = {damage_dealt:0, spotted:0, frags:0, dropped_capture_points:0, wins:0, battles:0,
 									   xp:0, survived_battles: 0, capture_points:0, draws:0, shots:0, hits:0, pens:0, tier:0, tanks:{}}
-				var average = {}
+				var wn8_totals = {damage_dealt:0, spotted:0, frags:0, dropped_capture_points:0, wins:0, battles:0}
+				var average = {tanks:{}}
 				
 				for (var i in stats_data) {
 					var tank = stats_data[i];
@@ -311,80 +313,79 @@ if (player && server) {
 				}
 							
 				for (var i in stats_data) {
-					var tank = stats_data[i][src];
-					if (tank_expected[tank.id]) {
-						var expected = tank_expected[tank.id];
+					var tank = stats_data[i][src];					
+					var expected = tank_expected[tank.id];
 
+					if (expected) {
 						expected.expDamage *= tank.battles;
 						expected.expSpot *= tank.battles;
 						expected.expFrag *= tank.battles;
 						expected.expDef *= tank.battles;
 						expected.expWinRate *= tank.battles;
 						
+						wn8_totals.damage_dealt += tank.damage_dealt;
+						wn8_totals.spotted += tank.spotted;
+						wn8_totals.frags += tank.frags;
+						wn8_totals.dropped_capture_points += tank.dropped_capture_points;
+						wn8_totals.wins += tank.wins;
+						wn8_totals.battles += tank.battles;
+						
 						var wn8 = calculate_wn8(tank, expected);
 						
-						if (!isNaN(wn8)) {
-							expected_totals.expDamage += expected.expDamage;
-							expected_totals.expSpot += expected.expSpot;
-							expected_totals.expFrag += expected.expFrag;
-							expected_totals.expDef += expected.expDef;
-							expected_totals.expWinRate += expected.expWinRate;
-							
-							achieved_totals.damage_dealt += tank.damage_dealt;
-							achieved_totals.spotted += tank.spotted;
-							achieved_totals.frags += tank.frags;
-							achieved_totals.dropped_capture_points += tank.dropped_capture_points;
-							achieved_totals.wins += tank.wins;
-							achieved_totals.battles += tank.battles;
+						expected_totals.expDamage += expected.expDamage;
+						expected_totals.expSpot += expected.expSpot;
+						expected_totals.expFrag += expected.expFrag;
+						expected_totals.expDef += expected.expDef;
+						expected_totals.expWinRate += expected.expWinRate;
 
-							if (!achieved_totals.tanks[tank.id]) achieved_totals.tanks[tank.id] = tank;
-							achieved_totals.tanks[tank.id].expected = expected;
-							achieved_totals.tanks[tank.id].wn8 = wn8;
-						}
+						if (!achieved_totals.tanks[tank.id]) achieved_totals.tanks[tank.id] = tank;
+						achieved_totals.tanks[tank.id].expected = expected;
+						achieved_totals.tanks[tank.id].wn8 = wn8;
 					}
+					
+					achieved_totals.damage_dealt += tank.damage_dealt;
+					achieved_totals.spotted += tank.spotted;
+					achieved_totals.frags += tank.frags;
+					achieved_totals.dropped_capture_points += tank.dropped_capture_points;
+					achieved_totals.wins += tank.wins;
+					achieved_totals.battles += tank.battles;
 				}
 							
 				for (var i in stats_data) {	
 					var tank = stats_data[i][src];
-
-					if (tank_expected[tank.id] && tank_expected_wn9[tank.id] && tank_data[tank.id] && achieved_totals.tanks[tank.id] && !isNaN(achieved_totals.tanks[tank.id].wn8) && !isNaN(achieved_totals.tanks[tank.id].wn9)) {
-						achieved_totals.tanks[tank.id].damage_dealt = tank.damage_dealt / tank.battles;
-						achieved_totals.tanks[tank.id].frags = tank.frags / tank.battles;
-						achieved_totals.tanks[tank.id].spotted = tank.spotted / tank.battles;
-						achieved_totals.tanks[tank.id].dropped_capture_points = tank.dropped_capture_points / tank.battles;
-						achieved_totals.tanks[tank.id].capture_points = tank.capture_points / tank.battles;
-						achieved_totals.tanks[tank.id].xp =  tank.battle_avg_xp;
-						achieved_totals.tanks[tank.id].survived_battles =  tank.survived_battles / tank.battles;
+					if (!achieved_totals.tanks[tank.id]) achieved_totals.tanks[tank.id] = tank;
+					
+					if (tank) {
+						if (tank.battles > 0) {
+							if (!average.tanks[tank.id]) average.tanks[tank.id] = tank;
+							average.tanks[tank.id].damage_dealt = tank.damage_dealt / tank.battles;
+							average.tanks[tank.id].frags = tank.frags / tank.battles;
+							average.tanks[tank.id].spotted = tank.spotted / tank.battles;
+							average.tanks[tank.id].dropped_capture_points = tank.dropped_capture_points / tank.battles;
+							average.tanks[tank.id].capture_points = tank.capture_points / tank.battles;
+							average.tanks[tank.id].xp =  tank.battle_avg_xp;
+							average.tanks[tank.id].survived_battles =  tank.survived_battles / tank.battles;
+						}
+						
 						achieved_totals.tanks[tank.id].wins =  tank.wins;
 						achieved_totals.tanks[tank.id].battles = tank.battles;
 						
-						/*
-						achieved_totals.tanks[tank.id].hits = tank.hits
-						achieved_totals.tanks[tank.id].shots = tank.shots;
-						achieved_totals.tanks[tank.id].piercings = tank.piercings;
-						*/
-						
+						achieved_totals.xp += tank.battle_avg_xp * tank.battles;
+						achieved_totals.survived_battles += tank.survived_battles * tank.battles;						
+						achieved_totals.capture_points += tank.capture_points * tank.battles;
+					}
+					
+					if (tank_data[tank.id]) {
 						achieved_totals.tanks[tank.id].name = tank_data[tank.id].name_i18n;
 						achieved_totals.tanks[tank.id].tier = tank_data[tank.id].level;
 						achieved_totals.tanks[tank.id].nation = tank_data[tank.id].nation;
 						achieved_totals.tanks[tank.id].type = tank_data[tank.id].type;
 						achieved_totals.tanks[tank.id].icon = tank_data[tank.id].image_small;
-						
-						achieved_totals.xp += tank.battle_avg_xp * tank.battles;
-						achieved_totals.survived_battles += tank.survived_battles;
-						achieved_totals.capture_points += tank.capture_points;
-						
-						/*
-						achieved_totals.shots += tank.shots;
-						achieved_totals.hits += tank.hits;
-						achieved_totals.pens += tank.piercings;
-						*/
-						
 						achieved_totals.tier += tank.battles * tank_data[tank.id].level;
 					}
 				}
 				
-				achieved_totals.wn8 = calculate_wn8(achieved_totals, expected_totals);
+				achieved_totals.wn8 = calculate_wn8(wn8_totals, expected_totals);
 				achieved_totals.wn9 = CalcWN9Account(stats_data, tank_expected_wn9)
 				
 				average.damage_dealt = achieved_totals.damage_dealt / achieved_totals.battles;
@@ -481,29 +482,31 @@ if (player && server) {
 				}
 				
 				
-				var results, average;
-				[results, average] = calculate_stats();
-				
+				var results, averages;
+				[results, averages] = calculate_stats();
+												
 				for (var i in results.tanks) {
-					var tank = results.tanks[i];
-					if (tank.name) {
+					var totals = results.tanks[i];
+					var average = averages.tanks[i];
+					
+					if (totals.name) {
 						var node = "<tr>";
 						
-						var kd = tank.frags / (1 - tank.survived_battles)
+						var kd = average.frags / (1 - average.survived_battles)
 						
-						node += "<td><img src='" + tank.icon + "'></td>";
-						node += "<td>"+tank.name+"</td>";
-						node += "<td>"+tank.nation+"</td>";
-						node += "<td>"+tank.tier+"</td>";
-						node += "<td style='color:#ffffff; background-color:" + wr_color(tank.wins/tank.battles) + "'>"+round(100*tank.wins/tank.battles, 1)+"%</td>";
-						node += "<td>"+tank.battles+"</td>";
-						node += "<td>"+round(tank.damage_dealt,0)+"</td>";
-						node += "<td>"+round(tank.frags, 2)+"</td>";
+						node += "<td><img src='" + totals.icon + "'></td>";
+						node += "<td>"+totals.name+"</td>";
+						node += "<td>"+totals.nation+"</td>";
+						node += "<td>"+totals.tier+"</td>";
+						node += "<td style='color:#ffffff; background-color:" + wr_color(totals.wins/totals.battles) + "'>"+round(100*totals.wins/totals.battles, 1)+"%</td>";
+						node += "<td>"+totals.battles+"</td>";
+						node += "<td>"+round(average.damage_dealt,0)+"</td>";
+						node += "<td>"+round(average.frags, 2)+"</td>";
 						node += "<td>"+round(kd,1)+"</td>";
-						node += "<td>"+round(100*tank.survived_battles,2)+"%</td>";
-						node += "<td>"+tank.xp+"</td>";
-						node += "<td data-toggle='tooltip' title='" + round(tank.wn8, 2) + "' style='color:#ffffff; background-color:" + wn8_color(tank.wn8) + "'>" + round(tank.wn8, 0) + "</td>";
-						node += "<td data-toggle='tooltip' title='" + round(tank.wn9, 2) + "' style='color:#ffffff; background-color:" + wn9_color(tank.wn9) + "'>" + round(tank.wn9, 0) + "</td>";
+						node += "<td>"+round(100*average.survived_battles,2)+"%</td>";
+						node += "<td>"+average.xp+"</td>";
+						node += "<td data-toggle='tooltip' title='" + round(totals.wn8, 2) + "' style='color:#ffffff; background-color:" + wn8_color(totals.wn8) + "'>" + round(totals.wn8, 0) + "</td>";
+						node += "<td data-toggle='tooltip' title='" + round(totals.wn9, 2) + "' style='color:#ffffff; background-color:" + wn9_color(totals.wn9) + "'>" + round(totals.wn9, 0) + "</td>";
 						node += "</tr>";
 						
 						$("#tank_list_body").append(node);
@@ -512,20 +515,20 @@ if (player && server) {
 				
 				$("#tank_list").trigger("update"); 
 
-				var kd = average.frags / (1 - average.survived_battles)
+				var kd = averages.frags / (1 - averages.survived_battles)
 										
 				$("#wr_col").append("<td data-toggle='tooltip' title='" + round(100*results.wins/results.battles, 4) + "' style='color:#ffffff; background-color:" + wr_color(results.wins/results.battles) + "'>" + round(100*results.wins/results.battles, 2) + "%</td>");
 				$("#wn8_col").append("<td data-toggle='tooltip' title='" + round(results.wn8, 2) + "' style='color:#ffffff; background-color:" + wn8_color(results.wn8) + "'>" + round(results.wn8, 0) + "</td>");
 				$("#wn9_col").append("<td data-toggle='tooltip' title='" + round(results.wn9, 2) + "' style='color:#ffffff; background-color:" + wn9_color(results.wn9) + "'>" + round(results.wn9, 0) + "</td>");
 				$("#battles_col").append("<td>" + results.battles + "</td>");
-				$("#dam_col").append("<td data-toggle='tooltip' title='" + round(average.damage_dealt, 2) + "'>" + round(average.damage_dealt, 0) + "</td>");
-				$("#kills_col").append("<td data-toggle='tooltip' title='" + round(average.frags, 4) + "'>" + round(average.frags, 2) + "</td>");
-				$("#surv_col").append("<td data-toggle='tooltip' title='" + round(100*average.survived_battles, 4) + "'>" + round(100*average.survived_battles, 2) + "%</td>");
+				$("#dam_col").append("<td data-toggle='tooltip' title='" + round(averages.damage_dealt, 2) + "'>" + round(averages.damage_dealt, 0) + "</td>");
+				$("#kills_col").append("<td data-toggle='tooltip' title='" + round(averages.frags, 4) + "'>" + round(averages.frags, 2) + "</td>");
+				$("#surv_col").append("<td data-toggle='tooltip' title='" + round(100*averages.survived_battles, 4) + "'>" + round(100*averages.survived_battles, 2) + "%</td>");
 				$("#kd_col").append("<td data-toggle='tooltip' title='" + round(kd, 4) + "'>" + round(kd, 2) + "</td>");
-				$("#def_col").append("<td data-toggle='tooltip' title='" + round(average.dropped_capture_points, 4) + "'>" + round(average.dropped_capture_points, 2) + "</td>");
-				$("#cap_col").append("<td data-toggle='tooltip' title='" + round(average.capture_points, 4) + "'>" + round(average.capture_points, 2) + "</td>");
-				$("#xp_col").append("<td data-toggle='tooltip' title='" + round(average.xp, 2) + "'>" + round(average.xp, 0) + "</td>");
-				$("#tier_col").append("<td data-toggle='tooltip' title='" + round(average.tier, 2) + "'>" + round(average.tier, 1) + "</td>");
+				$("#def_col").append("<td data-toggle='tooltip' title='" + round(averages.dropped_capture_points, 4) + "'>" + round(averages.dropped_capture_points, 2) + "</td>");
+				$("#cap_col").append("<td data-toggle='tooltip' title='" + round(averages.capture_points, 4) + "'>" + round(averages.capture_points, 2) + "</td>");
+				$("#xp_col").append("<td data-toggle='tooltip' title='" + round(averages.xp, 2) + "'>" + round(averages.xp, 0) + "</td>");
+				$("#tier_col").append("<td data-toggle='tooltip' title='" + round(averages.tier, 2) + "'>" + round(averages.tier, 1) + "</td>");
 		
 				function add_column(now, then, current_average) {
 					var results = {}
@@ -536,21 +539,32 @@ if (player && server) {
 					
 					results.battles = now.battles - then.battles;
 					
-					console.log(now.battles, then.battles)
-					
 					if (results.battles == 0) {
 						$("#wr_col").append("<td>No recent battles</rd>");
+						$("#wn8_col").append("<td></rd>");
+						$("#wn9_col").append("<td></rd>");
+						$("#battles_col").append("<td></rd>");
+						$("#dam_col").append("<td></rd>");
+						$("#kills_col").append("<td></rd>");
+						$("#surv_col").append("<td></rd>");
+						$("#kd_col").append("<td></rd>");
+						$("#def_col").append("<td></rd>");
+						$("#cap_col").append("<td></rd>");
+						$("#xp_col").append("<td></rd>");
+						$("#tier_col").append("<td></rd>");
 						return;
 					}
 
 					results.wins = now.wins - then.wins;
 					results.survived_battles = now.survived_battles - then.survived_battles;
+										
 					results.damage_dealt = now.damage_dealt - then.damage_dealt;
 					results.spotted = now.spotted - then.spotted;
 					results.frags = now.frags - then.frags;
 					results.dropped_capture_points = now.dropped_capture_points - then.dropped_capture_points;
 					results.capture_points = now.capture_points - then.capture_points;
 					results.xp = now.xp - then.xp;
+										
 					results.tier = now.tier - then.tier;
 					results.wn8 = (now.battles * now.wn8 - then.battles * then.wn8) / results.battles;
 					results.wn9 = (now.battles * now.wn9 - then.battles * then.wn9) / results.battles;
@@ -605,7 +619,7 @@ if (player && server) {
 				} 
 
 				if (summary) {
-					add_column(results, summary["recent"], average);
+					add_column(results, summary["recent"], averages);
 					var interesting_points;
 					if (src == "random" || src == "all") {
 						interesting_points = ["100", "1000", "5000"];
@@ -613,7 +627,7 @@ if (player && server) {
 						interesting_points = ["10", "100", "500"];
 					}
 					for (var i in interesting_points) {
-						add_column(results, summary[interesting_points[i]], average);
+						add_column(results, summary[interesting_points[i]], averages);
 					}
 				} else {
 					$("#wr_col").append("<td>Coming soon</rd>");
