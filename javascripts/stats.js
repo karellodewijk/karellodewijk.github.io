@@ -354,10 +354,10 @@ if (player && server) {
 				for (var i in stats_data) {	
 					var tank = stats_data[i][src];
 					if (!achieved_totals.tanks[tank.id]) achieved_totals.tanks[tank.id] = tank;
+					if (!average.tanks[tank.id]) average.tanks[tank.id] = tank;
 					
 					if (tank) {
 						if (tank.battles > 0) {
-							if (!average.tanks[tank.id]) average.tanks[tank.id] = tank;
 							average.tanks[tank.id].damage_dealt = tank.damage_dealt / tank.battles;
 							average.tanks[tank.id].frags = tank.frags / tank.battles;
 							average.tanks[tank.id].spotted = tank.spotted / tank.battles;
