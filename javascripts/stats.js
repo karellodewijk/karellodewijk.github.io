@@ -121,11 +121,12 @@ if (player && server) {
 	function populate() {					
 		if (src != "all") {
 			$("#last_100").text($("#last_100").text().replace("100", "10"));
-			$("#last_100").attr('title', $("#last_100").text().replace("100", "10"));
 			$("#last_1000").text($("#last_1000").text().replace("1,000", "100"));
-			$("#last_1000").attr('title', $("#last_1000").text().replace("1,000", "100"));
 			$("#last_5000").text($("#last_5000").text().replace("5,000", "500"));
-			$("#last_5000").attr('title', $("#last_5000").text().replace("5,000", "500"));
+		} else {
+			$("#last_100").text($("#last_100").text().replace("10", "100"));
+			$("#last_1000").text($("#last_1000").text().replace("100", "1,000"));
+			$("#last_5000").text($("#last_5000").text().replace("500", "5,000"));			
 		}
 		
 		$.when(
@@ -534,6 +535,8 @@ if (player && server) {
 					}
 					
 					results.battles = now.battles - then.battles;
+					
+					console.log(now.battles, then.battles)
 					
 					if (results.battles == 0) {
 						$("#wr_col").append("<td>No recent battles</rd>");
