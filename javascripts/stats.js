@@ -157,11 +157,10 @@ function populate() {
 				{ win:0.498, dmg:1963.8, frag:1.04, spot:1.08, def:0.61, cap:1.0, weight:1.60 }];
 			
 			function CalcWN9Tank(tank, expvals, maxhist) {
-				//remainder of function is sourced from http://jaj22.org.uk/wn9implement.html
 				var exp = expvals[tank.tank_id];
 				if (!exp) { console.log("Tank ID not found: " + tank.tank_id); return -1; }
 
-				var rtank = tank[wn9_src];
+				var rtank = tank.random;
 				var avg = tierAvg[exp.mmrange >= 3 ? exp.tier : exp.tier-1];
 				var rdmg = rtank.damage_dealt / (rtank.battles * avg.dmg);
 				var rfrag = rtank.frags / (rtank.battles * avg.frag);
@@ -180,22 +179,19 @@ function populate() {
 				return wn9;
 			}
 			
-			function CalcWN9Account(tanks, expvals) {
+			function CalcWN9Account(tanks, expvals)	{
 				// compile list of valid tanks with battles & WN9 
 				var tanklist = [];
 				var totbat = 0;
 				for (var i=0; i<tanks.length; i++)
 				{
-					if (expvals[tanks[i].tank_id]) {
-						var exp = expvals[tanks[i].tank_id];
-						if (!exp || exp.type == "SPG") continue;	// don't use SPGs & missing tanks
-						var wn9 = CalcWN9Tank(tanks[i], expvals, false);
-						var tankentry = { wn9:wn9, bat:tanks[i][wn9_src].battles, exp:exp };
-						tanklist.push(tankentry);
-						totbat += tankentry.bat;
-					}
+					var exp = expvals[tanks[i].tank_id];
+					if (!exp || exp.type == "SPG") continue;	// don't use SPGs & missing tanks
+					var wn9 = CalcWN9Tank(tanks[i], expvals, false);
+					var tankentry = { wn9:wn9, bat:tanks[i].random.battles, exp:exp };
+					tanklist.push(tankentry);
+					totbat += tankentry.bat;
 				}
-								
 				if (!totbat) return -1;		// handle case with no valid tanks
 
 				// cap tank weight according to tier, total battles & nerf status
@@ -208,7 +204,7 @@ function populate() {
 					if (exp.wn9nerf) tanklist[i].weight /= 2;
 					totweight += tanklist[i].weight;
 				}
-				
+
 				// sort tanks by WN9 decreasing
 				function compareTanks(a, b) { return b.wn9 - a.wn9 };
 				tanklist.sort(compareTanks);
@@ -218,18 +214,40 @@ function populate() {
 				var wn9tot = 0, usedweight = 0, i = 0;
 				for (; usedweight+tanklist[i].weight <= totweight; i++)
 				{
-					if (tanklist[i].wn9) {
-						wn9tot += tanklist[i].wn9 * tanklist[i].weight;
-						usedweight += tanklist[i].weight;
-					}
+					wn9tot += tanklist[i].wn9 * tanklist[i].weight;
+					usedweight += tanklist[i].weight;
 				}
-				
-				
-				
 				// last tank before cutoff uses remaining weight, not its battle count
 				wn9tot += tanklist[i].wn9 * (totweight - usedweight);
 				return wn9tot / totweight;
 			}
+			
+			function calcWN9A(tanks, expvals) {				
+				var wn9_src = src;
+				if (src == 'all') {
+					wn9_src = 'random';
+				}	
+				var transformed = [];
+				for (var i in tanks) {
+					if (tanks[i][src].battles > 0) {
+						var tank = {tank_id:tanks[i].tank_id}
+						tank.random = tanks[i][wn9_src];
+						transformed.push(tank)
+					}
+				}
+				return CalcWN9Account(transformed, expvals)
+			}
+			
+			function calcWN9T(tank, expvals, maxhist) {
+				var wn9_src = src;
+				if (src == 'all') {
+					wn9_src = 'random';
+				}
+				var transformed = {tank_id:tank.tank_id}
+				transformed.random = tank[wn9_src];
+				return CalcWN9Tank(transformed, expvals, maxhist)
+			}
+		
 		
 			var expected_totals = {expDamage:0, expSpot:0, expFrag:0, expDef:0, expWinRate:0}
 			var achieved_totals = {damage_dealt:0, spotted:0, frags:0, dropped_capture_points:0, wins:0, battles:0,
@@ -240,7 +258,7 @@ function populate() {
 			for (var i in stats_data) {
 				var tank = stats_data[i];
 				if (tank_expected_wn9[tank.tank_id]) {
-					var wn9 = CalcWN9Tank(tank, tank_expected_wn9, true); 
+					var wn9 = calcWN9T(tank, tank_expected_wn9, true); 
 					if (!isNaN(wn9)) {
 						if (!achieved_totals.tanks[tank.id]) achieved_totals.tanks[tank.tank_id] = {};
 						achieved_totals.tanks[tank.tank_id].wn9 = wn9;
@@ -291,40 +309,38 @@ function populate() {
 			for (var i in stats_data) {	
 				var tank = stats_data[i][src];
 				if (!achieved_totals.tanks[tank.id]) achieved_totals.tanks[tank.id] = tank;
-				if (!average.tanks[tank.id]) average.tanks[tank.id] = tank;
+				if (!average.tanks[tank.id]) average.tanks[tank.id] = JSON.parse(JSON.stringify(tank));
 				
-				if (tank) {
-					if (tank.battles > 0) {
-						average.tanks[tank.id].damage_dealt = tank.damage_dealt / tank.battles;
-						average.tanks[tank.id].frags = tank.frags / tank.battles;
-						average.tanks[tank.id].spotted = tank.spotted / tank.battles;
-						average.tanks[tank.id].dropped_capture_points = tank.dropped_capture_points / tank.battles;
-						average.tanks[tank.id].capture_points = tank.capture_points / tank.battles;
-						average.tanks[tank.id].xp =  tank.battle_avg_xp;
-						average.tanks[tank.id].survived_battles =  tank.survived_battles / tank.battles;
-					}
+				if (tank && tank.battles > 0) {
+					average.tanks[tank.id].damage_dealt = tank.damage_dealt / tank.battles;
+					average.tanks[tank.id].frags = tank.frags / tank.battles;
+					average.tanks[tank.id].spotted = tank.spotted / tank.battles;
+					average.tanks[tank.id].dropped_capture_points = tank.dropped_capture_points / tank.battles;
+					average.tanks[tank.id].capture_points = tank.capture_points / tank.battles;
+					average.tanks[tank.id].xp =  tank.battle_avg_xp;
+					average.tanks[tank.id].survived_battles =  tank.survived_battles / tank.battles;
 					
 					achieved_totals.tanks[tank.id].wins =  tank.wins;
 					achieved_totals.tanks[tank.id].battles = tank.battles;
 					
 					achieved_totals.xp += tank.battle_avg_xp * tank.battles;
-					achieved_totals.survived_battles += tank.survived_battles * tank.battles;						
-					achieved_totals.capture_points += tank.capture_points * tank.battles;
-				}
-				
-				if (tank_data[tank.id]) {
-					achieved_totals.tanks[tank.id].name = tank_data[tank.id].name_i18n;
-					achieved_totals.tanks[tank.id].tier = tank_data[tank.id].level;
-					achieved_totals.tanks[tank.id].nation = tank_data[tank.id].nation;
-					achieved_totals.tanks[tank.id].type = tank_data[tank.id].type;
-					achieved_totals.tanks[tank.id].icon = tank_data[tank.id].image_small;
-					achieved_totals.tier += tank.battles * tank_data[tank.id].level;
+					achieved_totals.survived_battles += tank.survived_battles;						
+					achieved_totals.capture_points += tank.capture_points;
+					
+					if (tank_data[tank.id]) {
+						achieved_totals.tanks[tank.id].name = tank_data[tank.id].name_i18n;
+						achieved_totals.tanks[tank.id].tier = tank_data[tank.id].level;
+						achieved_totals.tanks[tank.id].nation = tank_data[tank.id].nation;
+						achieved_totals.tanks[tank.id].type = tank_data[tank.id].type;
+						achieved_totals.tanks[tank.id].icon = tank_data[tank.id].image_small;
+						achieved_totals.tier += tank.battles * tank_data[tank.id].level;
+					}				
 				}
 			}
 			
 			achieved_totals.wn8 = calculate_wn8(wn8_totals, expected_totals);
-			achieved_totals.wn9 = CalcWN9Account(stats_data, tank_expected_wn9)
-			
+			achieved_totals.wn9 = calcWN9A(stats_data, tank_expected_wn9)
+						
 			average.damage_dealt = achieved_totals.damage_dealt / achieved_totals.battles;
 			average.frags = achieved_totals.frags / achieved_totals.battles;
 			average.spotted = achieved_totals.spotted / achieved_totals.battles;
@@ -334,7 +350,7 @@ function populate() {
 			average.survived_battles = achieved_totals.survived_battles / achieved_totals.battles;			
 			average.tier = achieved_totals.tier / achieved_totals.battles;
 			average.wins = achieved_totals.wins / achieved_totals.battles;
-						
+												
 			return [achieved_totals, average];
 		}
 		
