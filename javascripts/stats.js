@@ -483,28 +483,32 @@ function populate() {
 			$("#xp_col").append("<td data-toggle='tooltip' title='" + round(averages.xp, 2) + "'>" + round(averages.xp, 0) + "</td>");
 			$("#tier_col").append("<td data-toggle='tooltip' title='" + round(averages.tier, 2) + "'>" + round(averages.tier, 1) + "</td>");
 	
+			function add_msg_column(str) {
+				$("#wr_col").append("<td>" + str + "</rd>");
+				$("#wn8_col").append("<td></rd>");
+				$("#wn9_col").append("<td></rd>");
+				$("#battles_col").append("<td></rd>");
+				$("#dam_col").append("<td></rd>");
+				$("#kills_col").append("<td></rd>");
+				$("#surv_col").append("<td></rd>");
+				$("#kd_col").append("<td></rd>");
+				$("#def_col").append("<td></rd>");
+				$("#cap_col").append("<td></rd>");
+				$("#xp_col").append("<td></rd>");
+				$("#tier_col").append("<td></rd>");				
+			}
+	
 			function add_column(now, then, current_average) {
 				var results = {}
 				if (!then || Object.keys(then).length == 0) {
-					$("#wr_col").append("<td>Coming soon</rd>");
+					add_msg_column("Coming soon");
 					return;					
 				}
 				
 				results.battles = now.battles - then.battles;
 				
 				if (results.battles == 0) {
-					$("#wr_col").append("<td>No recent battles</rd>");
-					$("#wn8_col").append("<td></rd>");
-					$("#wn9_col").append("<td></rd>");
-					$("#battles_col").append("<td></rd>");
-					$("#dam_col").append("<td></rd>");
-					$("#kills_col").append("<td></rd>");
-					$("#surv_col").append("<td></rd>");
-					$("#kd_col").append("<td></rd>");
-					$("#def_col").append("<td></rd>");
-					$("#cap_col").append("<td></rd>");
-					$("#xp_col").append("<td></rd>");
-					$("#tier_col").append("<td></rd>");
+					add_msg_column("No recent battles");
 					return;
 				}
 
@@ -583,10 +587,10 @@ function populate() {
 					add_column(results, summary[interesting_points[i]], averages);
 				}
 			} else {
-				$("#wr_col").append("<td>Coming soon</rd>");
-				$("#wr_col").append("<td>Coming soon</rd>");
-				$("#wr_col").append("<td>Coming soon</rd>");
-				$("#wr_col").append("<td>Coming soon</rd>");
+				add_msg_column("Coming soon");
+				add_msg_column("Coming soon");
+				add_msg_column("Coming soon");
+				add_msg_column("Coming soon");
 			}
 		});
 	});
