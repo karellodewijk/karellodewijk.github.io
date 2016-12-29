@@ -2,21 +2,20 @@ var player = window.location.pathname.split('/');
 player = player[player.length - 1]
 
 if (!player) {
-	server = "eu";
 	var user = JSON.parse($("meta[name='user']").attr('content'));
 	if (user && user.wg_account_id) {
 		player = user.wg_account_id;
-		server = user.server;
 	}
-} else {
-	function get_server(id) {
-		if(id > 3000000000){return "kr";}
-		if(id > 2000000000){return "asia";}
-		if(id > 1000000000){return "com";}
-		if(id > 500000000){return "eu";}
-		return "ru";
-	}
-	var server = get_server(player);	
+}
+
+var server = get_server(player);
+
+function get_server(id) {
+	if(id > 3000000000){return "kr";}
+	if(id > 2000000000){return "asia";}
+	if(id > 1000000000){return "com";}
+	if(id > 500000000){return "eu";}
+	return "ru";
 }
 
 var getQueryString = function ( field, url ) {
@@ -55,7 +54,9 @@ function reset_ui() {
 	})
 }
 
-function populate() {					
+function populate() {	
+	server = get_server(player);
+		
 	if (src != "all") {
 		$("#last_100").text($("#last_100").text().replace("100 ", "10 "));
 		$("#last_1000").text($("#last_1000").text().replace("1,000 ", "100 "));
@@ -100,6 +101,7 @@ function populate() {
 						stats_data[i][wn9_src].id = stats_data[i].tank_id;
 					}
 				}
+				
 				self.resolve();
 			});
 		}),
@@ -506,7 +508,7 @@ function populate() {
 				}
 				
 				results.battles = now.battles - then.battles;
-				
+
 				if (results.battles == 0) {
 					add_msg_column("No recent battles");
 					return;
