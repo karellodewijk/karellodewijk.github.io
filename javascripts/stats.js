@@ -56,7 +56,8 @@ function reset_ui() {
 
 function populate() {	
 	server = get_server(player);
-		
+	$('#no_results').hide();
+	
 	if (src != "all") {
 		$("#last_100").text($("#last_100").text().replace("100 ", "10 "));
 		$("#last_1000").text($("#last_1000").text().replace("1,000 ", "100 "));
@@ -94,11 +95,12 @@ function populate() {
 			}
 			get_wg_data("/tanks/stats/?extra=random&", fields, function(data) {
 				stats_data = data;
-				stats_data = stats_data.map(function(x) { x[src].id = x.tank_id; return x; });
-				
-				if (src == "all") {
-					for (var i in stats_data) {
-						stats_data[i][wn9_src].id = stats_data[i].tank_id;
+				if (stats_data) {
+					stats_data = stats_data.map(function(x) { x[src].id = x.tank_id; return x; });				
+					if (src == "all") {
+						for (var i in stats_data) {
+							stats_data[i][wn9_src].id = stats_data[i].tank_id;
+						}
 					}
 				}
 				
@@ -128,7 +130,14 @@ function populate() {
 				self.resolve();
 			});
 		})
-	).then(function() {
+	).then(function() {	
+		if (!stats_data) {
+			$('#no_battles').show();
+			return;
+		} else {
+			$('#no_battles').hide();
+		}
+		
 		function calculate_stats() {
 			function calculate_wn8(tank, exp) {
 				var rDAMAGE = tank.damage_dealt / exp.expDamage;
@@ -619,18 +628,25 @@ $(document).ready(function() {
 		e.preventDefault();
 		var link = 'https://api.worldoftanks.' + server + '/wot/account/list/?limit=20&application_id=0dbf88d72730ed7b843ab5934d8b3794&search=' + $('#srch-term').val();
 		$.get(link, {}, function(data) {
-			if (data.data[0].nickname == $('#srch-term').val()) {
-				player = data.data[0].account_id
-				reset_ui();
-				populate();
+			if (data.data.length == 0) {
+				$('#no_results').show();
+				$('#no_battles').hide();
+				return;
 			} else {
-				var alternatives = "";
-				for (var i = 0; i < Math.min(20, data.data.length); i++) {
-					alternatives += "<a href='/player/"+ data.data[i].account_id + "'>" + data.data[i].nickname + "</a>, "
+				$('#no_results').hide();
+				if (data.data[0].nickname == $('#srch-term').val() || data.data.length == 1) {
+					player = data.data[0].account_id
+					reset_ui();
+					populate();
+				} else {
+					var alternatives = "";
+					for (var i = 0; i < Math.min(20, data.data.length); i++) {
+						alternatives += "<a href='/player/"+ data.data[i].account_id + "'>" + data.data[i].nickname + "</a>, "
+					}
+					alternatives = alternatives.substring(0, alternatives.length - 2);
+					$('#alt_lists').html(alternatives);
+					$("#did_you_mean").show();
 				}
-				alternatives = alternatives.substring(0, alternatives.length - 2);
-				$('#alt_lists').html(alternatives);
-				$("#did_you_mean").show();
 			}
 		});
 	});
