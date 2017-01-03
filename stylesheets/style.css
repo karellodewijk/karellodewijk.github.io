@@ -1,11 +1,5 @@
 div#preload { display: none; }
 
-* {
-	padding: 0px; 
-	margin:  0px;
-	border: 0;
-}
-
 .beta_button {
 	 background-image: url('beta_ribbon.png') !important;
 	 background-size: contain !important;
@@ -39,7 +33,7 @@ div#preload { display: none; }
 	min-height: calc(100vh - 148px);
 }
 
-html, body {position: absolute; min-width:100%; min-height: 100%;}
+html, body {position: absolute; min-width:100%; min-height: 100%; padding: 0px; margin:  0px;}
 
 #footer {
 	position: absolute;
