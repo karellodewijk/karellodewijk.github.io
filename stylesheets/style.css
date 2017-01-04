@@ -2,10 +2,20 @@ div#preload { display: none; }
 
 .beta_button {
 	 background-image: url('beta_ribbon.png') !important;
-	 background-size: contain !important;
+	 background-size: 60px !important;
 	 background-position: right top !important;
 	 background-repeat: no-repeat !important;
-	 width:130px;
+}
+
+#main_navbar .nav > li > a {
+   line-height: 90px;
+   padding-bottom: 0;
+   padding-top: 0;
+}
+
+#main_navbar .nav > li > button {
+   margin-bottom: 30px;
+   margin-top: 30px;
 }
 
 .jumbotron, .jumbotron p, .jumbotron ol, .jumbotron ul {
