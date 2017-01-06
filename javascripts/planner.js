@@ -4188,12 +4188,6 @@ function supports_color_input() {
 };
 
 function initialize_color_picker(slider_id, variable_name) {
-	if (supports_color_input()) {
-		$('#' + slider_id + ' ~ input').show();
-	} else {
-		$('#' + slider_id + ' ~ input').hide();
-	}
-	
 	var color = $('select[id="'+ slider_id + '"]').val();
 	window[variable_name] = parseInt('0x'+color.substring(1));
 	
@@ -5287,7 +5281,13 @@ function wot_connect() {
 }
 
 //connect socket.io socket
-$(document).ready(function() {	
+$(document).ready(function() {
+	//download polyfills
+	if (!supports_color_input()) {
+		$('head').append('<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">');
+		$('head').append('<script defer src="http://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>');
+	}
+	
 	dpi = document.getElementById('dpitest').offsetHeight;
 	
 	//sorts maps alphabetically, can't presort cause it depends on language
