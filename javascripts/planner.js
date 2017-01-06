@@ -372,6 +372,10 @@ $(document).on('keyup keydown', function(e) {
 				if (active_context == 'line_context' && new_drawing) {
 					on_line_end(e);
 				}
+			} else if (e.keyCode === 34) { //page down
+				next_slide();
+			} else if (e.keyCode === 33) { //page up
+				prev_slide();
 			}
 		}
 	}
@@ -5089,6 +5093,26 @@ function create_hp_bar(scale) {
 	return container
 }
 
+function prev_slide() {
+	if (can_edit()) {
+		var prev_slide_uid = find_previous_slide(room_data.slides[active_slide].order);
+		if (prev_slide_uid != 0) {
+			socket.emit("change_slide", room, prev_slide_uid);
+			change_slide(prev_slide_uid);
+		}
+	}
+}
+
+function next_slide() {
+	if (can_edit()) {
+		var next_slide_uid = find_next_slide(room_data.slides[active_slide].order);
+		if (next_slide_uid != 0) {
+			socket.emit("change_slide", room, next_slide_uid);
+			change_slide(next_slide_uid);
+		}
+	}
+}
+
 var icons = {}
 
 function wot_connect() {
@@ -5772,18 +5796,10 @@ $(document).ready(function() {
 		});
 		
 		$('#prev_slide').click(function() {
-			var prev_slide_uid = find_previous_slide(room_data.slides[active_slide].order);
-			if (prev_slide_uid != 0) {
-				socket.emit("change_slide", room, prev_slide_uid);
-				change_slide(prev_slide_uid);
-			}
+			prev_slide()
 		});
 		$('#next_slide').click(function() {
-			var next_slide_uid = find_next_slide(room_data.slides[active_slide].order);
-			if (next_slide_uid != 0) {
-				socket.emit("change_slide", room, next_slide_uid);
-				change_slide(next_slide_uid);
-			}
+			next_slide()
 		});
 		$('#new_slide').click(function() {
 			var new_slide = create_new_slide(active_slide);
