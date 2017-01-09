@@ -7,6 +7,60 @@ div#preload { display: none; }
 	 background-repeat: no-repeat !important;
 }
 
+/* Small Devices, Tablets */
+@media only screen and (max-width : 768px) {
+	#main_navbar .nav > li > a {
+	   line-height: 50px !important;
+	}
+	#home {
+		padding-left:10px;
+	}
+	#login_button_li {
+		line-height:50px;
+		padding-left:15px;
+	}
+	#login_button_li > button {
+	    margin-bottom: 0px !important;
+	    margin-top: 0px !important;
+	}
+}
+
+/* Extra Small Devices, Phones */ 
+@media only screen and (max-width : 480px) {
+	#main_navbar .nav > li > a {
+	   line-height: 50px !important;
+	}
+	#home {
+		padding-left:10px;
+	}
+	#login_button_li {
+		line-height:50px;
+		padding-left:15px;
+	}
+	#login_button_li > button {
+	    margin-bottom: 0px !important;
+	    margin-top: 0px !important;
+	}
+}
+
+/* Custom, iPhone Retina */ 
+@media only screen and (max-width : 320px) {
+	#main_navbar .nav > li > a {
+	   line-height: 50px !important;
+	}
+	#home {
+		padding-left:10px;
+	}
+	#login_button_li {
+		line-height:50px;
+		padding-left:15px;
+	}
+	#login_button_li > button {
+	    margin-bottom: 0px !important;
+	    margin-top: 0px !important;
+	}
+}
+
 #main_navbar .nav > li > a {
    line-height: 90px;
    padding-bottom: 0;
@@ -14,8 +68,8 @@ div#preload { display: none; }
 }
 
 #main_navbar .nav > li > button {
-   margin-bottom: 30px;
-   margin-top: 30px;
+   margin-bottom: 28px;
+   margin-top: 28px;
 }
 
 .jumbotron, .jumbotron p, .jumbotron ol, .jumbotron ul {
@@ -67,7 +121,6 @@ html, body {position: absolute; min-width:100%; min-height: 100%; padding: 0px; 
 
 .navbar {
     background-color: #2e2e2e;
-    background-image: none;
 	font-weight: 700;
 	font-family: 'Roboto Slab', serif;
 }
