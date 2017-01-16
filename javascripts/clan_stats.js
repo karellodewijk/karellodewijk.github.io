@@ -129,7 +129,7 @@ function populate() {
 			})
 		).then(function() {
 			$( document ).ready(function() {
-				$("#member_list").tablesorter({emptyTo: 'bottom', sortList: [[4,1],[0,0],[1,1],[2,0],[3,0],[5,0],[6,0],[7,0]]}); 
+				$("#member_list").tablesorter({emptyTo: 'bottom', sortList: [[1,0],[0,0],[2,0],[3,0],[4,0],[5,0],[7,0]]}); 
 				var metrics = ["battles", "damage_dealt", "spotted", "frags", "dropped_capture_points", "wins", "xp", "survived_battles", "capture_points", "tier"]
 				
 				console.log(clan_stats)
@@ -316,6 +316,7 @@ function populate() {
 							if (member_stats && member_stats['recent']) {
 								var wr = member_stats['recent'].wins/member_stats['recent'].battles;
 
+								node += "<td>" + round(member_stats['recent'].battles, 0) + "</td>";
 								node += "<td style='color:#ffffff; background-color:" + wr_color(wr) + "'>" + round(100*wr, 1) + "%</td>";
 								node += "<td data-toggle='tooltip' title='" + round(member_stats['recent'].wn8, 2) + "' style='color:#ffffff; background-color:" + wn8_color(member_stats['recent'].wn8) + "'>" + round(member_stats['recent'].wn8, 0) + "</td>";
 								node += "<td data-toggle='tooltip' title='" + round(member_stats['recent'].wn9, 2) + "' style='color:#ffffff; background-color:" + wn9_color(member_stats['recent'].wn9) + "'>" + round(member_stats['recent'].wn9, 0) + "</td>";
