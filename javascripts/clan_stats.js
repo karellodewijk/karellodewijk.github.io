@@ -357,7 +357,7 @@ function populate() {
 						$("#cap_col").append("<td data-toggle='tooltip' title='" + round(average.capture_points, 4) + "'>" + round(average.capture_points, 2) + "</td>");
 						$("#xp_col").append("<td data-toggle='tooltip' title='" + round(average.xp, 2) + "'>" + round(average.xp, 0) + "</td>");
 						$("#tier_col").append("<td data-toggle='tooltip' title='" + round(average.tier, 2) + "'>" + round(average.tier, 1) + "</td>");	
-						$("#spotted_col").append("<td data-toggle='tooltip' title='" + round(average.spotted, 2) + "'>" + round(average.spotted, 1) + "</td>");	
+						$("#spotted_col").append("<td data-toggle='tooltip' title='" + round(average.spotted, 2) + "'>" + round(average.spotted, 2) + "</td>");	
 							
 						function add_msg_column(str) {
 							$("#wr_col").append("<td>" + str + "</rd>");
