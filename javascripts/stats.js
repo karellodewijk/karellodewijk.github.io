@@ -155,6 +155,7 @@ function populate() {
 					var average_frags = totals.frags / totals.battles;
 					var average_survived = totals.survived_battles / totals.battles;
 					var average_xp = totals.xp / totals.battles;
+					var average_spotted = totals.spotted / totals.battles;
 					
 					node += "<td><img src='" + totals.icon + "'></td>";
 					node += "<td>"+totals.name+"</td>";
@@ -166,7 +167,8 @@ function populate() {
 					node += "<td>"+round(average_frags, 2)+"</td>";
 					node += "<td>"+round(kd,1)+"</td>";
 					node += "<td>"+round(100*average_survived,2)+"%</td>";
-					node += "<td>"+round(average_xp, 0)+"</td>";
+					node += "<td>"+round(average_spotted, 2)+"</td>";
+					node += "<td>"+round(average_xp, 0)+"</td>";				
 					node += "<td data-toggle='tooltip' title='" + round(totals.wn8, 2) + "' style='color:#ffffff; background-color:" + wn8_color(totals.wn8) + "'>" + round(totals.wn8, 0) + "</td>";
 					node += "<td data-toggle='tooltip' title='" + round(totals.wn9, 2) + "' style='color:#ffffff; background-color:" + wn9_color(totals.wn9) + "'>" + round(totals.wn9, 0) + "</td>";
 					node += "</tr>";
