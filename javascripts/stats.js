@@ -208,7 +208,8 @@ function populate() {
 				$("#def_col").append("<td></rd>");
 				$("#cap_col").append("<td></rd>");
 				$("#xp_col").append("<td></rd>");
-				$("#tier_col").append("<td></rd>");				
+				$("#tier_col").append("<td></rd>");
+				$("#spotted_col").append("<td></rd>");
 			}
 	
 			function add_column(now, then) {
