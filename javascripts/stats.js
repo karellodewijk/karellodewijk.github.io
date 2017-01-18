@@ -141,7 +141,7 @@ function populate() {
 		}
 				
 		$( document ).ready(function() {
-			$("#tank_list").tablesorter({sortList: [[5,1], [0,0],[1,0],[2,0],[3,0],[4,0],[6,0],[7,0]]}); 		
+			$("#tank_list").tablesorter({sortList: [[5,1], [0,0],[1,0],[2,0],[3,0],[4,0],[6,0],[7,0]], sortStable:true, sortAppend: [[5,1]]}); 		
 			
 			var results = calculate_stats(tank_expected, tank_expected_wn9, stats_data);
 											
@@ -636,10 +636,17 @@ $(document).ready(function() {
 			$(this).removeClass("active");
 		});
 		$(this).parent().addClass("active");
-	});
-	
+	});	
 	$(".collapsable").click(function(e) {
 		e.preventDefault();
+		var caret = $(this).find("span");
+		if (caret.hasClass("glyphicon-triangle-right")) {
+			$(this).find("span").removeClass("glyphicon-triangle-right");
+			$(this).find("span").addClass("glyphicon-triangle-bottom");
+		} else {
+			$(this).find("span").removeClass("glyphicon-triangle-bottom");
+			$(this).find("span").addClass("glyphicon-triangle-right");			
+		}
 		$(this).next("div").toggle();
 	})
 	$('#search_button').click(function(e){
