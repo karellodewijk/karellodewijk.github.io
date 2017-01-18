@@ -458,9 +458,16 @@ $(document).ready(function() {
 		});
 		$(this).parent().addClass("active");
 	});
-	
 	$(".collapsable").click(function(e) {
 		e.preventDefault();
+		var caret = $(this).find("span");
+		if (caret.hasClass("glyphicon-triangle-right")) {
+			$(this).find("span").removeClass("glyphicon-triangle-right");
+			$(this).find("span").addClass("glyphicon-triangle-bottom");
+		} else {
+			$(this).find("span").removeClass("glyphicon-triangle-bottom");
+			$(this).find("span").addClass("glyphicon-triangle-right");			
+		}
 		$(this).next("div").toggle();
 	})
 	$('#search_button').click(function(e){
