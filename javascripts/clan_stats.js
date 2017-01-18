@@ -229,7 +229,7 @@ function populate() {
 							}					
 						}
 						
-						$('#member_amount').text(clan_data.members.length)
+						$('#member_amount').text(""+clan_data.members.length)
 						
 						var interesting_points, summary_points;
 						if (src == "random" || src == "all") {
