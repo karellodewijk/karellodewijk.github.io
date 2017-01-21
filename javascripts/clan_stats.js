@@ -482,13 +482,13 @@ $(document).ready(function() {
 	});
 	$(".collapsable").click(function(e) {
 		e.preventDefault();
-		var caret = $(this).find("span");
+		var caret = $(this).find(".glyphicon");
 		if (caret.hasClass("glyphicon-triangle-right")) {
-			$(this).find("span").removeClass("glyphicon-triangle-right");
-			$(this).find("span").addClass("glyphicon-triangle-bottom");
+			$(this).find(".glyphicon").removeClass("glyphicon-triangle-right");
+			$(this).find(".glyphicon").addClass("glyphicon-triangle-bottom");
 		} else {
-			$(this).find("span").removeClass("glyphicon-triangle-bottom");
-			$(this).find("span").addClass("glyphicon-triangle-right");			
+			$(this).find(".glyphicon").removeClass("glyphicon-triangle-bottom");
+			$(this).find(".glyphicon").addClass("glyphicon-triangle-right");			
 		}
 		$(this).next("div").toggle();
 	})
