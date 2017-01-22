@@ -130,7 +130,7 @@ function populate() {
 			})
 		).then(function() {
 			$( document ).ready(function() {
-				$("#member_list").tablesorter({emptyTo: 'bottom', sortList: [[1,0],[0,0],[2,0],[3,0],[4,0],[5,0],[7,0]]}); 
+				$("#member_list").tablesorter({emptyTo: 'bottom', sortList: [[1,0],[0,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0]]}); 
 				var metrics = ["battles", "damage_dealt", "spotted", "frags", "dropped_capture_points", "wins", "xp", "survived_battles", "capture_points", "tier"]
 				
 				var missing_members = [];
