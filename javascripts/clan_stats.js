@@ -79,6 +79,7 @@ function reset_ui() {
 function populate() {	
 	server = get_server(clan);
 	$('#no_results').hide();	
+	$("#did_you_mean").hide();
 	if (src != "all") {
 		$(".last_100").each(function() { $(this).text($(this).text().replace("100 ", "10 ")); });		
 		$(".last_100").each(function() { $(this).attr("title", $(this).attr("title").replace("100 ", "10 ")); });		

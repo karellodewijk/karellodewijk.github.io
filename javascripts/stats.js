@@ -57,7 +57,7 @@ function reset_ui() {
 function populate() {	
 	server = get_server(player);
 	$('#no_results').hide();
-	
+	$("#did_you_mean").hide();
 	if (src != "all") {
 		$("#last_100").text($("#last_100").text().replace("100 ", "10 "));
 		$("#last_1000").text($("#last_1000").text().replace("1,000 ", "100 "));
