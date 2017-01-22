@@ -509,7 +509,7 @@ $(document).ready(function() {
 				} else {
 					var alternatives = "";
 					for (var i = 0; i < Math.min(20, data.data.length); i++) {
-						alternatives += "<a href='/clan/"+ data.data[0].clan_id + "'>" + data.data[i].tag + "</a>, "
+						alternatives += "<a href='/clan/"+ data.data[i].clan_id + "'>" + data.data[i].tag + "</a>, "
 					}
 					alternatives = alternatives.substring(0, alternatives.length - 2);
 					$('#alt_lists').html(alternatives);
