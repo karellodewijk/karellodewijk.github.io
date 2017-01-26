@@ -1038,6 +1038,7 @@ function set_background(new_background, cb) {
 				var grid = $('#map_select').find('option[value="'+ new_background.path +'"]').attr('data-grid')
 				if (grid) {
 					var img = new Image();
+					img.crossOrigin = "Anonymous";
 					img.onload = function() {
 						grid_layer.texture = new PIXI.Texture(new PIXI.BaseTexture(img));
 					}
