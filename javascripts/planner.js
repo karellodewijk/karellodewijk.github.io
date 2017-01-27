@@ -1022,7 +1022,7 @@ function set_background(new_background, cb) {
 			resources_loading++;
 
 			var texture;
-			if (new_background.indexOf("://")) {
+			if (new_background.path.indexOf("://")) {
 				texture = PIXI.Texture.fromImage(static_host + new_background.path);
 			} else {
 				texture = PIXI.Texture.fromImage(new_background.path);
