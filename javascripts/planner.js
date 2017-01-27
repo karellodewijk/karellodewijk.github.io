@@ -1021,8 +1021,13 @@ function set_background(new_background, cb) {
 		if (!new_background.is_video) {		
 			resources_loading++;
 
-			var texture = PIXI.Texture.fromImage(new_background.path);
-
+			var texture;
+			if (new_background.indexOf("://")) {
+				texture = PIXI.Texture.fromImage(static_host + new_background.path);
+			} else {
+				texture = PIXI.Texture.fromImage(new_background.path);
+			}
+				
 			var on_loaded = function() {
 				reset_background()
 				
