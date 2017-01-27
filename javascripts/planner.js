@@ -7,17 +7,12 @@ if (location.pathname.indexOf(game+'3') != -1) {
 	is_video_replay = true;
 }
 
-var image_host;
 function is_safari() {
 	return navigator.vendor && navigator.vendor.indexOf('Apple') > -1;
 }
 
 var static_host = $("#static_host").attr("data-static_host");
-if (is_safari()) {
-	image_host = 'http://'+location.host+'/icons/'; //enable for local image hosting
-} else {
-	image_host = static_host + "/icons/";
-}
+var image_host = static_host + "/icons/";
 var asset_host = static_host + "/";
 
 var loader = PIXI.loader;
@@ -3884,7 +3879,6 @@ function create_icon(icon, cb_after) {
 		path += ".png";
 	}
 	
-	console.log(path)
 	var texture = img_texture(path);
 
 	resources_loading++;
