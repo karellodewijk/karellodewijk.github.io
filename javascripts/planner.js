@@ -182,7 +182,7 @@ var ICON_SCALE = 0.025/20;
 var NOTE_SCALE = 0.03;
 var THICKNESS_SCALE = 1;
 var FONT_SCALE = 0.002;
-var TEXT_QUALITY = 8;
+var TEXT_QUALITY = 1;
 var DRAW_QUALITY = 2;
 var ARROW_SCALE = 0.008;
 var ARROW_SCALE2 = 1.7;
@@ -197,7 +197,7 @@ var VIDEO_EXTENSIONS = ['mp4','webgl','avi'];
 var VIDEO_SYNC_DELAY = 10000; //in ms
 var MOUSE_IDLE_HIDE_TIME = 5000;
 var MAX_CANVAS_SIZE = 4096;
-var ICON_LABEL_SCALE = 1;
+var ICON_LABEL_SCALE = 1.5;
 var TEXT_SCALE = 0.80;
 var BACKGROUND_TEXT_SCALE = 0.80;
 var PING_TIME = 500; //time ping stays in ms
@@ -443,19 +443,21 @@ function paste() {
 
 function adjust_zoom(entity) {
 	if (entity.draw_zoom_level) {
-		if (!adjust_all_zoom && entity.type != "icon") return;
+		if (!adjust_all_zoom && entity.type != "icon" && entity.type != "text" && entity.type != "background_text") return;
 		var scale = zoom_level / entity.draw_zoom_level;
 		switch(entity.type) {
 			case 'icon': case 'note':
 				entity.container.scale.x = entity.container.orig_scale[0] * scale;
 				entity.container.scale.y = entity.container.orig_scale[1] * scale;
 				break;
-			case 'text': case 'background_text':
-				set_anchor(entity.container, 0, 0);
-				entity.container.scale.x = entity.container.orig_scale[0] * scale;
-				entity.container.scale.y = entity.container.orig_scale[1] * scale;
-				set_anchor(entity.container, 0.5, 0.5);
+			case 'text': 
+				remove(entity.uid);
+				create_text2(entity);
 				break;
+			case 'background_text':
+				remove(entity.uid);
+				create_background_text2(entity);
+				break;				
 			case 'drawing':
 				remove(entity.uid);
 				create_drawing2(entity, DRAW_QUALITY * 1/scale, scale);
@@ -3623,7 +3625,7 @@ function on_background_text_end(e) {
 	var mouse_location = e.data.getLocalPosition(background_sprite);	
 	var x = mouse_x_rel(mouse_location.x);
 	var y = mouse_y_rel(mouse_location.y);
-	var background_text = {uid:newUid(), type: 'background_text', x:x, y:y, scale:[1,1], color:background_text_color, alpha:1, text:$('#text_tool_background_text').val(), font_size:background_font_size * zoom_level, font:'Arial', draw_zoom_level:zoom_level};
+	var background_text = {uid:newUid(), type: 'background_text', x:x, y:y, scale:[1,1], color:background_text_color, alpha:1, text:$('#text_tool_background_text').val(), font_size:background_font_size * zoom_level * 1.2, font:'Arial', draw_zoom_level:zoom_level};
 	undo_list.push(clone_action(["add", [background_text]]));
 	create_background_text2(background_text);
 	snap_and_emit_entity(background_text);
@@ -3681,13 +3683,25 @@ function on_line_end(e) {
 	render_scene();	
 }
 
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  this.beginPath();
+  this.moveTo(x+r, y);
+  this.arcTo(x+w, y,   x+w, y+h, r);
+  this.arcTo(x+w, y+h, x,   y+h, r);
+  this.arcTo(x,   y+h, x,   y,   r);
+  this.arcTo(x,   y,   x+w, y,   r);
+  this.closePath();
+  return this;
+}
 
 function create_text_sprite(msg, color, font_size, font, background, label_shadow, font_modifier) {	
 	if(font_modifier === undefined) font_modifier = "";
 	var _canvas = document.createElement("canvas");
 	var scaling = objectContainer.scale.y;
 	var _context = _canvas.getContext("2d");
-
+	
 	var text_quality = TEXT_QUALITY;
 	_context.font = font_modifier + " " + Math.round(2 * font_size * scaling * text_quality) + "px "+font;
 	_context.textBaseline = "top";
@@ -3700,21 +3714,28 @@ function create_text_sprite(msg, color, font_size, font, background, label_shado
 	}
 	metrics = _context.measureText(msg);
 	
-	_canvas.height = font_size * scaling * text_quality * 2.7;	
+	var height = font_size * scaling * text_quality * 2.7;
+	var linewidth = height * 0.1;
+	var y_margin = height * 0.1;
+	var x_margin = height * 0.2;
+	_canvas.height = height + 2 * y_margin;
 
 	if (background) {
-		_canvas.width = metrics.width + _canvas.height*0.2;
+		_canvas.width = metrics.width + 2 * x_margin + 2 * linewidth ;
 		_context.fillStyle = "#ffffff"
-		_context.lineWidth = _canvas.height*0.1
-		_context.fillRect(0, 0, metrics.width + _canvas.height*0.2, _canvas.height);
-		_context.strokeRect(0, 0, metrics.width + _canvas.height*0.2, _canvas.height);
+		_context.lineWidth = linewidth;
+		_context.roundRect(linewidth/2, linewidth/2, metrics.width + 2 * x_margin, height, 4 * y_margin);
+		_context.fill();
+		_context.stroke();
 	} else {
 		_canvas.width = metrics.width;
 	}
 	
 	_context.fillStyle = color;
 	_context.font = font_modifier + " " + Math.round(2 * font_size * scaling * text_quality) + "px "+font;
-	_context.textBaseline = "top";
+	_context.textBaseline = "middle";
+	
+	console.log(_context.font)
 
 	if (label_shadow) {
 		_context.shadowColor = "black";
@@ -3724,9 +3745,9 @@ function create_text_sprite(msg, color, font_size, font, background, label_shado
 	}
 
 	if (background) {
-		_context.fillText(msg, _canvas.height*0.1, _canvas.height*0.1);
+		_context.fillText(msg, x_margin, _canvas.height/2);
 	} else {
-		_context.fillText(msg, 0, 0);
+		_context.fillText(msg, 0, _canvas.height/2);
 	}
 	
 	var texture = PIXI.Texture.fromCanvas(_canvas);
@@ -3813,6 +3834,13 @@ function create_icon_cont(icon, texture) {
 	set_anchor(sprite, 0.5, 0.5);
 	
 	if (icon.label && icon.label != "") {
+		var label_scale;
+		if (!icon.label_background) {
+			label_scale = 470;
+		} else {
+			label_scale = 450;
+		}
+		
 		var text = create_text_sprite(icon.label, icon.label_color, ICON_LABEL_SCALE * icon.label_font_size, icon.label_font, icon.label_background, !icon.label_background, icon.label_font_modifier)
 	
 		var label_pos = icon.label_pos;
@@ -3821,17 +3849,6 @@ function create_icon_cont(icon, texture) {
 		}
 
 		icon.container.addChild(text);
-		
-		var label_scale;
-		if (!icon.label_background) {
-			label_scale = 470;
-		} else {
-			label_scale = 450;
-		}
-		
-		var ratio = text.width / text.height;
-		text.height = x_abs(icon.label_font_size / label_scale) / icon.container.scale.y
-		text.width = text.height * ratio;
 		
 		var sprite_width = sprite.width / sprite.scale.x
 		var sprite_height = sprite.height / sprite.scale.y
