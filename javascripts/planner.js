@@ -78,6 +78,7 @@ var nowebgl = location.search.indexOf('nowebgl') != -1;
 var wot_live = location.search.indexOf('wot_live') != -1;
 var adjust_all_zoom = location.search.indexOf('adjust_zoom') != -1;
 
+
 function hashstring(str) {
 	var sum = 0;
 	for (i = 0; i < str.length; i++) {
@@ -308,6 +309,7 @@ var control_camera = false;
 var dragging_enabled = true;
 var temp_canvas = document.createElement("canvas");
 var dragging_mode = {};
+var presentation_mode = true;
 
 //these variables are only for the video replay room
 var offset = 0; // time offset from the server in ms 
@@ -4078,10 +4080,9 @@ function update_lock() {
 	if (is_room_locked && !my_user.role) {
 		$('.mejs-controls').hide();
 		$('.left_column').hide();
-		$('#slide_interactive').hide();
-		$('#slide_static').show();
-		$('#slide_table1').hide();
 		$('#can_not_edit').show();
+		$('#disable_dragging').hide();
+		make_slides_unsortable();
 		$('#map_select_box').hide();
 		for (var i in room_data.slides[active_slide].entities) {
 			if (room_data.slides[active_slide].entities[i] && room_data.slides[active_slide].entities[i].type == 'note') {
@@ -4100,10 +4101,9 @@ function update_lock() {
 	} else {
 		$('.mejs-controls').show();
 		$('.left_column').show();
-		$('#slide_interactive').show();
-		$('#slide_static').hide();
-		$('#slide_table1').show();
+		make_slides_sortable();
 		$('#can_not_edit').hide();
+		$('#disable_dragging').show();
 		$('#map_select_box').show();
 		for (var i in room_data.slides[active_slide].entities) {
 			if (room_data.slides[active_slide].entities[i] && room_data.slides[active_slide].entities[i].type == 'note') {
@@ -4135,13 +4135,17 @@ function update_lock() {
 	if (my_user.role == "owner") {
 		$('#lock').show();
 		$('#nuke_room').show();
+		$('#stop_present').prop("disabled", false);
 		$('#lock_camera').show();
 
 	} else {
 		$('#lock').hide();
 		$('#nuke_room').hide();
 		$('#lock_camera').hide();
+		$('#stop_present').prop("disabled", true);
 	}
+	
+	update_slide_buttons()
 }
 
 function remove_user(user) {
@@ -4533,20 +4537,25 @@ function update_slide_buttons() {
 	var prev_slide_uid = find_previous_slide(room_data.slides[active_slide].order);
 	var next_slide_uid = find_next_slide(room_data.slides[active_slide].order);
 	
-	if (prev_slide_uid == 0) {
+	if (prev_slide_uid == 0 || (presentation_mode && !can_edit())) {
 		document.getElementById("prev_slide").disabled = true;
 	} else {
 		document.getElementById("prev_slide").disabled = false;
 	}
-	if (next_slide_uid == 0) {
+	if (next_slide_uid == 0 || (presentation_mode && !can_edit())) {
 		document.getElementById("next_slide").disabled = true;
 	} else {
 		document.getElementById("next_slide").disabled = false;
 	}
-	if (Object.keys(room_data.slides).length == 1) {
+	if (Object.keys(room_data.slides).length == 1 || !can_edit()) {
 		document.getElementById("remove_slide").disabled = true;
 	} else {
 		document.getElementById("remove_slide").disabled = false;
+	}
+	if (!can_edit()) {
+		document.getElementById("new_slide").disabled = true;
+	} else {
+		document.getElementById("new_slide").disabled = false;
 	}
 	
 	if (room_data.slides[active_slide].show_grid) {
@@ -4557,7 +4566,12 @@ function update_slide_buttons() {
 	
 	var name = escapeHtml(room_data.slides[active_slide].name);
 	$('#slide_name_field').val(name);
-	$('#slide_name_field2').val(name);
+
+	if (can_edit()) {
+		$('#slide_name_field').prop("readonly", false);
+	} else {
+		$('#slide_name_field').prop("readonly", true);
+	}
 	
 	var current_slide_uid = find_first_slide();
 	var table = $('#slide_table');
@@ -4570,17 +4584,15 @@ function update_slide_buttons() {
 			table.append("<tr id='" + current_slide_uid + "' style='background-color:#ADD8E6'><td><a id='" + current_slide_uid + "'>" + name + "</a></td></tr>");
 		} else {
 			table.append("<tr id='" + current_slide_uid + "'><td><a id='" + current_slide_uid + "'>" + name + "</a></td></tr>");
-		}
-		
+		}		
 		current_slide_uid = find_next_slide(room_data.slides[current_slide_uid].order);
-		
 	} while (current_slide_uid != 0);
-	
+
 	//TODO: Future me, figure out why it resets the scrollbar just AFTER this function ends, I'm too stupid to figure it out
 	var scrolltop = $('#slide_container').scrollTop();
 	setTimeout(function() {
 		$('#slide_container').scrollTop(scrolltop);
-	},0);
+	},0);	
 }
 
 function transition(slide) {	
@@ -5097,22 +5109,22 @@ function create_hp_bar(scale) {
 }
 
 function prev_slide() {
-	if (can_edit()) {
-		var prev_slide_uid = find_previous_slide(room_data.slides[active_slide].order);
-		if (prev_slide_uid != 0) {
+	var prev_slide_uid = find_previous_slide(room_data.slides[active_slide].order);
+	if (prev_slide_uid != 0) {
+		if (presentation_mode && can_edit()) {
 			socket.emit("change_slide", room, prev_slide_uid);
-			change_slide(prev_slide_uid);
 		}
+		change_slide(prev_slide_uid);
 	}
 }
 
 function next_slide() {
-	if (can_edit()) {
-		var next_slide_uid = find_next_slide(room_data.slides[active_slide].order);
-		if (next_slide_uid != 0) {
+	var next_slide_uid = find_next_slide(room_data.slides[active_slide].order);
+	if (next_slide_uid != 0) {
+		if (presentation_mode && can_edit()) {
 			socket.emit("change_slide", room, next_slide_uid);
-			change_slide(next_slide_uid);
 		}
+		change_slide(next_slide_uid);
 	}
 }
 
@@ -5286,6 +5298,61 @@ function wot_connect() {
 				}
 			}
 		}
+	}
+}
+
+function make_slides_sortable() {
+	// Return a helper with preserved width of cells
+	var fixHelper = function(e, ui) {
+		ui.children().each(function() {
+			$(this).width($(this).width());
+		});
+		return ui;
+	};
+	
+	$("#slide_table1 tbody").sortable({
+		helper: fixHelper,
+		update: function(event, ui) {
+			if (can_edit()) {
+				var new_order = 0;
+				if (ui.item[0].previousElementSibling) {
+					new_order = room_data.slides[ui.item[0].previousElementSibling.id].order;
+					if (ui.item[0].nextElementSibling) {
+						new_order += room_data.slides[ui.item[0].nextElementSibling.id].order;
+						new_order /= 2;
+					} else {
+						new_order += 4294967296;
+					}
+				} else {
+					new_order = room_data.slides[find_first_slide()].order - 4294967296;
+				}
+				
+				room_data.slides[ui.item[0].id].order = new_order;
+				socket.emit('change_slide_order', room, ui.item[0].id, new_order);
+				
+				update_slide_buttons();
+			}
+			
+		}
+	}).disableSelection();
+}
+
+function make_slides_unsortable() {
+	if ($("#slide_table1 tbody").data("ui-sortable"))
+		$("#slide_table1 tbody").sortable('disable');
+}
+
+function set_presentation_mode(new_presentation_mode) {
+	presentation_mode = new_presentation_mode;
+	var node = $('#stop_present').find('div');		
+	if (presentation_mode == true) {
+		node.removeClass('icon-present');
+		node.addClass('icon-stop_present');
+		$('#stop_present').attr('title', $('#stop_present').attr('data-disable'))
+	} else {
+		node.removeClass('icon-stop_present');
+		node.addClass('icon-present');
+		$('#stop_present').attr('title', $('#stop_present').attr('data-enable'))
 	}
 }
 
@@ -5571,38 +5638,6 @@ $(document).ready(function() {
 		arr.forEach(ticks);
 		
 		ping_texture = img_texture("circle.png");
-		
-		// Return a helper with preserved width of cells
-		var fixHelper = function(e, ui) {
-			ui.children().each(function() {
-				$(this).width($(this).width());
-			});
-			return ui;
-		};
-
-		$("#slide_table1 tbody").sortable({
-			helper: fixHelper,
-			update: function(event, ui) {
-				var new_order = 0;
-				if (ui.item[0].previousElementSibling) {
-					new_order = room_data.slides[ui.item[0].previousElementSibling.id].order;
-					if (ui.item[0].nextElementSibling) {
-						new_order += room_data.slides[ui.item[0].nextElementSibling.id].order;
-						new_order /= 2;
-					} else {
-						new_order += 4294967296;
-					}
-				} else {
-					new_order = room_data.slides[find_first_slide()].order - 4294967296;
-				}
-				
-				room_data.slides[ui.item[0].id].order = new_order;
-				socket.emit('change_slide_order', room, ui.item[0].id, new_order);
-				
-				update_slide_buttons();
-				
-			}
-		}).disableSelection();
 
 		$('#modal_cancel').click(function (e) {
 			$('#myModal').modal('hide');
@@ -5801,10 +5836,14 @@ $(document).ready(function() {
 		});
 		
 		$('#slide_table').on('click', 'tr', function() {
-			var new_slide = $(this).attr('id');
-			if (active_slide == new_slide) {return;}
-			socket.emit("change_slide", room, new_slide);
-			change_slide(new_slide);
+			if (can_edit() || !presentation_mode) {
+				var new_slide = $(this).attr('id');
+				if (active_slide == new_slide) {return;}
+				if (presentation_mode && can_edit()) {
+					socket.emit("change_slide", room, new_slide);
+				}
+				change_slide(new_slide);
+			}
 		});
 		
 		$('#prev_slide').click(function() {
@@ -5820,9 +5859,11 @@ $(document).ready(function() {
 			change_slide(new_slide.uid);
 		});
 		$('#remove_slide').click(function() { //removed active_slide
-			if (Object.keys(room_data.slides).length > 1) {
-				socket.emit('remove_slide', room, active_slide);
-				remove_slide(active_slide);
+			if (can_edit()) {
+				if (Object.keys(room_data.slides).length > 1) {
+					socket.emit('remove_slide', room, active_slide);
+					remove_slide(active_slide);
+				}
 			}
 		});
 		$('#save').click(function() { 
@@ -5992,6 +6033,11 @@ $(document).ready(function() {
 			}
 			update_lock();
 			socket.emit("lock_room", room, is_room_locked);
+		});
+		
+		$('#stop_present').click(function () {
+			set_presentation_mode(!presentation_mode);
+			socket.emit("presentation_mode", room, presentation_mode, active_slide);
 		});
 		
 		$('#lock_camera').click(function () {
@@ -6329,6 +6375,9 @@ $(document).ready(function() {
 		video_paused = new_room_data.video_paused;
 		active_slide = room_data.active_slide;
 		is_room_locked = room_data.locked;
+		if (room_data.hasOwnProperty("presentation_mode")) {
+			set_presentation_mode(room_data.presentation_mode);
+		}
 		my_user_id = my_id;
 		tactic_name = new_tactic_name;
 		
@@ -6481,6 +6530,15 @@ $(document).ready(function() {
 		activity_animation(user_id)
 	});
 
+	socket.on('presentation_mode', function(new_presentation_mode, new_slide, user_id) {
+		set_presentation_mode(new_presentation_mode);
+		if (new_presentation_mode == true) {
+			change_slide(new_slide);
+		}
+		update_slide_buttons();
+		activity_animation(user_id)
+	});
+	
 	socket.on('change_slide', function(uid) {
 		if (uid != active_slide) {
 			change_slide(uid);
