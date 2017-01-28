@@ -516,7 +516,9 @@ function zoom(amount, isZoomIn, center, e) {
 }
 
 function emit_pan_zoom() {
-	socket.emit('pan_zoom', room, zoom_level, from_x_local_vect(objectContainer.x), from_y_local_vect(objectContainer.y));
+	if (presentation_mode) {
+		socket.emit('pan_zoom', room, zoom_level, from_x_local_vect(objectContainer.x), from_y_local_vect(objectContainer.y));
+	}
 }
 
 function pan_zoom(new_zoom_level, x, y) {	
@@ -5488,7 +5490,7 @@ $(document).ready(function() {
 	
 	var touchend = function(e) {
 		$('#zoom_level').text((1/zoom_level).toFixed(2));
-		if (zoom_pan_pending && control_camera) {
+		if (zoom_pan_pending) {
 			emit_pan_zoom();
 			zoom_pan_pending = false;			
 		}
@@ -6038,6 +6040,9 @@ $(document).ready(function() {
 		$('#stop_present').click(function () {
 			set_presentation_mode(!presentation_mode);
 			socket.emit("presentation_mode", room, presentation_mode, active_slide);
+			if (presentation_mode) {
+				emit_pan_zoom();
+			}
 		});
 		
 		$('#lock_camera').click(function () {
