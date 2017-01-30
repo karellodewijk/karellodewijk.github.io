@@ -27,22 +27,22 @@ if (game == "wows") { //wows
 	assets.push(image_host+"circle.png", image_host+"recticle.png", image_host+"dot.png", image_host+"note.png", image_host+"cursor.png", image_host+"grid.png");
 } else if (game == "aw") {
 	assets.push(image_host+"rotate.png");
-	loader.add("aw_assets.png", asset_host + "aw_assets.png");
-	loader.add("aw_assets.json",  asset_host +  "aw_assets.json");
+	loader.add("aw_assets.png", asset_host + "aw_assets.png", {crossOrigin:true});
+	loader.add("aw_assets.json",  "aw_assets.json", {crossOrigin:true});
 } else if (game == "lol") {
 	assets.push(image_host+"rotate.png");
 	assets.push(image_host+"circle.png", image_host+"recticle.png", image_host+"dot.png", image_host+"note.png", image_host+"cursor.png", image_host+"grid.png");
 } else if (game == "hots") {
 	assets.push(image_host+"rotate.png");
-	loader.add("hots_assets.png", asset_host + "hots_assets.png");
-	loader.add("hots_assets.json",  asset_host +  "hots_assets.json");
+	loader.add("hots_assets.png", asset_host + "hots_assets.png", {crossOrigin:true});
+	loader.add("hots_assets.json",  "hots_assets.json", {crossOrigin:true});
 } else {
-	loader.add("wot_assets.png", asset_host + "wot_assets.png");
-	loader.add("wot_assets.json",  asset_host +  "wot_assets.json");
+	loader.add("wot_assets.png", asset_host + "wot_assets.png", {crossOrigin:true});
+	loader.add("wot_assets.json",  "wot_assets.json", {crossOrigin:true});
 }
 
 for (var i in assets) {
-	loader.add(assets[i], assets[i]);
+	loader.add(assets[i], assets[i], {crossOrigin:true});
 }
 
 var textures_loaded = false;
