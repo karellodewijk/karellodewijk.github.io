@@ -1028,7 +1028,7 @@ function set_background(new_background, cb) {
 			resources_loading++;
 
 			var texture;
-			if (new_background.path.indexOf("://")) {
+			if (!new_background.path.indexOf("://")) {
 				texture = PIXI.Texture.fromImage(static_host + new_background.path);
 			} else {
 				texture = PIXI.Texture.fromImage(new_background.path);
@@ -3631,9 +3631,32 @@ function on_background_text_end(e) {
 	snap_and_emit_entity(background_text);
 }
 
+//var line_graph;
 var line_state = {};
 function on_line_move(e) {
-	limit_rate(15, line_state, function() {
+	limit_rate(15, line_state, function() {		
+		/*
+		objectContainer.removeChild(line_graph);
+		line_graph = new PIXI.Graphics();
+		line_graph.lineStyle(4, 0xffd900, 1);
+		
+		var mouse_location = e.data.getLocalPosition(objectContainer);
+		
+		var a;
+		if (new_drawing.path.length == 0) {
+			a = [x_abs(new_drawing.x), y_abs(new_drawing.y)];
+		} else {
+			a = [x_abs(new_drawing.path[new_drawing.path.length - 1][0] + new_drawing.x),
+				 y_abs(new_drawing.path[new_drawing.path.length - 1][1] + new_drawing.y)];
+		}
+		
+		line_graph.moveTo(a[0], a[1]);
+		line_graph.lineTo(mouse_location.x, mouse_location.y);
+		
+		objectContainer.addChild(line_graph);
+		render_scene();	
+		*/
+		
 		var mouse_location = e.data.getLocalPosition(background_sprite);
 		var a;
 		if (new_drawing.path.length == 0) {
