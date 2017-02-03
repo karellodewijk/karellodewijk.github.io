@@ -179,7 +179,7 @@ div#preload { display: none; }
 		padding-left:10px;
 	}
 	#login_button_li {
-		line-height:50px;
+		line-height:px;
 		padding-left:15px;
 	}
 	#login_button_li > button {
@@ -225,14 +225,14 @@ div#preload { display: none; }
 }
 
 #main_navbar .nav > li > a {
-   line-height: 90px;
+   line-height: 110px;
    padding-bottom: 0;
    padding-top: 0;
 }
 
 #main_navbar .nav > li > button {
-   margin-bottom: 28px;
-   margin-top: 28px;
+   margin-bottom: 38px;
+   margin-top: 38px;
 }
 
 .jumbotron, .jumbotron p, .jumbotron ol, .jumbotron ul {
