@@ -4210,6 +4210,7 @@ function escapeHtml(unsafe) {
  }
 
 function chat(message, color) {
+	$('#chat_tab_button').effect("pulsate", {times:1}, 1000);
 	message = escapeHtml(message);
 	message = message.split(":")
 	$("#chat_box").append('<div class="chatmsg"><b style="color:' + color + ';">'+message[0]+'</b>: '+ message.slice(1).join(':') +'<br/></div>');
