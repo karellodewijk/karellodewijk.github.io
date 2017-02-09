@@ -1,4 +1,5 @@
 var player = window.location.pathname.split('/');
+
 player = player[player.length - 1]
 
 if (!player) {
@@ -72,6 +73,7 @@ function reset_ui() {
 }
 
 function populate() {	
+
 	server = get_server(player);
 	$('#no_results').hide();
 	$("#did_you_mean").hide();
@@ -197,7 +199,7 @@ function populate() {
 			}
 			
 			var results = calculate_stats(tank_expected, tank_expected_wn9, stats_data, wg_src, wn9_src);
-											
+
 			for (var i in results.tanks) {
 				var totals = results.tanks[i];
 				
@@ -756,7 +758,32 @@ function populate() {
 	}
 }
 
-$(document).ready(function() {	
+$(document).ready(function() {
+	function search() {
+		var link = 'https://api.worldoftanks.' + server + '/wot/account/list/?limit=20&application_id=0dbf88d72730ed7b843ab5934d8b3794&search=' + $('#srch-term').val();
+		$.get(link, {}, function(data) {
+			if (data.data.length == 0) {
+				$('#no_results').show();
+				$('#no_battles').hide();
+				return;
+			} else {
+				$('#no_results').hide();
+				if (data.data[0].nickname.toUpperCase() == $('#srch-term').val().toUpperCase() || data.data.length == 1) {
+					player = data.data[0].account_id
+					reset_ui();
+					populate();
+				} else {
+					var alternatives = "";
+					for (var i = 0; i < Math.min(20, data.data.length); i++) {
+						alternatives += "<a href='/player/"+ data.data[i].account_id + "'>" + data.data[i].nickname + "</a>, "
+					}
+					alternatives = alternatives.substring(0, alternatives.length - 2);
+					$('#alt_lists').html(alternatives);
+					$("#did_you_mean").show();
+				}
+			}
+		});		
+	}
 	$("#"+server).addClass("active");
 	$('.server_select').click(function(e){
 		e.preventDefault();
@@ -780,29 +807,12 @@ $(document).ready(function() {
 	})
 	$('#search_button').click(function(e){
 		e.preventDefault();
-		var link = 'https://api.worldoftanks.' + server + '/wot/account/list/?limit=20&application_id=0dbf88d72730ed7b843ab5934d8b3794&search=' + $('#srch-term').val();
-		$.get(link, {}, function(data) {
-			if (data.data.length == 0) {
-				$('#no_results').show();
-				$('#no_battles').hide();
-				return;
-			} else {
-				$('#no_results').hide();
-				if (data.data[0].nickname.toUpperCase() == $('#srch-term').val().toUpperCase() || data.data.length == 1) {
-					player = data.data[0].account_id
-					reset_ui();
-					populate();
-				} else {
-					var alternatives = "";
-					for (var i = 0; i < Math.min(20, data.data.length); i++) {
-						alternatives += "<a href='/player/"+ data.data[i].account_id + "'>" + data.data[i].nickname + "</a>, "
-					}
-					alternatives = alternatives.substring(0, alternatives.length - 2);
-					$('#alt_lists').html(alternatives);
-					$("#did_you_mean").show();
-				}
-			}
-		});
+		search();
+	});
+	$("#srch-term").on('keyup', function (e) {
+		if (e.keyCode == 13) {
+			search();
+		}
 	});
 	$('.tab_link').click(function(e) {
 		e.preventDefault();
@@ -820,7 +830,6 @@ if (player && server) {
 	$(document).ready(function() {
 		$("#" + src + "_tab").addClass("active");
 	});
-	
 	populate();
 } else {
 	$("#login_or_search").show();
