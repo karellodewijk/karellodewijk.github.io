@@ -1242,13 +1242,19 @@ div.inline { display: inline-block; vertical-align: middle; }
   width: 22px;
   height: 22px;
 }
-.icon-ru {
+.icon-pt {
   background-position: -0px -2700px;
   width: 22px;
   height: 22px;
 }
-.icon-sr {
+.icon-ru {
   background-position: -0px -2722px;
   width: 22px;
   height: 22px;
 }
+.icon-sr {
+  background-position: -0px -2744px;
+  width: 22px;
+  height: 22px;
+}
+
