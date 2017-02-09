@@ -748,7 +748,7 @@ window.onresize = function() {
 		resize_renderer(width, height);		
 	} else {
 		align_left = true;
-		if (window.innerWidth-right_sidebar_width >= window.innerHeight) {
+		if ((window.innerWidth-right_sidebar_width)*1.25 >= window.innerHeight) {
 			var width, height;
 			if (window.innerWidth - right_sidebar_width > window.innerHeight) {
 				height = window.innerHeight;
