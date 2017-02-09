@@ -1,5 +1,5 @@
-//var servers = $("#socket_io_servers").attr("data-socket_io_servers").split(',')
-var servers = [location.host];
+var servers = $("#socket_io_servers").attr("data-socket_io_servers").split(',')
+//var servers = [location.host];
 
 var game = $('meta[name=game]').attr("content");
 var is_video_replay = false;
@@ -2603,8 +2603,8 @@ function on_select_end(e) {
 			var rect = {};
 			rect.width = x_rel(sprite.width)
 			rect.height = y_rel(sprite.height)
-			rect.x = x_rel(sprite.x) - rect.width/2
-			rect.y = y_rel(sprite.y) - rect.height/2
+			rect.x = x_rel(sprite.x) - rect.width * sprite.anchor.x;
+			rect.y = y_rel(sprite.y) - rect.height * sprite.anchor.y
 
 			//enable to visualise bounding boxes
 			//var shape = new PIXI.Rectangle(0, 0, x_abs(rect.width), y_abs(rect.height));
