@@ -2387,7 +2387,7 @@ function on_ruler_move(e) {
 							 + Math.pow(map_size_y * (left_click_origin[1] - mouse_y_rel(mouse_location.y)), 2));
 						 							 
 		var label = "";
-		if (game == "lol") {
+		if (game == "lol" || game == "csgo") {
 			label += Math.round(10*length)/10 + "u";
 		} else if (game == "wows") {
 			label += Math.round(0.01*length)/10 + "km";
@@ -4042,17 +4042,13 @@ function create_icon_cont(icon, texture) {
 		} else {
 			label_scale = 450;
 		}
+				
+		var text = create_text_sprite(icon.label, icon.label_color, icon.label_font_size * x_abs(0.0014) / icon.container.scale.y, icon.label_font, icon.label_background, !icon.label_background, icon.label_font_modifier)
 		
-		
-		var text = create_text_sprite(icon.label, icon.label_color, ICON_LABEL_SCALE * icon.label_font_size, icon.label_font, icon.label_background, !icon.label_background, icon.label_font_modifier)
-	
 		var label_pos = icon.label_pos;
 		if (!label_pos) {
 			label_pos = "pos_bottom";
 		}
-
-		text.height /= icon.container.scale.y;
-		text.width /= icon.container.scale.y;	
 		
 		icon.container.addChild(text);
 		
