@@ -6059,12 +6059,6 @@ $(document).ready(function() {
 			initialize_slider("delay", "delay_text", "delay");
 		}
 		
-		$('html').click(function(e) {
-			if (e.target.id != 'tactic_name') {
-				$('[data-toggle="popover"]').popover('hide');
-			}
-		});
-		
 		$('[data-toggle="popover"]').popover({
 			container: 'body',
 			trigger: 'manual',
