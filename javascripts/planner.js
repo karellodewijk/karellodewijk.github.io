@@ -4043,7 +4043,7 @@ function create_icon_cont(icon, texture) {
 			label_scale = 450;
 		}
 				
-		var text = create_text_sprite(icon.label, icon.label_color, icon.label_font_size * x_abs(0.0014) / icon.container.scale.y, icon.label_font, icon.label_background, !icon.label_background, icon.label_font_modifier)
+		var text = create_text_sprite(icon.label, icon.label_color, icon.label_font_size * x_abs(0.0013) / icon.container.scale.y, icon.label_font, icon.label_background, !icon.label_background, icon.label_font_modifier)
 		
 		var label_pos = icon.label_pos;
 		if (!label_pos) {
