@@ -5197,8 +5197,8 @@ function video_progress() {
 function enable_dragging() {
 	if (!dragging_enabled) {	
 		var icon = $("#disable_dragging > div");
-		icon.removeClass("icon-enable_dragging");
-		icon.addClass("icon-disable_dragging");
+		icon.removeClass("icon-disable_dragging");
+		icon.addClass("icon-enable_dragging");
 		$("#disable_dragging").attr('title', $("#disable_dragging").attr('data-disable'))
 	
 		dragging_enabled = true;
@@ -5218,8 +5218,8 @@ function enable_dragging() {
 function disable_dragging() {
 	if (dragging_enabled) {
 		var icon = $("#disable_dragging > div");
-		icon.removeClass("icon-disable_dragging");
-		icon.addClass("icon-enable_dragging");
+		icon.removeClass("icon-enable_dragging");
+		icon.addClass("icon-disable_dragging");
 		$("#disable_dragging").attr('title', $("#disable_dragging").attr('data-enable'))
 				
 		dragging_enabled = false;			
@@ -5591,12 +5591,12 @@ function set_presentation_mode(new_presentation_mode) {
 	presentation_mode = new_presentation_mode;
 	var node = $('#stop_present').find('div');		
 	if (presentation_mode == true) {
-		node.removeClass('icon-present');
-		node.addClass('icon-stop_present');
-		$('#stop_present').attr('title', $('#stop_present').attr('data-disable'))
-	} else {
 		node.removeClass('icon-stop_present');
 		node.addClass('icon-present');
+		$('#stop_present').attr('title', $('#stop_present').attr('data-disable'))
+	} else {
+		node.removeClass('icon-present');
+		node.addClass('icon-stop_present');
 		$('#stop_present').attr('title', $('#stop_present').attr('data-enable'))
 	}
 }
@@ -6309,19 +6309,21 @@ $(document).ready(function() {
 		
 		$('#lock_camera').click(function () {
 			var node = $(this).find('div');	
-			if (node.hasClass('icon-lock_camera')) {
-				node.removeClass('icon-lock_camera').addClass('icon-unlock_camera');
+			if (node.hasClass('icon-unlock_camera')) {
+				node.removeClass('icon-unlock_camera').addClass('icon-lock_camera');
+				$("#lock_camera").attr('title', $("#lock_camera").attr('data-enable'))
 				control_camera = true;
 				handle_pan_zoom();
 			} else {
-				node.removeClass('icon-unlock_camera').addClass('icon-lock_camera');
+				node.removeClass('icon-lock_camera').addClass('icon-unlock_camera');
+				$("#lock_camera").attr('title', $("#lock_camera").attr('data-disable'))
 				control_camera = false;
 			}
 		});
 		
 		$('#disable_dragging').click(function () {
 			var icon = $("#disable_dragging > div");
-			if (icon.hasClass("icon-disable_dragging")) {
+			if (icon.hasClass("icon-enable_dragging")) {
 				dragging_mode[active_context] = "disabled";
 				disable_dragging();
 			} else {
