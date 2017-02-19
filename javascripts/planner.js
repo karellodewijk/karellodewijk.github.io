@@ -6069,6 +6069,7 @@ $(document).ready(function() {
 			}
 		}).click(function(e) {
 			$(this).popover('toggle');
+			var _this = $(this);
 			document.getElementById("tactic_name").setAttribute("value", tactic_name);
 			var popover = $(this);
 			$(document).on('click', '#store_tactic', function(e) {
@@ -6084,6 +6085,7 @@ $(document).ready(function() {
 					alert('Tactic stored as: "' + tactic_name + '"');
 					e.stopPropagation();
 				}
+				_this.popover('toggle');
 			});
 			e.stopPropagation();
 		});
@@ -6157,8 +6159,14 @@ $(document).ready(function() {
 		});
 
 		$('#export').click(function () {
-			var new_renderer = new PIXI.CanvasRenderer(size_x, size_y,{backgroundColor : 0xBBBBBB});
-			new_renderer.render(objectContainer);			
+			var new_renderer = new PIXI.CanvasRenderer(background_sprite.width, background_sprite.height, {backgroundColor : 0xBBBBBB});
+			
+			var temp_x = background_sprite.x, temp_y = background_sprite.y;
+			background_sprite.x = 0;
+			background_sprite.y = 0;
+			new_renderer.render(background_sprite);			
+			background_sprite.x = temp_x;
+			background_sprite.y = temp_y;
 
 			$.getScript("http://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js", function() {
 				$.getScript("http://cdnjs.cloudflare.com/ajax/libs/javascript-canvas-to-blob/3.3.0/js/canvas-to-blob.min.js", function() {
@@ -6177,7 +6185,7 @@ $(document).ready(function() {
 			$.getScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js", function(){
 				var original_slide = active_slide;
 				var zip = new JSZip();
-				var new_renderer = new PIXI.CanvasRenderer(size_x, size_y, {backgroundColor : 0xBBBBBB});
+				var new_renderer = new PIXI.CanvasRenderer(background_sprite.width, background_sprite.height, {backgroundColor : 0xBBBBBB});
 				var first_slide_uid = find_first_slide();
 				var n = 1;
 				
@@ -6186,7 +6194,12 @@ $(document).ready(function() {
 					change_slide(slide_uid);
 					var it = setInterval(function() {
 						if (resources_loading == 0) {
-							new_renderer.render(objectContainer);
+							var temp_x = background_sprite.x, temp_y = background_sprite.y;
+							background_sprite.x = 0;
+							background_sprite.y = 0;
+							new_renderer.render(background_sprite);			
+							background_sprite.x = temp_x;
+							background_sprite.y = temp_y;
 							var data = new_renderer.view.toDataURL("image/jpeg", 0.9);
 							data = data.replace("data:image/jpeg;base64,","");
 							zip.file(n.toString() + '-' + room_data.slides[slide_uid].name + ".jpg", data, {base64:true});
