@@ -6634,13 +6634,8 @@ $(document).ready(function() {
 		room_data = new_room_data;
 		video_paused = new_room_data.video_paused;
 		active_slide = room_data.active_slide;
-		
-		console.log(active_slide)
-		console.log(room_data)
-		console.log(room_data.slides[active_slide])
 		if (!room_data.slides[active_slide]) {
-			console.log("Ok let's fix this")
-			active_slide = Object.keys(room_data)[0];
+			active_slide = Object.keys(room_data.slides)[0];
 		}		
 		is_room_locked = room_data.locked;
 		if (room_data.hasOwnProperty("presentation_mode")) {
