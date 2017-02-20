@@ -6634,6 +6634,9 @@ $(document).ready(function() {
 		room_data = new_room_data;
 		video_paused = new_room_data.video_paused;
 		active_slide = room_data.active_slide;
+		if (!room_data.slides[active_slide]) {
+			active_slide = Object.keys(room_data)[0];
+		}		
 		is_room_locked = room_data.locked;
 		if (room_data.hasOwnProperty("presentation_mode")) {
 			set_presentation_mode(room_data.presentation_mode);
