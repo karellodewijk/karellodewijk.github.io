@@ -5971,6 +5971,31 @@ $(document).ready(function() {
 			});
 		});
 		
+		$("#upload_background").change(function (e) {
+			var form = $("#upload_map_form")
+			var formData = new FormData(form[0]);
+			$.ajax({
+				url:form.attr("action"),
+				data:formData,
+				type:'POST',
+				contentType: false,
+				processData: false,
+				success : function(response) {
+					try {
+						response = JSON.parse(response);
+						console.log(response.path)
+						try_select_map($('#map_select'), response.path, true);						
+					} catch(e) {
+						alert(response);
+					}
+				}
+			});
+		});
+		
+		$('#upload_map').click(function (e) {
+			 $("#upload_background").click();
+		});
+		
 		$('#map_modal_cancel').click(function (e) {
 			$('#map_modal').modal('hide');
 		});
