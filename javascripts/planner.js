@@ -5978,50 +5978,54 @@ $(document).ready(function() {
 		function refresh_icon_menu() {
 			var icon_list = $('#icon_list');
 			icon_list.empty();
-			$.ajax({
-				url:upload_path+"/list_icons.php?user_id="+my_user.identity,
-				type:'GET',
-				cache: false,
-				success : function(response) {
-					try {
-						var icons = JSON.parse(response);
-						if (icons.length > 0) {
-							$('#no_uploaded_icons').hide();
-						} else {
-							$('#no_uploaded_icons').show();
+			if (my_user && my_user.identity) {
+				$.ajax({
+					url:upload_path+"/list_icons.php?user_id="+my_user.identity,
+					type:'GET',
+					cache: false,
+					success : function(response) {
+						try {
+							var icons = JSON.parse(response);
+							if (icons.length > 0) {
+								$('#no_uploaded_icons').hide();
+							} else {
+								$('#no_uploaded_icons').show();
+							}
+							for (var i in icons) {
+								icon_list.append('<div class="inline" style="padding:20px"><input id="' + icons[i] + '" type="checkbox"> <img src="' + upload_path + '/icons/' + my_user.identity + '/thumbs/' + icons[i] + '"></div>')
+							}
+						} catch(e) {
+							alert(response);
 						}
-						for (var i in icons) {
-							icon_list.append('<div class="inline" style="padding:20px"><input id="' + icons[i] + '" type="checkbox"> <img src="' + upload_path + '/icons/' + my_user.identity + '/thumbs/' + icons[i] + '"></div>')
-						}
-					} catch(e) {
-						alert(response);
 					}
-				}
-			});
+				});
+			}
 		}
 		
 		function refresh_custom_icons() {
 			var icon_list = $('#custom_icons_list')
 			icon_list.empty();
-			$.ajax({
-				url:upload_path+"/list_icons.php?user_id="+my_user.identity,
-				type:'GET',
-				cache: false,
-				success : function(response) {
-					try {
-						var icons = JSON.parse(response);
-						for (var i in icons) {
-							var color = 'data-no_color="true"';
-							if (icons[i].substring(0, 3) == "bw-") {
-								color = '';
+			if (my_user && my_user.identity) {
+				$.ajax({
+					url:upload_path+"/list_icons.php?user_id="+my_user.identity,
+					type:'GET',
+					cache: false,
+					success : function(response) {
+						try {
+							var icons = JSON.parse(response);
+							for (var i in icons) {
+								var color = 'data-no_color="true"';
+								if (icons[i].substring(0, 3) == "bw-") {
+									color = '';
+								}
+								icon_list.append('<button id="' + upload_path + '/icons/' + my_user.identity + '/' + icons[i] + '" data-scale=2 '+ color +' class="tank_select" data-toggle="tooltip" title="' + icons[i] + '"><img src="' + upload_path + '/icons/' + my_user.identity + '/thumbs/' + icons[i] + '"></button>');
 							}
-							icon_list.append('<button id="' + upload_path + '/icons/' + my_user.identity + '/' + icons[i] + '" data-scale=2 '+ color +' class="tank_select" data-toggle="tooltip" title="' + icons[i] + '"><img src="' + upload_path + '/icons/' + my_user.identity + '/thumbs/' + icons[i] + '"></button>');
+						} catch(e) {
+							alert(response);
 						}
-					} catch(e) {
-						alert(response);
 					}
-				}
-			});
+				});
+			}
 		}
 		
 		$('#upload_icon').click(function (e) {
