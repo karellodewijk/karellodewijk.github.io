@@ -44,6 +44,7 @@ function get_wg_data(page, fields, cb) {
 		link = link.slice(0,-1);
 	}
 	$.get(link).done(function(data) {
+		console.log(data)
 		cb(data.data[player]);
 	});
 }
@@ -105,6 +106,14 @@ function populate() {
 				self.resolve();
 			}).fail(function() {
 				summary = null;
+				self.resolve();
+			});
+		}),
+		$.Deferred(function() {
+			var self = this;
+			get_wg_data("/account/tanks/?", ["tank_id"], function(data) {
+				valid_tanks = data.map((x) => {return parseInt(x.tank_id)});
+				valid_tanks.sort((a,b) => {return a-b});
 				self.resolve();
 			});
 		}),
@@ -177,6 +186,33 @@ function populate() {
 		} else {
 			$('#no_battles').hide();
 		}
+
+		//borrowed from http://stackoverflow.com/questions/22697936/binary-search-in-javascript
+		function binarySearch(ar, el, compare_fn) {
+			var m = 0;
+			var n = ar.length - 1;
+			while (m <= n) {
+				var k = (n + m) >> 1;
+				var cmp = compare_fn(el, ar[k]);
+				if (cmp > 0) {
+					m = k + 1;
+				} else if(cmp < 0) {
+					n = k - 1;
+				} else {
+					return k;
+				}
+			}
+			return -m - 1;
+		}
+		
+		//WG api keeps tank stats after an account reset this cleans those out by checking the owned tanks against the tank stat list 
+		for (var i in stats_data) {
+			var tank_id = stats_data[i].tank_id;
+			var pos = binarySearch(valid_tanks, tank_id, (a,b) => {return a-b});
+			if (pos < 0) {
+				delete stats_data[i];
+			}
+		}
 				
 		$( document ).ready(function() {
 			$("#tank_list").tablesorter({sortList: [[5,1], [0,0],[1,0],[2,0],[3,0],[4,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0]], sortStable:true, sortAppend: [[5,1]]}); 		
@@ -199,7 +235,7 @@ function populate() {
 			}
 			
 			var results = calculate_stats(tank_expected, tank_expected_wn9, stats_data, wg_src, wn9_src);
-
+						
 			for (var i in results.tanks) {
 				var totals = results.tanks[i];
 				
@@ -267,7 +303,7 @@ function populate() {
 				$("#spotted_col").append("<td></rd>");
 			}
 	
-			function add_column(now, then) {
+			function add_column(now, then) {				
 				var results = {}
 				if (!then || Object.keys(then).length == 0) {
 					add_msg_column("Coming soon");
@@ -673,7 +709,7 @@ function populate() {
 			
 		});
 
-		if (summary.battles) {
+		if (summary && summary.battles) {
 			$('#line_chart').show();
 			var wn8_dataset = []
 			var wn9_dataset = []
