@@ -109,11 +109,12 @@ function populate() {
 				self.resolve();
 			});
 		}),
+		//this is to fix a bug with reset account, where wg still reports old stats for tanks
 		$.Deferred(function() {
 			var self = this;
 			get_wg_data("/account/tanks/?", ["tank_id"], function(data) {
-				valid_tanks = data.map((x) => {return parseInt(x.tank_id)});
-				valid_tanks.sort((a,b) => {return a-b});
+				valid_tanks = data.map(function(x) {return parseInt(x.tank_id)});
+				valid_tanks.sort(function(a,b) {return a-b});
 				self.resolve();
 			});
 		}),
@@ -205,14 +206,13 @@ function populate() {
 			return -m - 1;
 		}
 		
-		//WG api keeps tank stats after an account reset this cleans those out by checking the owned tanks against the tank stat list 
-		for (var i in stats_data) {
-			var tank_id = stats_data[i].tank_id;
-			var pos = binarySearch(valid_tanks, tank_id, (a,b) => {return a-b});
-			if (pos < 0) {
-				delete stats_data[i];
-			}
-		}
+		//this is to fix a bug with reset account, where wg still reports old stats for tanks
+		stats_data = stats_data.filter(function(x) {
+			var tank_id = x.tank_id;
+			var pos = binarySearch(valid_tanks, tank_id, function(a,b) {return a-b});
+			return (pos >= 0)
+		})
+		
 				
 		$( document ).ready(function() {
 			$("#tank_list").tablesorter({sortList: [[5,1], [0,0],[1,0],[2,0],[3,0],[4,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0]], sortStable:true, sortAppend: [[5,1]]}); 		
