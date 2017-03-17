@@ -1,5 +1,6 @@
 var servers = $("#socket_io_servers").attr("data-socket_io_servers").split(',')
-//var servers = [location.host];
+
+if (servers.length == 1 && servers[0] == "") servers = [location.host];
 
 var game = $('meta[name=game]').attr("content");
 var is_video_replay = false;
@@ -1158,6 +1159,7 @@ function set_background(new_background, cb) {
 					img.crossOrigin = "Anonymous";
 					img.onload = function() {
 						grid_layer.texture = new PIXI.Texture(new PIXI.BaseTexture(img));
+						render_scene();
 					}
 					img.src = image_host + grid;
 				}
@@ -2030,6 +2032,22 @@ function on_left_click(e) {
 		setup_mouse_events(undefined, on_note_end);
 	}
 }
+
+/* uncomment for pixi 4.4.1+
+var eraser_state = {}
+function on_eraser_move(e) {
+	limit_rate(5, eraser_state, function() {
+		renderer.plugins.interaction.processInteractive(renderer.plugins.interaction.eventData, objectContainer, function(e, container, hit) {
+			if (hit && container.entity && container.entity.type != 'background') {
+				var entity = container.entity;
+				remove(entity.uid);
+				undo_list.push(clone_action(["remove", [entity]]));
+				socket.emit('remove', room, entity.uid, active_slide);
+			}
+		}, true);	
+	});
+}
+*/
 
 var eraser_state = {}
 function on_eraser_move(e) {
@@ -2909,6 +2927,7 @@ function redraw_select_box() {
 			select_box.height = y_max - y_min;
 			select_box.x = x_min + select_box.width/2;
 			select_box.y = y_min + select_box.height/2;
+			make_resizable(select_box);
 			
 			rotate_arrow0.x = x_min + select_box.width + rotate_arrow0.width/2 + y_abs(ROTATE_ARROW_MARGIN) * zoom_level;
 			rotate_arrow0.y = y_min + select_box.height/2;
@@ -6005,6 +6024,7 @@ $(document).ready(function() {
 		function refresh_custom_icons() {
 			var icon_list = $('#custom_icons_list')
 			icon_list.empty();
+						
 			if (my_user && my_user.identity) {
 				$.ajax({
 					url:upload_path+"/list_icons.php?user_id="+my_user.identity,
