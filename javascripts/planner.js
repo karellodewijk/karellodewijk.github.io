@@ -1825,7 +1825,7 @@ function hexToRGBA(hex, alpha) {
 function init_canvas_simple(ctx, line_thickness, line_color, style) {	
 	var line_color = '#' + ('00000' + (line_color | 0).toString(16)).substr(-6); 
 
-	ctx.lineWidth = line_thickness * (size_y/1000) * THICKNESS_SCALE;
+	ctx.lineWidth = line_thickness * THICKNESS_SCALE;
 			
 	ctx.strokeStyle = line_color;
 	ctx.fillStyle = line_color;
@@ -1833,7 +1833,7 @@ function init_canvas_simple(ctx, line_thickness, line_color, style) {
 	//provides some AA
 	ctx.shadowBlur = ctx.lineWidth / 2;
 	ctx.shadowColor = '#000000';
-	
+		
 	if ('setLineDash' in ctx) {	
 		if (style == "dashed") {
 			ctx.setLineDash([5*line_thickness, 3*line_thickness]);
@@ -1945,9 +1945,9 @@ function on_left_click(e) {
 			var end_circle_radius = (e.type == "touchstart") ? MIN_POLYGON_END_DISTANCE_TOUCH : MIN_POLYGON_END_DISTANCE;
 			
 			graphics = new PIXI.Graphics();
-			graphics.lineStyle(new_drawing.outline_thickness * THICKNESS_SCALE, new_drawing.outline_color, new_drawing.outline_opacity);
+			graphics.lineStyle(new_drawing.outline_thickness / background_sprite.scale.y * THICKNESS_SCALE, new_drawing.outline_color, new_drawing.outline_opacity);
 			graphics.moveTo(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)));
-			graphics.drawShape(new PIXI.Circle(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)), size_y * end_circle_radius * zoom_level));
+			graphics.drawShape(new PIXI.Circle(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)), background_sprite.height / background_sprite.scale.y * end_circle_radius * zoom_level));
 			background_sprite.addChild(graphics);
 			
 			just_activated = true;
@@ -1975,9 +1975,9 @@ function on_left_click(e) {
 			var end_circle_radius = (e.type == "touchstart") ? MIN_POLYGON_END_DISTANCE_TOUCH : MIN_POLYGON_END_DISTANCE;
 			
 			graphics = new PIXI.Graphics();
-			graphics.lineStyle(new_drawing.outline_thickness * THICKNESS_SCALE, new_drawing.outline_color, new_drawing.outline_opacity);
+			graphics.lineStyle(new_drawing.outline_thickness / background_sprite.scale.y * THICKNESS_SCALE, new_drawing.outline_color, new_drawing.outline_opacity);
 			graphics.moveTo(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)));
-			graphics.drawShape(new PIXI.Circle(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)), size_y * end_circle_radius * zoom_level));
+			graphics.drawShape(new PIXI.Circle(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)), background_sprite.height / background_sprite.scale.y * end_circle_radius * zoom_level));
 			background_sprite.addChild(graphics);
 			
 			setup_mouse_events(on_curve_move, on_area_end);
@@ -2309,12 +2309,14 @@ function on_curve_end(e) {
 		point_buffer.push(mouse_location.x, mouse_location.y);
 		new_drawing.path.push([from_x_local(new_x) - new_drawing.x, from_y_local(new_y) - new_drawing.y]);
 
-		background_sprite.removeChild(graphics);		
+		background_sprite.removeChild(graphics);
+		
 		graphics = new PIXI.Graphics();
-		graphics.lineStyle(new_drawing.thickness * THICKNESS_SCALE, new_drawing.color, 1);
+		graphics.lineStyle(new_drawing.thickness / background_sprite.scale.y * THICKNESS_SCALE, new_drawing.color, 1);
 		graphics.moveTo(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)));
-		graphics.drawShape(new PIXI.Circle(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)), size_y * end_circle_radius * zoom_level));
+		graphics.drawShape(new PIXI.Circle(x_abs(from_x_local(mouse_location.x)), y_abs(from_y_local(mouse_location.y)), background_sprite.height / background_sprite.scale.y * end_circle_radius * zoom_level));
 		background_sprite.addChild(graphics);
+		
 		render_scene();	
 		
 		on_curve_move(e);
