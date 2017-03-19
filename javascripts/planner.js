@@ -314,6 +314,7 @@ var grid_layer;
 var zoom_level = 1;
 var control_camera = false;
 var dragging_enabled = true;
+var dragging = false;
 var temp_canvas = document.createElement("canvas");
 var dragging_mode = {};
 var presentation_mode = true;
@@ -1432,6 +1433,7 @@ function on_drag_start(e) {
 			return;
 		}
 		
+		dragging = true;
 		var mouse_location = mouse_loc();
 		last_drag_update = Date.now();
 		last_drag_position = [from_x_local(mouse_location.x), from_y_local(mouse_location.y)];
@@ -2873,22 +2875,26 @@ function on_selectbox_move(e) {
 }
 
 function on_select_over(e) {
-	select_box.mousemove = on_selectbox_move;
-	select_box.touchmove = on_selectbox_move;
-	select_box.mouseout = on_select_out;
-	select_box.touchend = on_select_out;
+	if (!dragging) {
+		select_box.mousemove = on_selectbox_move;
+		select_box.touchmove = on_selectbox_move;
+		select_box.mouseout = on_select_out;
+		select_box.touchend = on_select_out;
+	}
 }
 
 function on_select_out(e) {
-	once_per_frame(select_box_move_state, function() {});
-	$('html,body').css('cursor', 'default');
-	select_box.mousemove = undefined;
-	select_box.touchmove = undefined;
-	select_box.mousedown = undefined;
-	select_box.touchstart = undefined;
-	objectContainer.mousedown = on_left_click;
-	select_box.mouseout = undefined;
-	select_box.touchend = undefined;
+	if (!dragging) {
+		once_per_frame(select_box_move_state, function() {});
+		$('html,body').css('cursor', 'default');
+		select_box.mousemove = undefined;
+		select_box.touchmove = undefined;
+		select_box.mousedown = undefined;
+		select_box.touchstart = undefined;
+		objectContainer.mousedown = on_left_click;
+		select_box.mouseout = undefined;
+		select_box.touchend = undefined;
+	}
 }
 
 function make_resizable(select_box) {
@@ -4930,6 +4936,7 @@ function transition(slide) {
 function cancel_drag(abort) {
 	clearTimeout(drag_timeout);
 	objectContainer.buttonMode = false;	
+	dragging = false;
 	
 	if (context_before_drag) {
 		active_context = context_before_drag;
