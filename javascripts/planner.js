@@ -4127,7 +4127,7 @@ function create_icon_cont(icon, texture) {
 	room_data.slides[active_slide].entities[icon.uid] = icon;
 }
 	
-function create_icon(icon, cb_after) {
+function create_icon(icon, done) {
 	try {
 		var counter = $('button[id*="'+icon.tank+'"]').find("span");
 		counter[0].innerHTML = parseInt(counter[0].innerHTML)+1;
@@ -4146,7 +4146,7 @@ function create_icon(icon, cb_after) {
 	resources_loading++;
 	var onloaded = function() {
 		create_icon_cont(icon, texture);
-		if (cb_after) cb_after(icon);
+		if (done) done();
 		resources_loading--;
 	}
 	
@@ -4200,50 +4200,65 @@ function create_entity(entity) {
 	if (room_data.slides[active_slide].entities[entity.uid]) {
 		remove(entity.uid);
 	}
+	
 	if (entity.type == 'background') {
 		set_background(entity);
+		done()
 	} else if (entity.type == 'icon') {
-		create_icon(entity);
+		create_icon(entity, done);
 	} else if (entity.type == 'drawing') {
 		create_drawing2(entity, DRAW_QUALITY);
+		done()
 	} else if (entity.type == 'curve') {
 		create_curve2(entity, DRAW_QUALITY);
+		done()
 	} else if (entity.type == 'line') {
 		create_line2(entity, DRAW_QUALITY);
+		done()
 	} else if (entity.type == 'text') {
 		create_text2(entity);
+		done()
 	} else if (entity.type == 'background_text') {
 		create_background_text2(entity);
+		done()
 	} else if (entity.type == 'note') {
 		create_note(entity);
+		done()
 	} else if (entity.type == 'rectangle') {
 		create_rectangle2(entity, DRAW_QUALITY);
+		done()
 	} else if (entity.type == 'circle') {
+		done()
 		create_circle2(entity, DRAW_QUALITY);
 	} else if (entity.type == 'polygon') {
 		create_polygon2(entity, DRAW_QUALITY);
+		done()
 	} else if (entity.type == 'area') {
 		create_area2(entity, DRAW_QUALITY);
+		done()
 	}
 
-	if (entity.container) {
-		if (entity.scale) {
-			entity.container.scale.x = entity.container.orig_scale[0] * entity.scale[0];
-			entity.container.scale.y = entity.container.orig_scale[1] * entity.scale[1];
-		}
+	function done() {
+		if (entity.container) {
+			if (entity.scale) {
+				entity.container.scale.x = entity.container.orig_scale[0] * entity.scale[0];
+				entity.container.scale.y = entity.container.orig_scale[1] * entity.scale[1];
+			}
+				
+			if (entity.container.anchor) {
+				set_anchor(entity.container, 0.5, 0.5);
+			}
 			
-		if (entity.container.anchor) {
-			set_anchor(entity.container, 0.5, 0.5);
-		}
+			console.log("rotating")
+			if (entity.rotation) {
+				entity.container.rotation = -entity.rotation;
+			}
+			
+			adjust_zoom(entity)
 		
-		if (entity.rotation) {
-			entity.container.rotation = -entity.rotation;
-		}
-		
-		adjust_zoom(entity)
-	
-		if (background.is_video) {
-			update_timeline(entity);
+			if (background.is_video) {
+				update_timeline(entity);
+			}
 		}
 	}
 }
