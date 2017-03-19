@@ -4146,7 +4146,7 @@ function create_icon(icon, done) {
 	resources_loading++;
 	var onloaded = function() {
 		create_icon_cont(icon, texture);
-		if (done) done();
+		if (done) done(icon);
 		resources_loading--;
 	}
 	
@@ -4249,7 +4249,6 @@ function create_entity(entity) {
 				set_anchor(entity.container, 0.5, 0.5);
 			}
 			
-			console.log("rotating")
 			if (entity.rotation) {
 				entity.container.rotation = -entity.rotation;
 			}
