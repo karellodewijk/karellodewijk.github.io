@@ -3694,9 +3694,9 @@ function rebuild_timeline(entity) {
 	for (var key in room_data.slides[active_slide].entities) {
 		if (room_data.slides[active_slide].entities.hasOwnProperty(key)) {
 			if (room_data.slides[active_slide].entities[key].container) {
-				update_timeline(room_data.slides[active_slide].entities[key]);
 				remove(key, true);
 			}
+			update_timeline(room_data.slides[active_slide].entities[key]);
 		}
 	}
 }
