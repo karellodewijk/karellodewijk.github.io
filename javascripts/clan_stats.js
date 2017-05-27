@@ -97,13 +97,7 @@ function populate() {
 		$(".last_5000").each(function() { $(this).attr("title", $(this).attr("title").replace("500 ", "5,000 "));	});			
 	}
 	
-	if (!player) {
-		get_wg_clan_data("/clans/info/?", ["leader_id"], function(data) {
-			download_clan_stats();
-		});
-	} else {
-		download_clan_stats();
-	}
+	download_clan_stats();
 	
 	function download_clan_stats() {
 		$.when(
@@ -335,7 +329,8 @@ function populate() {
 
 							var node = "<tr>";
 							node += "<td style='text-align:left; padding-left:5px'><a href='/player/" + member.account_id + "'>" + member.account_name + "</a></td>";
-							node += "<td><span hidden>" + role_rank + "</span>" + member.role_i18n + "</td>";
+							node += "<td><span hidden>" + role_rank + "</span>" + member.role + "</td>";
+							//node += "<td><span hidden>" + role_rank + "</span>" + member.role_i18n + "</td>";
 
 							if (member_stats && member_stats['recent']) {
 								var wr = member_stats['recent'].wins/member_stats['recent'].battles;
