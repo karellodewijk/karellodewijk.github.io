@@ -10,6 +10,7 @@ if (!player) {
 }
 
 var server = get_server(player);
+var charts = [];
 
 function get_server(id) {
 	if(id > 3000000000){return "kr";}
@@ -44,7 +45,6 @@ function get_wg_data(page, fields, cb) {
 		link = link.slice(0,-1);
 	}
 	$.get(link).done(function(data) {
-		console.log(data)
 		cb(data.data[player]);
 	});
 }
@@ -71,10 +71,13 @@ function reset_ui() {
 	$('#total_table_body').children().each(function() {
 		$(this).children().slice(1).remove();
 	})
+	for (var i in charts) {
+		charts[i].destroy();
+	}
+	charts = [];
 }
 
 function populate() {	
-
 	server = get_server(player);
 	$('#no_results').hide();
 	$("#did_you_mean").hide();
@@ -159,7 +162,7 @@ function populate() {
 		}),
 		$.Deferred(function() {
 			var self = this;
-			$.get("http://karellodewijk.github.io/other/expected_wn8.json", {}, function(data) {
+			$.get("http://karellodewijk.github.io/other/expected_wn8_2.json", {}, function(data) {
 				tank_expected = data;
 				self.resolve();
 			});
@@ -519,7 +522,7 @@ function populate() {
 			};				
 	
 			var ctx = document.getElementById("tier_battles").getContext('2d');
-			var myBarChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'bar',
 				data: tierBattleDesc,
 				options: {
@@ -531,10 +534,10 @@ function populate() {
 					  }]
 					}
 				}
-			});
+			}));
 
 			var ctx = document.getElementById("tier_wins").getContext('2d');
-			var myBarChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'bar',
 				data: tierWinsDesc,
 				options: {
@@ -551,10 +554,10 @@ function populate() {
 					  }]
 					}
 				}
-			});
+			}));
 			
 			var ctx = document.getElementById("tier_wn8").getContext('2d');
-			var myBarChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'bar',
 				data: tierWN8Desc,
 				options: {
@@ -566,10 +569,10 @@ function populate() {
 					  }]
 					}
 				}
-			});
+			}));
 
 			var ctx = document.getElementById("tier_wn9").getContext('2d');
-			var myBarChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'bar',
 				data: tierWN9Desc,
 				options: {
@@ -581,7 +584,7 @@ function populate() {
 					  }]
 					}
 				}
-			});
+			}));
 
 			var types = ["Light", "Medium", "Heavy", "TD", "SPG"];
 			var wn9_types = ["Light", "Medium", "Heavy", "TD"];
@@ -643,7 +646,7 @@ function populate() {
 			};				
 	
 			var ctx = document.getElementById("type_battles").getContext('2d');
-			var myBarChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'bar',
 				data: typeBattleDesc,
 				options: {
@@ -655,10 +658,10 @@ function populate() {
 					  }]
 					}
 				}
-			});
+			}));
 
 			var ctx = document.getElementById("type_wins").getContext('2d');
-			var myBarChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'bar',
 				data: typeWinsDesc,
 				options: {
@@ -675,10 +678,10 @@ function populate() {
 					  }]
 					}
 				}
-			});			
+			}));			
 			
 			var ctx = document.getElementById("type_wn8").getContext('2d');
-			var myBarChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'bar',
 				data: typeWN8Desc,
 				options: {
@@ -690,10 +693,10 @@ function populate() {
 					  }]
 					}
 				}
-			});
+			}));
 
 			var ctx = document.getElementById("type_wn9").getContext('2d');
-			var myBarChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'bar',
 				data: typeWN9Desc,
 				options: {
@@ -705,7 +708,7 @@ function populate() {
 					  }]
 					}
 				}
-			});
+			}));
 			
 		});
 
@@ -722,7 +725,7 @@ function populate() {
 			var max_x = summary.battles[summary.battles.length-1];
 					
 			var ctx = document.getElementById('wn8_progress').getContext('2d');
-			var myChart = new Chart(ctx, {
+			charts.push(new Chart(ctx, {
 				type: 'line',
 				data: {
 					labels: summary.battles,
@@ -780,7 +783,7 @@ function populate() {
 					  }]
 					}
 				}
-			})
+			}))
 		} else {
 			$('#line_chart').hide();
 		}
