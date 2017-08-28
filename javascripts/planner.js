@@ -1892,7 +1892,6 @@ function t2o(transparancy) {
 //function fires when mouse is left clicked on the map and it isn't a drag
 var last_point;
 function on_left_click(e) {
-
 	if (active_context == "drag_context") {
 		cancel_drag(true);
 	}
@@ -2309,9 +2308,7 @@ function on_curve_end(e) {
 		create_curve2(new_drawing, DRAW_QUALITY);
 		emit_entity(new_drawing);
 		undo_list.push(clone_action(["add", [new_drawing]]));
-		
-		background_sprite.removeChild(graphics);
-		
+				
 		render_scene();	
 		stop_drawing();
 		setup_mouse_events(undefined, undefined);
@@ -3670,6 +3667,9 @@ function start_drawing() {
 }
 
 function stop_drawing() {
+	background_sprite.removeChild(graphics);
+	new_drawing = null;
+	render_scene();
 	$(temp_draw_canvas).hide();
 	$(draw_canvas).hide();	
 }
@@ -5747,6 +5747,9 @@ $(document).ready(function() {
 	
 	$(renderer.view).mousedown(function(e) {
 		if (e.which === 3 || e.which === 2) {
+			if (objectContainer.mouseup) {
+				stop_drawing()
+			}
 			last_pan_loc = [mouse_loc().x, mouse_loc().y];
 			setup_mouse_events(on_pan);
 			e.preventDefault();
@@ -5754,7 +5757,7 @@ $(document).ready(function() {
 	});
 
 	renderer.view.addEventListener('contextmenu', function(e) {
-		setup_mouse_events(undefined);
+		//stop_drawing();
 		$('#zoom_level').text((1/zoom_level).toFixed(2));
 		handle_pan_zoom()
 		e.preventDefault();
