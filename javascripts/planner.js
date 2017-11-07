@@ -475,31 +475,32 @@ function adjust_zoom(entity) {
 				break;				
 			case 'drawing':
 				remove(entity.uid);
-				create_drawing2(entity, DRAW_QUALITY * 1/scale, scale);
+				create_drawing2(entity, DRAW_QUALITY, scale);
 				break;
 			case 'curve':
 				remove(entity.uid);
-				create_curve2(entity, DRAW_QUALITY * 1/scale, scale);
+				create_curve2(entity, DRAW_QUALITY, scale);
 				break;
 			case 'line':
 				remove(entity.uid);
-				create_line2(entity, DRAW_QUALITY * 1/scale, scale);
+        console.log(entity, DRAW_QUALITY, scale)
+				create_line2(entity, DRAW_QUALITY, scale);
 				break;
 			case 'rectangle':
 				remove(entity.uid);
-				create_rectangle2(entity, DRAW_QUALITY * 1/scale, scale);
+				create_rectangle2(entity, DRAW_QUALITY, scale);
 				break;
 			case 'circle':
 				remove(entity.uid);
-				create_circle2(entity, DRAW_QUALITY * 1/scale, scale);
+				create_circle2(entity, DRAW_QUALITY, scale);
 				break;
 			case 'polygon':
 				remove(entity.uid);
-				create_polygon2(entity, DRAW_QUALITY * 1/scale, scale);
+				create_polygon2(entity, DRAW_QUALITY, scale);
 				break;
 			case 'area':
 				remove(entity.uid);
-				create_area2(entity, DRAW_QUALITY * 1/scale, scale);
+				create_area2(entity, DRAW_QUALITY, scale);
 				break;
 		}
 		
@@ -3393,18 +3394,20 @@ function draw_entity(drawing, quality_scale, thickness_scale, extra_margin, draw
 	var color = '#' + ('00000' + (drawing.color | 0).toString(16)).substr(-6); 
 
 	var base_resolution = background_sprite.height / background_sprite.scale.y;
-	
-	var quality = quality_scale;
+	  
+  var zoom_ratio = drawing.draw_zoom_level / zoom_level
+  console.log(zoom_ratio)
+	var quality = quality_scale / zoom_ratio;
   
+  /*
+  console.log(drawing.draw_zoom_level * zoom_level)
 	if (drawing.draw_zoom_level) {
-		quality /= drawing.draw_zoom_level;
+		quality /= drawing.draw_zoom_level * zoom_level;
 	}
+  */
   
-	var base_thickness = thickness_scale * quality * (background_sprite.height / renderer.view.height) / background_sprite.scale.y;	
-  
-  if (drawing.draw_zoom_level != zoom_level) {
-    base_thickness *= drawing.draw_zoom_level
-  }
+	var base_thickness = thickness_scale * quality * (background_sprite.height / renderer.view.height) / background_sprite.scale.y;	 
+  base_thickness *= zoom_ratio
   
 	var margin = 20 + extra_margin * base_thickness;
 
@@ -3835,22 +3838,24 @@ function on_line_move(e) {
 		
 		var mouse_location = e.data.getLocalPosition(background_sprite);
 		var a;
-		if (new_drawing.path.length == 0) {
-			a = [to_x_local(new_drawing.x), to_y_local(new_drawing.y)];
-		} else {
-			a = [to_x_local(new_drawing.path[new_drawing.path.length - 1][0] + new_drawing.x),
-				 to_y_local(new_drawing.path[new_drawing.path.length - 1][1] + new_drawing.y)];
-		}
-		var b = [to_x_local(mouse_x_rel(mouse_location.x)) , to_y_local(mouse_y_rel(mouse_location.y))];
-		
-		temp_draw_context.clearRect(0, 0, temp_draw_canvas.width * DRAW_QUALITY, temp_draw_canvas.height * DRAW_QUALITY);
+    if (new_drawing) {
+      if (new_drawing.path.length == 0) {
+        a = [to_x_local(new_drawing.x), to_y_local(new_drawing.y)];
+      } else {
+        a = [to_x_local(new_drawing.path[new_drawing.path.length - 1][0] + new_drawing.x),
+           to_y_local(new_drawing.path[new_drawing.path.length - 1][1] + new_drawing.y)];
+      }
+      var b = [to_x_local(mouse_x_rel(mouse_location.x)) , to_y_local(mouse_y_rel(mouse_location.y))];
+      
+      temp_draw_context.clearRect(0, 0, temp_draw_canvas.width * DRAW_QUALITY, temp_draw_canvas.height * DRAW_QUALITY);
 
-		temp_draw_context.beginPath();
-		temp_draw_context.moveTo(a[0] * DRAW_QUALITY, a[1] * DRAW_QUALITY);		
-		temp_draw_context.lineTo(b[0] * DRAW_QUALITY, b[1] * DRAW_QUALITY);
-		temp_draw_context.stroke();
-		
-		draw_end(temp_draw_context, new_drawing, a, b, 1/zoom_level, DRAW_QUALITY);	
+      temp_draw_context.beginPath();
+      temp_draw_context.moveTo(a[0] * DRAW_QUALITY, a[1] * DRAW_QUALITY);		
+      temp_draw_context.lineTo(b[0] * DRAW_QUALITY, b[1] * DRAW_QUALITY);
+      temp_draw_context.stroke();
+      
+      draw_end(temp_draw_context, new_drawing, a, b, 1/zoom_level, DRAW_QUALITY);	
+    }
 	});
 }
 
