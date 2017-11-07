@@ -3395,11 +3395,17 @@ function draw_entity(drawing, quality_scale, thickness_scale, extra_margin, draw
 	var base_resolution = background_sprite.height / background_sprite.scale.y;
 	
 	var quality = quality_scale;
+  
 	if (drawing.draw_zoom_level) {
 		quality /= drawing.draw_zoom_level;
 	}
-	
+  
 	var base_thickness = thickness_scale * quality * (background_sprite.height / renderer.view.height) / background_sprite.scale.y;	
+  
+  if (drawing.draw_zoom_level != zoom_level) {
+    base_thickness *= drawing.draw_zoom_level
+  }
+  
 	var margin = 20 + extra_margin * base_thickness;
 
 	var points = [];
@@ -6180,6 +6186,8 @@ $(document).ready(function() {
 			var map = $('#map_url').val().trim();
 			if (map && map != "") {
 				try_select_map($('#map_select'), map, true);
+				//add_custom_map(map);
+				//$('#map_select').trigger('change');
 			}
 			$('#map_modal').modal('hide');
 		});
