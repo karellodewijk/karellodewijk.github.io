@@ -3392,91 +3392,14 @@ function canvas2container2(_context, _canvas, width, height, entity) {
 function draw_entity(drawing, quality_scale, thickness_scale, extra_margin, draw_function) {
 	var color = '#' + ('00000' + (drawing.color | 0).toString(16)).substr(-6); 
 
-	var zoom_diff = drawing.draw_zoom_level / zoom_level;
-	quality_scale /= zoom_diff;
-	thickness_scale *= zoom_diff;
-
-	var base_resolution = 1000 * (zoom_diff / background_sprite.scale.y);
-	
-	console.log(base_resolution)
-	var quality = quality_scale;
-	var base_thickness = 1;	
-	
-	var margin = 20 + extra_margin * base_thickness;
-
-	var points = [];
-	if (drawing.path.length > 0) {
-		var left = 9999, top = 9999, right = -9999, bottom = -9999;
-		for (var i = 0; i < drawing.path.length; i++) {
-			var x = drawing.path[i][0];
-			var y = drawing.path[i][1];
-			left = Math.min(left, x);
-			top = Math.min(top, y);
-			right = Math.max(right, x);
-			bottom = Math.max(bottom, y);
-			points.push(base_resolution * x * quality, base_resolution * y * quality);
-		}
-		
-		if (drawing.type == 'curve' || drawing.type == 'area') {
-			//curve and area need a bit more margin
-			margin += Math.max((right - left), (bottom - top)) * base_resolution * quality * 0.3;
-		}
-		
-		var width = Math.ceil(base_resolution * (right - left) * quality + margin);
-		var height = Math.ceil(base_resolution * (bottom - top) * quality + margin);
-
-		var _canvas = document.createElement("canvas");
-		_canvas.width = width;
-		_canvas.height = height;
-		var _context = _canvas.getContext("2d");
-		
-		//shift everything, this should make all coords > margin.
-		var x_diff = -left * base_resolution * quality + margin/2;
-		var y_diff = -top * base_resolution * quality + margin/2;
-		for (var i = 0; i < points.length; i+=2) {
-			points[i] += x_diff;
-			points[i+1] += y_diff;
-		}
-		
-		draw_function(_context, points, quality, base_thickness);
-		
-		canvas2container2(_context, _canvas, width, height, drawing);	
-		
-		drawing.container.height /= (quality) ;
-		drawing.container.width /= (quality) ;
-		drawing.container.x = x_abs(drawing.x + left) - (margin/2) / quality;
-		drawing.container.y = y_abs(drawing.y + top) - (margin/2) / quality;
-	
-		drawing.container.orig_scale = [drawing.container.scale.x, drawing.container.scale.y];
-		background_sprite.addChild(drawing.container);
-		
-		render_scene();
-	}
-}
-
-/*
-
-function draw_entity(drawing, quality_scale, thickness_scale, extra_margin, draw_function) {
-	var color = '#' + ('00000' + (drawing.color | 0).toString(16)).substr(-6); 
-	
-	var zoom_diff = drawing.draw_zoom_level / zoom_level;
-	var height_factor = background_sprite.scale.y * zoom_diff;
-	
 	var base_resolution = background_sprite.height / background_sprite.scale.y;
-		
-	//var quality = quality_scale * height_factor;
 	
-	var quality = 15;
-
-	var base_thickness = thickness_scale;
-	
+	var quality = quality_scale;
 	if (drawing.draw_zoom_level) {
-		//quality /= zoom_diff;	
-		//base_thickness *= zoom_diff;	
+		quality /= drawing.draw_zoom_level;
 	}
 	
-	console.log(quality, base_thickness)
-	
+	var base_thickness = thickness_scale * quality * (background_sprite.height / renderer.view.height) / background_sprite.scale.y;	
 	var margin = 20 + extra_margin * base_thickness;
 
 	var points = [];
@@ -3528,7 +3451,6 @@ function draw_entity(drawing, quality_scale, thickness_scale, extra_margin, draw
 		render_scene();
 	}
 }
-*/
 
 function create_drawing2(drawing, quality_scale, thickness_scale) {
 	if (!quality_scale) quality_scale = 1;
@@ -6258,8 +6180,6 @@ $(document).ready(function() {
 			var map = $('#map_url').val().trim();
 			if (map && map != "") {
 				try_select_map($('#map_select'), map, true);
-				//add_custom_map(map);
-				//$('#map_select').trigger('change');
 			}
 			$('#map_modal').modal('hide');
 		});
