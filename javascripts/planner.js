@@ -483,7 +483,6 @@ function adjust_zoom(entity) {
 				break;
 			case 'line':
 				remove(entity.uid);
-        console.log(entity, DRAW_QUALITY, scale)
 				create_line2(entity, DRAW_QUALITY, scale);
 				break;
 			case 'rectangle':
@@ -3396,15 +3395,7 @@ function draw_entity(drawing, quality_scale, thickness_scale, extra_margin, draw
 	var base_resolution = background_sprite.height / background_sprite.scale.y;
 	  
   var zoom_ratio = drawing.draw_zoom_level / zoom_level
-  console.log(zoom_ratio)
 	var quality = quality_scale / zoom_ratio;
-  
-  /*
-  console.log(drawing.draw_zoom_level * zoom_level)
-	if (drawing.draw_zoom_level) {
-		quality /= drawing.draw_zoom_level * zoom_level;
-	}
-  */
   
 	var base_thickness = thickness_scale * quality * (background_sprite.height / renderer.view.height) / background_sprite.scale.y;	 
   base_thickness *= zoom_ratio
@@ -4892,19 +4883,23 @@ function transition(slide) {
 	var to_remove = [];
 	var to_add = [];
 	var to_transition = [];
-	 
-	for (var key in room_data.slides[active_slide].entities) { 
-		if (room_data.slides[slide].entities[key]) {
-			to_transition.push(key);
-		} else {
-			to_remove.push(key);
-		}
-	}	
-	for (var key in room_data.slides[slide].entities) {
-		if (!room_data.slides[active_slide].entities.hasOwnProperty(key)) {
-			to_add.push(key);
-		}
-	}
+
+  if (room_data.slides[active_slide].entities) {
+    for (var key in room_data.slides[active_slide].entities) { 
+      if (room_data.slides[slide].entities && room_data.slides[slide].entities[key]) {
+        to_transition.push(key);
+      } else {
+        to_remove.push(key);
+      }
+    }	
+  }
+  if (room_data.slides[slide].entities) {
+    for (var key in room_data.slides[slide].entities) {
+      if (room_data.slides[active_slide].entities && !room_data.slides[active_slide].entities.hasOwnProperty(key)) {
+        to_add.push(key);
+      }
+    }
+  }
 	for (var i in to_remove) {
 		var key = to_remove[i];
 		remove(key, true);
@@ -7102,7 +7097,7 @@ $(document).ready(function() {
 	
 	socket.on('pan_zoom', function(slide, new_zoom_level, x, y, user_id) {
 		activity_animation(user_id);
-		room_data.slides[slide] = [new_zoom_level, x, y];
+		room_data.slides[slide].pan_zoom = [new_zoom_level, x, y];
 		if (slide == active_slide) {
 			pan_zoom(new_zoom_level, x, y);
 		}
