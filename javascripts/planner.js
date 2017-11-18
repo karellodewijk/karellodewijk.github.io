@@ -5699,7 +5699,15 @@ $(document).ready(function() {
 	size_x = window.innerWidth;
 	size_y = window.innerHeight;
 
-	renderer = PIXI.autoDetectRenderer(size_x, size_y, {transparent:true});
+  if (nowebgl) {
+    renderer = new PIXI.CanvasRenderer(size_x, size_y, {transparent:true});
+  } else {
+    try {
+      renderer = PIXI.autoDetectRenderer(size_x, size_y, {transparent:true});
+    } catch(e) {
+      renderer = new PIXI.CanvasRenderer(size_x, size_y, {transparent:true});
+    }
+  }  
 	renderer.autoResize = true;
 	useWebGL = renderer instanceof PIXI.WebGLRenderer;
 
