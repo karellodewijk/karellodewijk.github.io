@@ -120,6 +120,7 @@ var sid = $("#sid").attr("data-sid")
 var socket;
 try {
 	socket = io.connect(server, {
+    transports: ['websocket'],
 		reconnectionDelay: 100,
 		reconnectionDelayMax: 500,
 		'reconnection limit' : 1000,
@@ -6867,6 +6868,7 @@ $(document).ready(function() {
 	}
 	
 	socket.on('room_data', function(new_room_data, my_id, new_tactic_name, locale) {
+    console.log("receiving room data")
 		cleanup();
 		room_data = new_room_data;
 		video_paused = new_room_data.video_paused;
