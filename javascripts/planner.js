@@ -5998,23 +5998,32 @@ $(document).ready(function() {
 				$('#map_select_container').show();
 				$('#wotbase_select_container').hide();
 				$('#new_minimap_select_container').hide();
-        var new_path = $("#map_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
-        console.log(new_path)
-        try_select_map($("#map_select"), new_path, true);
+        try {
+          var new_path = $("#map_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
+          try_select_map($("#map_select"), new_path, true);
+        } catch (e) {
+          $("#map_select").val("").selectpicker('render');
+        }
       } else if (this.id == "select_wotbase") {
 				$('#map_select_container').hide();
 				$('#wotbase_select_container').show();
 				$('#new_minimap_select_container').hide();
-        var new_path = $("#wotbase_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
-        console.log(new_path)
-        try_select_map($("#wotbase_select"), new_path, true);
+        try {
+          var new_path = $("#wotbase_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
+          try_select_map($("#wotbase_select"), new_path, true);
+        } catch (e) {
+          $("#wotbase_select").val("").selectpicker('render');
+        }
 			} else if (this.id == "select_new_minimap") {
 				$('#map_select_container').hide();
 				$('#wotbase_select_container').hide();
 				$('#new_minimap_select_container').show();
-        var new_path = $("#new_minimap_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
-        console.log(new_path)
-        try_select_map($("#new_minimap_select"), new_path, true);
+        try {
+          var new_path = $("#new_minimap_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
+          try_select_map($("#new_minimap_select"), new_path, true);
+        } catch (e) {
+          $("#new_minimap_select").val("").selectpicker('render');
+        }
       }
 		});
 		
