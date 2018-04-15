@@ -298,6 +298,7 @@ var select_center;
 var objectContainer;
 var fast_container;
 var background_sprite;
+var background;
 var renderer;
 var size
 var size_x;
@@ -5993,22 +5994,25 @@ $(document).ready(function() {
 		});
 		
 		$('input[name="map_type_select"]').on('change', function() {
-		    if (this.id == "select_hd") {
+      if (this.id == "select_hd") {
 				$('#map_select_container').show();
 				$('#wotbase_select_container').hide();
 				$('#new_minimap_select_container').hide();
-				$("#map_select").val("").selectpicker('render');
-		    } else if (this.id == "select_wotbase") {
+        var new_path = $("#map_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
+        try_select_map($("#map_select"), new_path, true);
+      } else if (this.id == "select_wotbase") {
 				$('#map_select_container').hide();
 				$('#wotbase_select_container').show();
 				$('#new_minimap_select_container').hide();
-				$("#wotbase_select").val("").selectpicker('render');
+        var new_path = $("#wotbase_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
+        try_select_map($("#wotbase_select"), new_path, true);
 			} else if (this.id == "select_new_minimap") {
 				$('#map_select_container').hide();
 				$('#wotbase_select_container').hide();
 				$('#new_minimap_select_container').show();
-				$("#new_minimap_select").val("").selectpicker('render');				
-		    }
+        var new_path = $("#new_minimap_select").find("option[value$='" + last(background.path.split('/')) + "']").val()
+        try_select_map($("#new_minimap_select"), new_path, true);
+      }
 		});
 		
 		$('#send_to_link').click(function (e) {
