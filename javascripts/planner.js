@@ -64,7 +64,6 @@ function img_texture(src) {
 			return PIXI.Texture.fromImage(src);
 		}
 	}
-	
 }
 
 var texture_atlas;
@@ -3748,8 +3747,10 @@ function emit_entity(entity) {
 	socket.emit('create_entity', room, entity, active_slide);
 	room_data.slides[active_slide].z_top++;
 	entity.z_index = room_data.slides[active_slide].z_top;
-	entity.container = container;
-	set_anchor(entity.container, 0.5, 0.5);
+	if (container) {
+		entity.container = container;
+		set_anchor(entity.container, 0.5, 0.5);
+	}
 	render_scene();
 }
 
@@ -6291,7 +6292,54 @@ $(document).ready(function() {
 			initialize_slider("delay", "delay_text", "delay");
 		}
 		
-		$('[data-toggle="popover"]').popover({
+		$('#change_map_size_popover').popover({
+			container: 'body',
+			trigger: 'manual',
+			html: 'true',
+			template: '<div class="popover popover-medium" style="width: 300px;"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"></div></div></div>',
+			content: function() {
+				return $('#popover-content');
+			}
+		}).click(function(e) {
+			$(this).popover('toggle');
+			var _this = $(this);
+			var popover = $(this);
+			$(document).find('#map_size_x')[0].value = parseFloat(background.size_x); 
+			$(document).find('#map_size_y')[0].value = parseFloat(background.size_y); 
+			$(document).on('click', '#save_map_size', function(e) {
+				var x = $(document).find('#map_size_y')[0].value;
+				var y = $(document).find('#map_size_y')[0].value;
+				var background_entity;
+				for (var key in room_data.slides[active_slide].entities) {
+					if (room_data.slides[active_slide].entities[key].type == 'background') {
+						background_entity = room_data.slides[active_slide].entities[key];
+					}
+				}
+				
+				background_entity.size_x = $(document).find('#map_size_y')[0].value;
+				background_entity.size_y = $(document).find('#map_size_y')[0].value;
+				$("#map_size").text("("+background_entity.size_x+" x "+background_entity.size_y+")");
+				emit_entity(background_entity);
+				/*
+				name = escapeHtml(name);
+				if (name == "") {
+					alert("Empty name, tactic not stored");
+				} else {
+					tactic_name = name;
+					document.title = "Tactic - " + tactic_name;
+					socket.emit("store", room, tactic_name);
+					$("#save").show();
+					alert('Tactic stored as: "' + tactic_name + '"');
+					e.stopPropagation();
+				}
+				*/
+				e.stopPropagation();
+				_this.popover('toggle');
+			});
+			e.stopPropagation();
+		});
+		
+		$('#store_tactic_popover').popover({
 			container: 'body',
 			trigger: 'manual',
 			html: 'true',
