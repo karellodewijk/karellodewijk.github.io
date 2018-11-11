@@ -6303,9 +6303,7 @@ $(document).ready(function() {
 		}).click(function(e) {
 			$(this).popover('toggle');
 			var _this = $(this);
-			var popover = $(this);
-			$(document).find('#map_size_x')[0].value = parseFloat(background.size_x); 
-			$(document).find('#map_size_y')[0].value = parseFloat(background.size_y); 
+			var popover = $(this);			
 			$(document).on('click', '#save_map_size', function(e) {
 				var x = $(document).find('#map_size_y')[0].value;
 				var y = $(document).find('#map_size_y')[0].value;
@@ -6315,25 +6313,11 @@ $(document).ready(function() {
 						background_entity = room_data.slides[active_slide].entities[key];
 					}
 				}
-				
 				background_entity.size_x = $(document).find('#map_size_y')[0].value;
 				background_entity.size_y = $(document).find('#map_size_y')[0].value;
+				console.log()
 				$("#map_size").text("("+background_entity.size_x+" x "+background_entity.size_y+")");
 				emit_entity(background_entity);
-				/*
-				name = escapeHtml(name);
-				if (name == "") {
-					alert("Empty name, tactic not stored");
-				} else {
-					tactic_name = name;
-					document.title = "Tactic - " + tactic_name;
-					socket.emit("store", room, tactic_name);
-					$("#save").show();
-					alert('Tactic stored as: "' + tactic_name + '"');
-					e.stopPropagation();
-				}
-				*/
-				e.stopPropagation();
 				_this.popover('toggle');
 			});
 			e.stopPropagation();
