@@ -69,14 +69,18 @@ function img_texture(src) {
 
 var texture_atlas;
 function setup_assets() {
-	texture_atlas = {}
-	for (var key in loader.resources) {
-		if (key.slice(-4) == "json") {
-			for (var key2 in loader.resources[key].data.tiles) {
-				texture_atlas[key2] = loader.resources[key].data.tiles[key2]; 
-			}
-		}
-	}
+  try {
+    texture_atlas = {}
+    for (var key in loader.resources) {
+      if (key.slice(-4) == "json") {
+        for (var key2 in loader.resources[key].data.tiles) {
+          texture_atlas[key2] = loader.resources[key].data.tiles[key2]; 
+        }
+      }
+    }
+  } catch (e) {
+    alert("Something is interfering with loading assets, probably adblock.");
+  }
 }
 
 var room = location.search.split('room=')[1].split("&")[0];	
