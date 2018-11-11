@@ -6302,8 +6302,8 @@ $(document).ready(function() {
 			}
 		}).click(function(e) {
 			$(this).popover('toggle');
-			var _this = $(this);
-			var popover = $(this);			
+			let _this = $(this);
+			let popover = $(this);			
 			$(document).on('click', '#save_map_size', function(e) {
 				var x = $(document).find('#map_size_y')[0].value;
 				var y = $(document).find('#map_size_y')[0].value;
@@ -6318,7 +6318,8 @@ $(document).ready(function() {
 				console.log()
 				$("#map_size").text("("+background_entity.size_x+" x "+background_entity.size_y+")");
 				emit_entity(background_entity);
-				_this.popover('toggle');
+				_this.popover('hide');
+				e.stopPropagation();
 			});
 			e.stopPropagation();
 		});
@@ -6333,9 +6334,9 @@ $(document).ready(function() {
 			}
 		}).click(function(e) {
 			$(this).popover('toggle');
-			var _this = $(this);
+			let _this = $(this);
 			document.getElementById("tactic_name").setAttribute("value", tactic_name);
-			var popover = $(this);
+			let popover = $(this);
 			$(document).on('click', '#store_tactic', function(e) {
 				var name = $(document).find('#tactic_name')[0].value;
 				name = escapeHtml(name);
@@ -6349,7 +6350,8 @@ $(document).ready(function() {
 					alert('Tactic stored as: "' + tactic_name + '"');
 					e.stopPropagation();
 				}
-				_this.popover('toggle');
+				_this.popover('hide');
+				e.stopPropagation();
 			});
 			e.stopPropagation();
 		});
