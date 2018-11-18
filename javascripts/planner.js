@@ -4334,7 +4334,7 @@ function update_my_user() {
 		if (tactic_name && tactic_name != "") {
 			$("#save").show();
 		}
-		$('#sign_in_text').text(my_user.name.substring(0,9));
+		$('#sign_in_text').text(my_user.name.substring(0,8));
 		$('#login_dropdown').removeClass('btn-warning')
 		$('#login_dropdown').addClass('btn-success')
 	} else {
