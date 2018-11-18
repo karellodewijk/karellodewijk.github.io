@@ -1225,7 +1225,7 @@ function set_background(new_background, cb) {
 					on_loaded();
 				});
 				texture.baseTexture.on('error', function(e) {
-					alert("Image exists, but the host does not allow embedding. Try uploading your map to a service such as http://imgur.com.");
+					alert("Image exists, but the host does not allow embedding. Try uploading your map to a service such as https://imgur.com.");
 					resources_loading--;
 					if (cb)	cb(false);
 				});			
@@ -5690,8 +5690,8 @@ function select_icon(node) {
 $(document).ready(function() {
 	//download polyfills
 	if (!supports_color_input()) {
-		$('head').append('<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">');
-		$('head').append('<script defer src="http://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>');
+		$('head').append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">');
+		$('head').append('<script defer src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>');
 	}
 	
 	dpi = document.getElementById('dpitest').offsetHeight;
@@ -5988,7 +5988,7 @@ $(document).ready(function() {
 				if (!$('#this_slide_only').get(0).checked) {
 					slide = undefined;
 				}
-				$.post('http://'+target+'/add_to_room', {target: tactic_uid, source:room, session_id:$("#sid").attr("data-sid"), host:parse_domain(location.hostname), stored:"false", slide:slide}).done(function( data ) {
+				$.post('https://'+target+'/add_to_room', {target: tactic_uid, source:room, session_id:$("#sid").attr("data-sid"), host:parse_domain(location.hostname), stored:"false", slide:slide}).done(function( data ) {
 					if (data != "Success") {
 						alert(data);
 					}
@@ -6407,7 +6407,7 @@ $(document).ready(function() {
 		$('#link').click(function() { 
 			var copySupported = document.queryCommandSupported('copy');
 			var textArea = document.createElement("textarea");
-			var link_text = "http://" + location.host + location.pathname+"?room="+room;
+			var link_text = "https://" + location.host + location.pathname+"?room="+room;
 			textArea.value = link_text;
 			document.body.appendChild(textArea);
 			//textArea.select();
@@ -6440,8 +6440,8 @@ $(document).ready(function() {
 			background_sprite.scale.x = temp_scale_x;
 			background_sprite.scale.y = temp_scale_y;
 
-			$.getScript("http://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js", function() {
-				$.getScript("http://cdnjs.cloudflare.com/ajax/libs/javascript-canvas-to-blob/3.7.0/js/canvas-to-blob.min.js", function() {
+			$.getScript("https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js", function() {
+				$.getScript("https://cdnjs.cloudflare.com/ajax/libs/javascript-canvas-to-blob/3.7.0/js/canvas-to-blob.min.js", function() {
 					new_renderer.view.toBlob(function(blob){
 						if (tactic_name && tactic_name != "") {
 							saveAs(blob, tactic_name + ".jpg");
@@ -6459,8 +6459,8 @@ $(document).ready(function() {
 
 			new_renderer.render(objectContainer);			
 
-			$.getScript("http://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js", function() {
-				$.getScript("http://cdnjs.cloudflare.com/ajax/libs/javascript-canvas-to-blob/3.7.0/js/canvas-to-blob.min.js", function() {
+			$.getScript("https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js", function() {
+				$.getScript("https://cdnjs.cloudflare.com/ajax/libs/javascript-canvas-to-blob/3.7.0/js/canvas-to-blob.min.js", function() {
 					new_renderer.view.toBlob(function(blob){
 						if (tactic_name && tactic_name != "") {
 							saveAs(blob, tactic_name + ".jpg");
@@ -6524,7 +6524,7 @@ $(document).ready(function() {
 									}
 								}
 
-								$.getScript("http://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js", function(){
+								$.getScript("https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js", function(){
 									var blob = zip.generate({type:"blob"});
 									if (tactic_name && tactic_name != "") {
 										saveAs(blob, tactic_name + ".zip");
