@@ -161,14 +161,14 @@ function populate() {
 		}),
 		$.Deferred(function() {
 			var self = this;
-			$.get("http://karellodewijk.github.io/other/expected_wn8.json", {}, function(data) {
+			$.get("https://karellodewijk.github.io/other/expected_wn8.json", {}, function(data) {
 				tank_expected = data;
 				self.resolve();
 			});
 		}),
 		$.Deferred(function() {
 			var self = this;
-			$.get("http://karellodewijk.github.io/other/expected_wn9.json", {}, function(data) {
+			$.get("https://karellodewijk.github.io/other/expected_wn9.json", {}, function(data) {
 				tank_expected_wn9 = data;
 				self.resolve();
 			});
@@ -190,7 +190,7 @@ function populate() {
 			$('#no_battles').hide();
 		}
 
-		//borrowed from http://stackoverflow.com/questions/22697936/binary-search-in-javascript
+		//borrowed from https://stackoverflow.com/questions/22697936/binary-search-in-javascript
 		function binarySearch(ar, el, compare_fn) {
 			var m = 0;
 			var n = ar.length - 1;
@@ -800,6 +800,7 @@ $(document).ready(function() {
 	function search() {
 		var link = 'https://api.worldoftanks.' + server + '/wot/account/list/?limit=20&application_id=0dbf88d72730ed7b843ab5934d8b3794&search=' + $('#srch-term').val();
 		$.get(link, {}, function(data) {
+      console.log(data)
 			if (data.data.length == 0) {
 				$('#no_results').show();
 				$('#no_battles').hide();
