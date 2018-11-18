@@ -6403,16 +6403,28 @@ $(document).ready(function() {
 				socket.emit("rename_slide", room, active_slide, $(this).val());
 			}
 		});
-
-		$('#link').click(function() { 
-			var copySupported = document.queryCommandSupported('copy');
-			var textArea = document.createElement("textarea");
-			var link_text = "https://" + location.host + location.pathname+"?room="+room;
-			textArea.value = link_text;
-			document.body.appendChild(textArea);
-			//textArea.select();
-			window.prompt("Copy to clipboard and share with friends:", link_text);
-			document.body.removeChild(textArea);
+    
+    $('#link').click(function() { 
+      var copySupported = document.queryCommandSupported('copy');
+      var link_text = "https://" + location.host + location.pathname+"?room="+room;   
+      if (copySupported) {
+        const el = document.createElement('textarea');
+        el.value = link_text;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);   
+        $('#link').tooltip();  
+        let title = $('#link').attr('title');
+        $('#link').attr('title', $('#link').data("success"));
+        $('#link').tooltip("open");
+        setTimeout(() => {
+          $('#link').attr('title', title);
+          $('#link').tooltip("destroy");
+        }, 1000)
+      } else {
+        window.prompt("Copy to clipboard and share with friends:", link_text);
+      }
 		});
 		
 		$("#chat_input").keyup(function (e) {
