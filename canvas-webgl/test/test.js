@@ -4,8 +4,8 @@ function test_webgl(test) {
 	canvas.width = 300;
 	canvas.height = 300;
 	ctx = canvas.getContext('webgl-2d');
-	test(ctx);
 	document.body.appendChild(canvas);
+	test(ctx, canvas);
 }
 
 function test_canvas(test) {
@@ -14,8 +14,8 @@ function test_canvas(test) {
 	canvas.width = 300;
 	canvas.height = 300;
 	ctx = canvas.getContext('2d');
-	test(ctx);
 	document.body.appendChild(canvas);
+	test(ctx, canvas);
 }
 
 function do_test(test) {
@@ -24,12 +24,13 @@ function do_test(test) {
 	document.body.appendChild(document.createElement('br'));
 }
 
-test_webgl
- 
 window.onload = function() {
-	do_test(function(ctx) {	
-		ctx.beginPath();
-		ctx.ellipse(100, 100, 50, 75, 45 * Math.PI/180, 0, 2 * Math.PI);
-		ctx.stroke();
+	do_test(function(ctx, canvas) {
+		var image = document.getElementById("source");
+		ctx.drawImage(image, 0, 0, 100, 100, 0, 0, 100, 100);
+		
+		var data = ctx.getImageData(0,0,100,100);
+		ctx.putImageData(data, 100, 100);
+		
 	});	
 }
